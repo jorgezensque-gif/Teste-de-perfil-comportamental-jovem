@@ -2,18 +2,72 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Teste DISC - Perguntas</title>
+    <title>Painel de Resultados - Instrutor Jorge</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 50px; text-align: center; }
-        .card { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; display: inline-block; }
-        h1 { color: #ff5c3a; }
+        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { color: #ff5c3a; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: #181c24; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #252a35; }
+        th { background: #252a35; color: #ff5c3a; }
+        tr:hover { background: #1f242d; }
+        .tag { padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
+        .e { background: #e63946; } /* Executor */
+        .c { background: #ffb703; } /* Comunicador */
+        .p { background: #2a9d8f; } /* Planejador */
+        .a { background: #457b9d; } /* Analista */
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>O Teste Começou!</h1>
-        <p>Olá! Se você está vendo esta página, o sistema do Jorge funcionou.</p>
-        <p>Agora você pode substituir este código pelas suas perguntas reais.</p>
+    <div class="container">
+        <h1>📊 Relatório de Perfis - Projeto Pescar</h1>
+        <table id="tabela-resultados">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Aluno</th>
+                    <th>E</th>
+                    <th>C</th>
+                    <th>P</th>
+                    <th>A</th>
+                    <th>Pontos SAP</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-tabela">
+                </tbody>
+        </table>
     </div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
+            projectId: "perfil-jovem--disc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('resultados_testes').on('value', (snapshot) => {
+            const corpo = document.getElementById('corpo-tabela');
+            corpo.innerHTML = "";
+            
+            snapshot.forEach((childSnapshot) => {
+                const dado = childSnapshot.val();
+                const p = dado.pontos;
+                
+                const linha = `<tr>
+                    <td>${dado.data || '-'}</td>
+                    <td><strong>${dado.aluno || 'Anônimo'}</strong></td>
+                    <td><span class="tag e">${p.E}</span></td>
+                    <td><span class="tag c">${p.C}</span></td>
+                    <td><span class="tag p">${p.P}</span></td>
+                    <td><span class="tag a">${p.A}</span></td>
+                    <td>${p.SAP} / 3</td>
+                </tr>`;
+                corpo.innerHTML += linha;
+            });
+        });
+    </script>
 </body>
 </html>
