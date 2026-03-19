@@ -2,73 +2,101 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>DISC Admin — Painel do Jorge</title>
+    <title>Painel DISC — Administrador Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
     <style>
-        body { background: #0a0c10; color: #e8ecf2; font-family: 'DM Sans', sans-serif; padding: 40px; }
-        .card { background: #181c24; border: 1px solid #252a35; padding: 30px; border-radius: 16px; max-width: 600px; margin: auto; }
-        h2 { color: #ff5c3a; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #11141a; border: 1px solid #252a35; color: white; border-radius: 8px; }
-        button { background: #ff5c3a; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        button:hover { background: #e04b2f; }
-        .lista-chaves { margin-top: 30px; border-top: 1px solid #252a35; padding-top: 20px; }
+        body { background: #0a0c10; color: #e8ecf2; font-family: sans-serif; padding: 50px; text-align: center; }
+        .admin-card { background: #181c24; padding: 40px; border-radius: 20px; border: 1px solid #252a35; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #ff5c3a; margin-bottom: 25px; }
+        input { width: 80%; padding: 12px; margin-bottom: 20px; background: #0a0c10; border: 1px solid #252a35; color: white; border-radius: 8px; font-size: 16px; }
+        .btn-gerar { width: 85%; padding: 15px; background: #ff5c3a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
+        .btn-gerar:hover { background: #e04b2f; transform: scale(1.02); }
+        .lista { margin-top: 30px; text-align: left; max-height: 300px; overflow-y: auto; padding-right: 10px; }
         .chave-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #252a35; font-family: monospace; }
         .disponivel { color: #06d6a0; }
         .usada { color: #6b7585; text-decoration: line-through; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Painel Administrativo DISC</h2>
-        <p style="margin-bottom: 15px; color: #6b7585;">Gerador de chaves sincronizado com a nuvem.</p>
-        
-        <input type="text" id="prefixo" placeholder="Prefixo da chave (Ex: TURMA-A)">
-        <button onclick="gerarChave()">GERAR E SALVAR NA NUVEM</button>
 
-        <div class="lista-chaves" id="lista">Carregando chaves da nuvem...</div>
+    <div class="admin-card">
+        <h2>Gerador de Chaves DISC</h2>
+        <input type="text" id="prefixo" placeholder="Prefixo (Ex: TURMA-A)">
+        <button class="btn-gerar" onclick="gerarNovaChave()">GERAR CHAVE NA NUVEM</button>
+
+        <div class="lista" id="lista-chaves">
+            <p style="text-align:center; color:#6b7585;">Carregando chaves do Firebase...</p>
+        </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU PROJETO PERFIL-JOVEM--DISC
+        // CONFIGURAÇÃO DO SEU PROJETO NO FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyB...", // O Firebase preencherá automaticamente se usar o SDK, mas os dados abaixo são do seu projeto
-            authDomain: "perfil-jovem--disc.firebaseapp.com",
             databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
             projectId: "perfil-jovem--disc"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        async function gerarChave() {
-            const prefixo = document.getElementById('prefixo').value || "DISC";
-            const novaChave = prefixo + "-" + Math.random().toString(36).substr(2, 5).toUpperCase();
-            
-            const snapshot = await db.ref('lista_chaves').once('value');
-            let chaves = snapshot.val() || [];
-            
-            chaves.push({ code: novaChave, used: false, user: "" });
-            await db.ref('lista_chaves').set(chaves);
-            
-            alert("Sucesso! Chave " + novaChave + " salva na nuvem.");
-            listar();
+        // FUNÇÃO PARA GERAR CHAVE
+        async function gerarNovaChave() {
+            const prefixo = document.getElementById('prefixo').value.toUpperCase() || "DISC";
+            const codigoAleatorio = Math.random().toString(36).substr(2, 5).toUpperCase();
+            const chaveFinal = prefixo + "-" + codigoAleatorio;
+
+            try {
+                // Pega a lista atual do Firebase
+                const snapshot = await db.ref('lista_chaves').once('value');
+                let chaves = snapshot.val() || [];
+
+                // Adiciona a nova chave à lista
+                chaves.push({
+                    code: chaveFinal,
+                    used: false,
+                    user: ""
+                });
+
+                // Salva a lista atualizada de volta no Firebase
+                await db.ref('lista_chaves').set(chaves);
+                
+                alert("Sucesso! Chave " + chaveFinal + " gerada!");
+                document.getElementById('prefixo').value = ""; // Limpa o campo
+                atualizarLista();
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao salvar! Verifique se as Regras do Firebase estão em 'true'.");
+            }
         }
 
-        async function listar() {
+        // FUNÇÃO PARA MOSTRAR AS CHAVES NO ECRÃ
+        async function atualizarLista() {
             const snapshot = await db.ref('lista_chaves').once('value');
             const chaves = snapshot.val() || [];
-            const listaDiv = document.getElementById('lista');
-            listaDiv.innerHTML = "<h3>Chaves Ativas:</h3>";
+            const container = document.getElementById('lista-chaves');
             
+            if (chaves.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Nenhuma chave gerada ainda.</p>";
+                return;
+            }
+
+            container.innerHTML = "<h4>Chaves Geradas:</h4>";
+            // Mostra as chaves mais recentes no topo
             chaves.reverse().forEach(c => {
-                listaDiv.innerHTML += `
-                    <div class="chave-item ${c.used ? 'usada' : 'disponivel'}">
-                        <span>${c.code}</span>
-                        <span>${c.used ? 'Usado por: ' + c.user : 'Disponível'}</span>
-                    </div>`;
+                const status = c.used ? `<span class="usada">Usada por: ${c.user}</span>` : `<span class="disponivel">Disponível</span>`;
+                container.innerHTML += `
+                    <div class="chave-item">
+                        <strong>${c.code}</strong>
+                        ${status}
+                    </div>
+                `;
             });
         }
-        listar();
+
+        // Carrega a lista assim que abrir a página
+        atualizarLista();
     </script>
 </body>
 </html>
+         
