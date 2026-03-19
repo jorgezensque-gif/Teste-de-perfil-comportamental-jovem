@@ -3,26 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Pescar - Jorge</title>
+    <title>Autoavaliação SAP - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 600px; width: 100%; text-align: center; }
-        input { width: 80%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; }
-        button { background: #ff5c3a; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .opcoes button { text-align: left; background: #252a35; margin: 5px 0; }
-        .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin: 20px 0; }
+        body { background: #0a0c10; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 700px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header-sap { border-bottom: 3px solid #ff5c3a; margin-bottom: 20px; padding-bottom: 10px; }
+        .desc-box { background: #0a0c10; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.6; color: #abb2bf; margin-bottom: 15px; border-left: 4px solid #ff5c3a; text-align: justify; }
+        .evidencias { background: rgba(255, 92, 58, 0.1); padding: 12px; border-radius: 8px; font-size: 13px; color: #ff8e75; margin-bottom: 20px; font-style: italic; }
+        .opcoes { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+        .btn-nota { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #353b48; background: #252a35; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-nota:hover { background: #ff5c3a; transform: translateY(-3px); }
+        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 1px solid #353b48; background: #0a0c10; color: white; box-sizing: border-box; }
+        .barra-progresso { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
         .barra-fill { height: 100%; background: #ff5c3a; width: 0%; transition: 0.4s; }
     </style>
 </head>
 <body>
 
-<div class="container" id="box">
-    <h2>Identificação</h2>
-    <p>Por favor, digite seu nome completo:</p>
-    <input type="text" id="nomeAluno" placeholder="Nome do Jovem">
-    <button onclick="iniciar()">COMEÇAR AVALIAÇÃO</button>
+<div class="container" id="main-box">
+    <div class="header-sap">
+        <h2>Identificação do Jovem</h2>
+        <p>Projeto Pescar - Unidade Parceira</p>
+    </div>
+    <p>Digite seu nome completo para iniciar a Etapa 1:</p>
+    <input type="text" id="nomeJovem" placeholder="Nome Completo">
+    <button class="btn-nota" style="width: 100%;" onclick="iniciar()">INICIAR AVALIAÇÃO</button>
 </div>
 
 <script>
@@ -30,52 +37,90 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let nomeDoJovem = "";
-    let fase = "SAP"; let indice = 0;
-    let resSAP = []; let resDISC = {E:0, C:0, P:0, A:0};
+    let nomeGravado = "";
+    let indice = 0;
+    let notasSAP = [];
 
-    const perguntasSAP = [
-        { t: "1-PROTAGONISMO", q: "Como você avalia sua autonomia?" },
-        { t: "2-RESPONSABILIDADE", q: "Como você avalia seu compromisso?" },
-        { t: "3-AMBIENTAL", q: "Como você avalia seu cuidado ambiental?" },
-        { t: "4-CONVIVÊNCIA", q: "Como você avalia sua ética?" },
-        { t: "5-SAÚDE", q: "Como você avalia seu bem-estar?" },
-        { t: "6-EQUIPE", q: "Como você avalia seu trabalho em grupo?" },
-        { t: "7-APRENDER", q: "Como você avalia seu desejo de aprender?" }
-    ];
-
-    const perguntasDISC = [
-        { q: "Em um desafio, prefiro:", o: [{t:"Comandar",v:"E"},{t:"Animar",v:"C"},{t:"Apoiar",v:"P"},{t:"Analisar",v:"A"}] },
-        { q: "Sou mais:", o: [{t:"Decidido",v:"E"},{t:"Influente",v:"C"},{t:"Estável",v:"P"},{t:"Cauteloso",v:"A"}] }
+    const sapData = [
+        {
+            t: "1 - SER PROTAGONISTA",
+            d: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino...",
+            e: "• Sou referência nos meus grupos.\n• Respeito e me faço respeitar.\n• Construo meu Projeto de Vida.\n• Reconheço potenciais e pontos a melhorar."
+        },
+        {
+            t: "2 - SER RESPONSÁVEL E COMPROMETIDO",
+            d: "É comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido, respeitar regras e normas de convivência...",
+            e: "• Sou assíduo e pontual.\n• Cumpro prazos e normas.\n• Esforço-me por bons resultados."
+        },
+        {
+            t: "3 - CONSCIÊNCIA AMBIENTAL",
+            d: "É o cuidado e o zelo com o meio ambiente e o uso consciente dos recursos naturais e materiais...",
+            e: "• Descarte correto de resíduos.\n• Uso consciente de água e luz.\n• Zelo pelo patrimônio."
+        },
+        {
+            t: "4 - VALORES DE CONVIVÊNCIA",
+            d: "É a capacidade de agir com ética e postura cidadã em relação a si mesmo e aos outros, respeitando as diferenças...",
+            e: "• Postura ética e cordial.\n• Respeito à diversidade.\n• Gentileza e tolerância."
+        },
+        {
+            t: "5 - SAÚDE E BEM-ESTAR",
+            d: "É o cuidado físico e emocional consigo mesmo, buscando hábitos de vida saudáveis...",
+            e: "• Higiene e alimentação.\n• Equilíbrio emocional.\n• Enfrento desafios com segurança."
+        },
+        {
+            t: "6 - TRABALHAR EM EQUIPE",
+            d: "Capacidade de colaborar e partilhar, colocando os interesses do grupo acima dos interesses pessoais...",
+            e: "• Bem-estar do grupo em foco.\n• Busca consenso.\n• Aceita críticas e sugestões."
+        },
+        {
+            t: "7 - APRENDER A APRENDER",
+            d: "Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática o que aprendeu...",
+            e: "• Compromisso escolar.\n• Tira lições de situações boas/ruins.\n• Curiosidade e argumentação."
+        }
     ];
 
     function iniciar() {
-        nomeDoJovem = document.getElementById('nomeAluno').value;
-        if(nomeDoJovem.length < 3) { alert("Digite seu nome!"); return; }
-        mostrar();
+        nomeGravado = document.getElementById('nomeJovem').value;
+        if(nomeGravado.length < 3) { alert("Por favor, digite seu nome!"); return; }
+        proximaPergunta();
     }
 
-    function mostrar() {
-        let html = `<div class="barra-bg"><div class="barra-fill" style="width:${(indice/7)*100}%"></div></div>`;
-        if(fase === "SAP") {
-            const p = perguntasSAP[indice];
-            html += `<h2>${p.t}</h2><p>${p.q}</p><div class="opcoes">`;
-            for(let i=1; i<=5; i++) html += `<button onclick="votarSAP(${i})">${i}</button>`;
-        } else {
-            const d = perguntasDISC[indice];
-            html += `<h2>Perfil DISC</h2><p>${d.q}</p><div class="opcoes">`;
-            d.o.forEach(o => html += `<button onclick="votarDISC('${o.v}')">${o.t}</button>`);
+    function proximaPergunta() {
+        if(indice >= sapData.length) { finalizar(); return; }
+        const p = sapData[indice];
+        const progresso = (indice / sapData.length) * 100;
+        
+        let html = `
+            <div class="barra-progresso"><div class="barra-fill" style="width: ${progresso}%"></div></div>
+            <div class="header-sap"><h2>${p.t}</h2></div>
+            <div class="desc-box">${p.d}</div>
+            <div class="evidencias"><strong>Evidências Norteadoras:</strong><br>${p.e.replace(/\n/g, '<br>')}</div>
+            <p>Em uma escala de 1 a 5, como você se avalia?</p>
+            <div class="opcoes">`;
+        
+        for(let i=1; i<=5; i++) {
+            html += `<button class="btn-nota" onclick="votar(${i})">${i}</button>`;
         }
-        document.getElementById('box').innerHTML = html + "</div>";
+        
+        document.getElementById('main-box').innerHTML = html + `</div>`;
     }
 
-    function votarSAP(v) { resSAP.push(v); indice++; if(indice>=7){ fase="DISC"; indice=0; } mostrar(); }
-    function votarDISC(v) { resDISC[v]++; indice++; if(indice>=2) finalizar(); else mostrar(); }
+    function votar(nota) {
+        notasSAP.push(nota);
+        indice++;
+        proximaPergunta();
+    }
 
     async function finalizar() {
-        document.getElementById('box').innerHTML = "<h2>Enviando...</h2>";
-        await db.ref('resultados_testes').push({ aluno: nomeDoJovem, data: new Date().toLocaleString(), sap: resSAP, disc: resDISC });
-        document.getElementById('box').innerHTML = "<h2>Sucesso!</h2><p>Jorge recebeu seu relatório.</p>";
+        document.getElementById('main-box').innerHTML = "<h2>Enviando sua Autoavaliação...</h2>";
+        // Aqui enviamos apenas o SAP como você pediu agora, mas o Admin está pronto para ler isso.
+        await db.ref('resultados_testes').push({
+            aluno: nomeGravado,
+            data: new Date().toLocaleString(),
+            sap: notasSAP,
+            disc: {E:0, C:0, P:0, A:0} // Mantive a estrutura para não dar erro no gráfico
+        });
+        document.getElementById('main-box').innerHTML = `<h2>Concluído!</h2><p>Obrigado, ${nomeGravado}. Jorge já recebeu seus dados.</p>`;
     }
 </script>
 </body>
