@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste DISC & SAP Jovem</title>
+    <title>Teste DISC & SAP Jovem 5.0</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #ff5c3a; margin-bottom: 20px; }
-        .opcoes button { width: 100%; padding: 15px; margin: 10px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; font-size: 16px; }
+        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 650px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #ff5c3a; margin-top: 0; text-align: center; }
+        .descricao-sap { background: #0a0c10; padding: 15px; border-radius: 8px; border-left: 4px solid #ff5c3a; margin-bottom: 20px; font-size: 14px; line-height: 1.5; color: #abb2bf; text-align: justify; }
+        .pergunta-texto { font-size: 18px; font-weight: bold; margin-bottom: 20px; display: block; text-align: center; }
+        .opcoes button { width: 100%; padding: 15px; margin: 8px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; font-size: 15px; }
         .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; transform: translateX(5px); }
         .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin-bottom: 20px; }
         .barra-fill { height: 100%; background: #ff5c3a; width: 0%; transition: 0.4s; border-radius: 4px; }
-        p { color: #8892b0; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -27,7 +28,6 @@
 </div>
 
 <script>
-    // Configuração do Firebase do Jorge
     const firebaseConfig = {
         databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
         projectId: "perfil-jovem--disc"
@@ -35,16 +35,40 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Perguntas que unem Sólides (DISC) e SAP Jovem
     const perguntas = [
-        { q: "No dia a dia, qual característica te define melhor?", 
-          o: [{t:"DETERMINAÇÃO: Foco em resultados.", v:"E"}, {t:"ENTUSIASMO: Falar e motivar pessoas.", v:"C"}, {t:"PACIÊNCIA: Gosto de rotina e calma.", v:"P"}, {t:"EXATIDÃO: Gosto de detalhes e regras.", v:"A"}] },
-        { q: "Como você prefere agir em grupo (SAP 6.0)?", 
-          o: [{t:"Lidero e decido o que fazer.", v:"E"}, {t:"Animo o grupo e comunico as ideias.", v:"C"}, {t:"Ajudo os outros e busco união.", v:"P"}, {t:"Analiso os riscos e sigo o plano.", v:"A"}] },
-        { q: "Sobre Protagonismo (SAP 1.0):", 
-          o: [{t:"Eu tomo a iniciativa e faço acontecer.", v:"E"}, {t:"Eu influencio e inspiro meus colegas.", v:"C"}, {t:"Eu planejo meu futuro com segurança.", v:"P"}, {t:"Eu estudo muito bem minhas escolhas.", v:"A"}] },
-        { q: "Como você lida com regras (SAP 2.0)?", 
-          o: [{t:"Sigo se for prático e eficiente.", v:"E"}, {t:"Sigo para manter o bom clima no grupo.", v:"C"}, {t:"Sigo porque me sinto seguro assim.", v:"P"}, {t:"Sigo rigorosamente porque é o correto.", v:"A"}] }
+        { 
+            titulo: "1 - SER PROTAGONISTA",
+            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. Consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal.",
+            q: "Nas evidências de protagonismo, como você se avalia?", 
+            o: [
+                {t:"Sou referência e tomo a iniciativa sempre (Executor).", v:"E"},
+                {t:"Gosto de influenciar e motivar meus colegas (Comunicador).", v:"C"},
+                {t:"Construo meu Projeto de Vida com calma e segurança (Planejador).", v:"P"},
+                {t:"Analiso minhas escolhas com base em fatos e estudos (Analista).", v:"A"}
+            ]
+        },
+        { 
+            titulo: "2 - SER RESPONSÁVEL E COMPROMETIDO",
+            desc: "É comprometer-se com suas atividades, ser pontual, cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos. É esforçar-se para obter bons resultados e melhorar seu desempenho.",
+            q: "Sobre compromisso e regras, qual o seu perfil?", 
+            o: [
+                {t:"Foco total no resultado e na eficiência (Executor).", v:"E"},
+                {t:"Busco cumprir as regras para manter o bom clima (Comunicador).", v:"C"},
+                {t:"Gosto de normas claras, elas me dão segurança (Planejador).", v:"P"},
+                {t:"Sigo rigorosamente pois valorizo a organização e o correto (Analista).", v:"A"}
+            ]
+        },
+        { 
+            titulo: "6 - TRABALHAR E PRODUZIR EM EQUIPE",
+            desc: "Capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses do grupo acima dos interesses pessoais. É respeitar as contribuições de cada um e perceber seus próprios limites.",
+            q: "No trabalho em equipe, como você costuma agir?", 
+            o: [
+                {t:"Cobro agilidade de todos para batermos a meta (Executor).", v:"E"},
+                {t:"Animo o grupo e facilito a comunicação (Comunicador).", v:"C"},
+                {t:"Ouço a todos e busco o consenso com paciência (Planejador).", v:"P"},
+                {t:"Garantia de que o trabalho seja feito sem erros técnicos (Analista).", v:"A"}
+            ]
+        }
     ];
 
     let indice = 0;
@@ -56,10 +80,15 @@
             return;
         }
         const p = perguntas[indice];
-        let html = `<h2>Questão ${indice + 1}</h2><p>${p.q}</p><div class="opcoes">`;
+        let html = `<h2>${p.titulo}</h2>
+                    <div class="descricao-sap">${p.desc}</div>
+                    <span class="pergunta-texto">${p.q}</span>
+                    <div class="opcoes">`;
+        
         p.o.forEach(opt => {
             html += `<button onclick="votar('${opt.v}')">${opt.t}</button>`;
         });
+        
         html += `</div>`;
         document.getElementById('conteudo-quiz').innerHTML = html;
         document.getElementById('barra').style.width = ((indice / perguntas.length) * 100) + "%";
@@ -73,20 +102,12 @@
 
     async function salvarEResultar() {
         document.getElementById('conteudo-quiz').innerHTML = "<h2>Salvando seu Perfil...</h2>";
-        const nomeSalvo = localStorage.getItem('nomeAluno') || "Jovem";
+        const nomeAlun = localStorage.getItem('nomeAluno') || "Jovem";
         try {
-            await db.ref('resultados_testes').push({
-                aluno: nomeSalvo,
-                data: new Date().toLocaleString(),
-                perfil: pontos
-            });
-            document.getElementById('conteudo-quiz').innerHTML = `
-                <h2 style="color:#06d6a0">Pronto, ${nomeSalvo}!</h2>
-                <p>Seu teste foi enviado com sucesso para o instrutor Jorge.</p>
-                <button onclick="window.location.href='index.html'" style="margin-top:20px; background:#ff5c3a; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">SAIR</button>
-            `;
+            await db.ref('resultados_testes').push({ aluno: nomeAlun, data: new Date().toLocaleString(), perfil: pontos });
+            document.getElementById('conteudo-quiz').innerHTML = `<h2>Pronto, ${nomeAlun}!</h2><p>Seu teste foi enviado com sucesso para o Jorge.</p>`;
         } catch (e) {
-            document.getElementById('conteudo-quiz').innerHTML = "<h2>Erro ao salvar. Verifique a internet.</h2>";
+            document.getElementById('conteudo-quiz').innerHTML = "<h2>Erro ao salvar!</h2>";
         }
     }
 
