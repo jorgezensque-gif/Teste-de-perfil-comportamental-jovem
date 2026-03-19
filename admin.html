@@ -3,63 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel Jorge - Gestão SAP & DISC</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
         .menu { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; position: sticky; top: 0; background: #0a0c10; padding: 10px; z-index: 100; border-bottom: 1px solid #333; }
         .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
         .btn-ex { background: #27ae60; } .btn-del { background: #e74c3c; } .btn-print { background: #3498db; }
-        
         .sessao { background: #181c24; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
-        .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card-aluno { background: #1e2430; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #ff5c3a; }
-        
         .pdi-box { background: #0a0c10; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 14px; color: #cbd5e0; line-height: 1.5; border: 1px dashed #444; }
         h2 { color: #ff5c3a; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: #000; }
+        @media print { .menu { display: none; } }
     </style>
 </head>
 <body>
 
     <div class="menu">
-        <button class="btn btn-ex" onclick="exportarExcel()">📗 EXPORTAR EXCEL</button>
+        <button class="btn btn-ex" onclick="exportarExcel()">📗 EXCEL</button>
         <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR PDI</button>
         <button class="btn btn-del" onclick="limpar()">🗑️ ZERAR TURMA</button>
     </div>
 
-    <h1 style="text-align:center;">📊 Painel de Análise - Jorge</h1>
+    <h1 style="text-align:center;">📊 Painel de Análise Jorge - Pescar</h1>
 
-    <div class="sessao">
-        <h2>📈 Diagnóstico Geral da Turma</h2>
-        <div class="grid-graficos">
+    <div id="sessao-turma" class="sessao" style="display:none;">
+        <h2>📈 Média Geral da Turma</h2>
+        <div class="grid">
             <div><canvas id="chart-turma-sap"></canvas></div>
             <div><canvas id="chart-turma-disc"></canvas></div>
         </div>
-        <div id="analise-turma" class="pdi-box">Calculando tendências do grupo...</div>
     </div>
 
-    <h2>👤 PDIs Individuais</h2>
-    <div id="lista-alunos">Aguardando dados...</div>
+    <div id="lista-alunos">Aguardando dados do Firebase...</div>
 
 <script>
+    // Inicialização do Firebase
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Dicionário baseado no seu PDF
     const infoDISC = {
-        E: { n: "Dominante (D)", c: "#e74c3c", pdi: "Desafio: Desenvolver paciência e escuta ativa. Dica: Delegue mais e controle menos." },
-        C: { n: "Influente (I)", c: "#f1c40f", pdi: "Desafio: Foco em detalhes e prazos. Dica: Use agendas e evite dispersão em conversas." },
-        P: { n: "Estável (S)", c: "#2ecc71", pdi: "Desafio: Lidar com mudanças bruscas. Dica: Exponha suas opiniões com mais firmeza." },
-        A: { n: "Analítico (C)", c: "#3498db", pdi: "Desafio: Perfeccionismo excessivo. Dica: Busque agilidade e aceite que o 'feito' é melhor que o 'perfeito não entregue'." }
+        E: { n: "Dominante (D)", c: "#e74c3c", pdi: "Focar em paciência e escuta. Dica: Delegue mais tarefas." },
+        C: { n: "Influente (I)", c: "#f1c40f", pdi: "Focar em detalhes e prazos. Dica: Use listas de tarefas." },
+        P: { n: "Estável (S)", c: "#2ecc71", pdi: "Lidar com mudanças. Dica: Exponha opiniões com firmeza." },
+        A: { n: "Analítico (C)", c: "#3498db", pdi: "Evitar perfeccionismo. Dica: Busque agilidade na entrega." }
     };
+
+    // Função para desenhar os gráficos com segurança
+    function desenhar(id, sap, disc) {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['P1','P2','P3','P4','P5','P6','P7'],
+                datasets: [{ label: 'SAP', data: sap, borderColor: '#06d6a0', backgroundColor: 'rgba(6, 214, 160, 0.1)' }]
+            },
+            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+    }
 
     db.ref('resultados_testes').on('value', snap => {
         const lista = document.getElementById('lista-alunos');
         lista.innerHTML = "";
+        if (!snap.exists()) { lista.innerHTML = "Nenhum aluno avaliado ainda."; return; }
+
+        document.getElementById('sessao-turma').style.display = "block";
         let totalSAP = [0,0,0,0,0,0,0];
         let totalDISC = { E:0, C:0, P:0, A:0 };
         let qtd = 0;
@@ -68,69 +85,43 @@
             const d = alunoSnap.val();
             const id = alunoSnap.key;
             qtd++;
-
-            // Soma para média da turma
             d.sap.forEach((v, i) => totalSAP[i] += v);
             totalDISC.E += d.disc.E; totalDISC.C += d.disc.C; totalDISC.P += d.disc.P; totalDISC.A += d.disc.A;
 
-            // Perfil Dominante
             let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
 
             lista.innerHTML += `
                 <div class="card-aluno">
                     <div style="display:flex; justify-content:space-between;">
                         <strong>ALUNO: ${d.aluno}</strong>
-                        <span class="tag" style="background:${infoDISC[principal].c}; color:#000">${infoDISC[principal].n}</span>
+                        <span class="tag" style="background:${infoDISC[principal].c}">${infoDISC[principal].n}</span>
                     </div>
-                    <div class="grid-graficos" style="margin-top:15px;">
-                        <canvas id="radar-${id}" height="150"></canvas>
+                    <div class="grid">
+                        <canvas id="radar-${id}"></canvas>
                         <div class="pdi-box">
                             <strong>🎯 PDI INDIVIDUAL:</strong><br>${infoDISC[principal].pdi}
-                            <br><br><strong>📌 Competências SAP:</strong> Notas entre 1 e 5.
                         </div>
                     </div>
-                </div>
-            `;
-            setTimeout(() => {
-                new Chart(document.getElementById('radar-'+id), {
-                    type: 'radar',
-                    data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'SAP', data: d.sap, borderColor: '#06d6a0', backgroundColor: 'rgba(6,214,160,0.1)' }] },
-                    options: { scales: { r: { min:0, max:5, ticks: {display:false} } }, plugins: { legend: {display:false} } }
-                });
-            }, 100);
+                </div>`;
+            
+            setTimeout(() => desenhar('radar-'+id, d.sap, d.disc), 200);
         });
 
-        if(qtd > 0) gerarTurma(totalSAP.map(v => v/qtd), totalDISC, qtd);
+        // Gráficos da Turma
+        setTimeout(() => {
+            new Chart(document.getElementById('chart-turma-sap'), {
+                type: 'bar',
+                data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label: 'Média SAP', data: totalSAP.map(v => v/qtd), backgroundColor: '#06d6a0' }] }
+            });
+            new Chart(document.getElementById('chart-turma-disc'), {
+                type: 'pie',
+                data: { labels: ['Dom','Inf','Est','Ana'], datasets: [{ data: [totalDISC.E, totalDISC.C, totalDISC.P, totalDISC.A], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }] }
+            });
+        }, 500);
     });
 
-    function gerarTurma(mediasSAP, somaDISC, qtd) {
-        // Gráfico SAP Turma
-        new Chart(document.getElementById('chart-turma-sap'), {
-            type: 'bar',
-            data: { labels: ['Protag.','Resp.','Amb.','Conv.','Saúde','Equipe','Apr.'], datasets: [{ label:'Média SAP da Turma', data: mediasSAP, backgroundColor: '#06d6a0' }] },
-            options: { scales: { y: { min:0, max:5 } } }
-        });
-
-        // Gráfico DISC Turma
-        new Chart(document.getElementById('chart-turma-disc'), {
-            type: 'pie',
-            data: { labels: ['Dom','Inf','Est','Ana'], datasets: [{ data: [somaDISC.E, somaDISC.C, somaDISC.P, somaDISC.A], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }] }
-        });
-
-        document.getElementById('analise-turma').innerHTML = `
-            <strong>📝 Plano de Aula Sugerido:</strong><br>
-            A média SAP da turma é <b>${(mediasSAP.reduce((a,b)=>a+b)/7).toFixed(1)}</b>. 
-            Focar atividades na competência: <b>${mediasSAP.indexOf(Math.min(...mediasSAP)) + 1}</b> (menor média).
-        `;
-    }
-
-    function limpar() { if(confirm("Deseja apagar todos os dados da turma?")) db.ref('resultados_testes').remove(); }
-    
-    function exportarExcel() {
-        alert("Gerando planilha...");
-        // Lógica de exportação simplificada para o Jorge
-        window.print(); 
-    }
+    function limpar() { if(confirm("Apagar tudo?")) db.ref('resultados_testes').remove(); }
+    function exportarExcel() { window.print(); }
 </script>
 </body>
 </html>
