@@ -2,53 +2,134 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Jorge - Admin</title>
+    <title>Painel Jorge - Gestão & PDI</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
-        .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; }
-        .btn-excel { background: #27ae60; }
-        .btn-limpar { background: #e74c3c; }
-        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .box { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; }
+        body { background: #0a0c10; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .menu-top { display: flex; gap: 10px; justify-content: center; position: sticky; top: 0; background: #0a0c10; padding: 15px; z-index: 1000; border-bottom: 2px solid #333; }
+        .btn { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-ex { background: #27ae60; } .btn-del { background: #e74c3c; } .btn-pdi { background: #f39c12; }
+        
+        .secao { background: #181c24; border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid #333; }
+        .grid-turma { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card-aluno { background: #1e2430; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #ff5c3a; }
+        
+        h2 { color: #ff5c3a; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .pdi-box { background: #0a0c10; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9em; line-height: 1.5; color: #cbd5e0; }
+        .tag-disc { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <div class="controles">
-        <button class="btn btn-excel" onclick="exportar()">📗 EXPORTAR EXCEL</button>
-        <button class="btn btn-limpar" onclick="limpar()">🗑️ LIMPAR TUDO</button>
+
+    <div class="menu-top">
+        <button class="btn btn-ex" onclick="exportarExcel()">📗 Planilha Completa</button>
+        <button class="btn btn-pdi" onclick="window.print()">🖨️ Imprimir Relatórios/PDI</button>
+        <button class="btn btn-del" onclick="limparBanco()">🗑️ Zerar Turma</button>
     </div>
-    <div id="lista"></div>
+
+    <h1 style="text-align:center;">📊 Inteligência de Dados - Projeto Pescar</h1>
+
+    <div class="secao">
+        <h2>📈 Diagnóstico da Turma (Média Coletiva)</h2>
+        <div class="grid-turma">
+            <div><canvas id="chart-turma-sap"></canvas></div>
+            <div><canvas id="chart-turma-disc"></canvas></div>
+        </div>
+        <div id="pdi-turma" class="pdi-box">Gerando análise da turma...</div>
+    </div>
+
+    <h2>👤 Resultados Individuais e PDI</h2>
+    <div id="lista-alunos">Carregando...</div>
+
 <script>
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let dadosExcel = [];
+
+    const desc DISC = {
+        E: { nome: "Dominante", cor: "#ff5c3a", pdi: "Focar em empatia e paciência. Ouvir mais a equipe antes de decidir." },
+        C: { nome: "Influente", cor: "#ffbd2e", pdi: "Melhorar organização e acompanhamento de prazos. Falar menos, executar mais." },
+        P: { nome: "Estável", cor: "#27ae60", pdi: "Trabalhar a autoconfiança e iniciativa para mudanças. Ser mais assertivo." },
+        A: { nome: "Cauteloso", cor: "#2980b9", pdi: "Evitar o perfeccionismo excessivo. Tomar decisões com mais agilidade." }
+    };
+
     db.ref('resultados_testes').on('value', snap => {
-        const container = document.getElementById('lista'); container.innerHTML = ""; dadosExcel = [];
+        const lista = document.getElementById('lista-alunos');
+        lista.innerHTML = "";
+        
+        let somaSAP = [0,0,0,0,0,0,0];
+        let somaDISC = { E:0, C:0, P:0, A:0 };
+        let total = 0;
+
         snap.forEach(alunoSnap => {
-            const d = alunoSnap.val(); const id = alunoSnap.key;
-            dadosExcel.push({ Aluno: d.aluno, Data: d.data, Exec: d.disc.E, Comu: d.disc.C, Plan: d.disc.P, Anal: d.disc.A });
-            container.innerHTML += `<div class="card-aluno"><h3>${d.aluno}</h3><div class="grid">
-                <div class="box"><canvas id="radar-${id}"></canvas></div>
-                <div class="box"><canvas id="barra-${id}"></canvas></div>
-            </div></div>`;
-            setTimeout(() => {
-                new Chart(document.getElementById('radar-'+id), { type: 'radar', data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'SAP', data: d.sap, borderColor: '#06d6a0' }] } });
-                new Chart(document.getElementById('barra-'+id), { type: 'bar', data: { labels: ['E','C','P','A'], datasets: [{ label:'DISC', data: [d.disc.E, d.disc.C, d.disc.P, d.disc.A], backgroundColor: '#ff5c3a' }] } });
-            }, 100);
+            const d = alunoSnap.val();
+            const id = alunoSnap.key;
+            total++;
+
+            // Acumula médias da turma
+            d.sap.forEach((v, i) => somaSAP[i] += v);
+            somaDISC.E += d.disc.E; somaDISC.C += d.disc.C; 
+            somaDISC.P += d.disc.P; somaDISC.A += d.disc.A;
+
+            // Define perfil principal do aluno
+            let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
+
+            lista.innerHTML += `
+                <div class="card-aluno">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:1.2em;"><strong>${d.aluno}</strong></span>
+                        <span class="tag-disc" style="background:${descDISC[principal].cor}">Perfil: ${descDISC[principal].nome}</span>
+                    </div>
+                    <div class="grid-turma">
+                        <canvas id="sap-${id}" height="150"></canvas>
+                        <div class="pdi-box">
+                            <strong>🎯 PDI Individual:</strong><br>${descDISC[principal].pdi}
+                            <br><br><strong>💡 Dica Jorge:</strong> Estimular este aluno em tarefas de ${principal == 'E' ? 'liderança' : (principal == 'C' ? 'comunicação' : 'suporte')}.
+                        </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => gerGrafico(id, d.sap, d.disc), 100);
         });
+
+        if(total > 0) gerTurma(somaSAP.map(v => v/total), somaDISC, total);
     });
-    function exportar() {
-        const ws = XLSX.utils.json_to_sheet(dadosExcel); const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Resultados"); XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
+
+    function gerGrafico(id, sap, disc) {
+        new Chart(document.getElementById('sap-'+id), {
+            type: 'radar',
+            data: { 
+                labels: ['Protag.','Resp.','Amb.','Conv.','Saúde','Equipe','Apr.'],
+                datasets: [{ label:'SAP', data: sap, borderColor: '#06d6a0', backgroundColor: 'rgba(6,214,160,0.2)' }]
+            },
+            options: { scales: { r: { min:0, max:5, ticks: {display:false} } }, plugins: { legend: {display:false} } }
+        });
     }
-    function limpar() { if(confirm("Limpar tudo?")) db.ref('resultados_testes').remove(); }
+
+    function gerTurma(mediasSAP, somaDISC, total) {
+        // Gráfico Médias SAP
+        new Chart(document.getElementById('chart-turma-sap'), {
+            type: 'bar',
+            data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'Média da Turma SAP', data: mediasSAP, backgroundColor: '#06d6a0' }] }
+        });
+
+        // Gráfico Distribuição DISC
+        new Chart(document.getElementById('chart-turma-disc'), {
+            type: 'pie',
+            data: { labels: ['Dom','Inf','Est','Cau'], datasets: [{ data: [somaDISC.E, somaDISC.C, somaDISC.P, somaDISC.A], backgroundColor: ['#ff5c3a','#ffbd2e','#27ae60','#2980b9'] }] }
+        });
+
+        document.getElementById('pdi-turma').innerHTML = `
+            <strong>📝 Plano de Desenvolvimento da Turma:</strong><br>
+            A turma apresenta maior força em <b>${mediasSAP[0] > 4 ? 'Protagonismo' : 'Trabalho em Equipe'}</b>. 
+            Foco coletivo sugerido: ${mediasSAP.indexOf(Math.min(...mediasSAP)) + 1}ª competência SAP.
+        `;
+    }
+
+    function limparBanco() { if(confirm("Jorge, apagar tudo?")) db.ref('resultados_testes').remove(); }
 </script>
 </body>
 </html>
