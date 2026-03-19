@@ -2,101 +2,120 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel DISC — Administrador Jorge</title>
+    <title>Painel Admin SAP/DISC - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0a0c10; color: #e8ecf2; font-family: sans-serif; padding: 50px; text-align: center; }
-        .admin-card { background: #181c24; padding: 40px; border-radius: 20px; border: 1px solid #252a35; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #ff5c3a; margin-bottom: 25px; }
-        input { width: 80%; padding: 12px; margin-bottom: 20px; background: #0a0c10; border: 1px solid #252a35; color: white; border-radius: 8px; font-size: 16px; }
-        .btn-gerar { width: 85%; padding: 15px; background: #ff5c3a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
-        .btn-gerar:hover { background: #e04b2f; transform: scale(1.02); }
-        .lista { margin-top: 30px; text-align: left; max-height: 300px; overflow-y: auto; padding-right: 10px; }
-        .chave-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #252a35; font-family: monospace; }
-        .disponivel { color: #06d6a0; }
-        .usada { color: #6b7585; text-decoration: line-through; }
+        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
+        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 25px; border-radius: 15px; margin-bottom: 40px; }
+        .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        .info-header { border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        canvas { background: rgba(255,255,255,0.02); border-radius: 10px; padding: 15px; }
+        .legenda-detalhada { font-size: 12px; color: #abb2bf; margin-top: 15px; line-height: 1.4; }
+        @media (max-width: 900px) { .grid-graficos { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="admin-card">
-        <h2>Gerador de Chaves DISC</h2>
-        <input type="text" id="prefixo" placeholder="Prefixo (Ex: TURMA-A)">
-        <button class="btn-gerar" onclick="gerarNovaChave()">GERAR CHAVE NA NUVEM</button>
-
-        <div class="lista" id="lista-chaves">
-            <p style="text-align:center; color:#6b7585;">Carregando chaves do Firebase...</p>
-        </div>
-    </div>
+    <h1>📊 Gestão de Competências SAP - Projeto Pescar</h1>
+    <div id="lista-resultados">Carregando relatórios...</div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU PROJETO NO FIREBASE
-        const firebaseConfig = {
-            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-            projectId: "perfil-jovem--disc"
-        };
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // FUNÇÃO PARA GERAR CHAVE
-        async function gerarNovaChave() {
-            const prefixo = document.getElementById('prefixo').value.toUpperCase() || "DISC";
-            const codigoAleatorio = Math.random().toString(36).substr(2, 5).toUpperCase();
-            const chaveFinal = prefixo + "-" + codigoAleatorio;
+        // Descrições baseadas no formulário oficial
+        const descricoesSAP = [
+            "1-Protagonismo: Consciência de identidade e autonomia.",
+            "2-Responsabilidade: Pontualidade e cumprimento de regras.",
+            "3-Ambiental: Zelo com recursos naturais e materiais.",
+            "4-Convivência: Ética, respeito e postura cidadã.",
+            "5-Saúde: Cuidado físico e emocional.",
+            "6-Equipe: Colaboração e interesses do grupo.",
+            "7-Aprender: Busca por novos conhecimentos."
+        ];
 
-            try {
-                // Pega a lista atual do Firebase
-                const snapshot = await db.ref('lista_chaves').once('value');
-                let chaves = snapshot.val() || [];
-
-                // Adiciona a nova chave à lista
-                chaves.push({
-                    code: chaveFinal,
-                    used: false,
-                    user: ""
-                });
-
-                // Salva a lista atualizada de volta no Firebase
-                await db.ref('lista_chaves').set(chaves);
+        db.ref('resultados_testes').on('value', snap => {
+            const container = document.getElementById('lista-resultados');
+            container.innerHTML = "";
+            snap.forEach(alunoSnap => {
+                const d = alunoSnap.val();
+                const id = alunoSnap.key;
                 
-                alert("Sucesso! Chave " + chaveFinal + " gerada!");
-                document.getElementById('prefixo').value = ""; // Limpa o campo
-                atualizarLista();
-            } catch (error) {
-                console.error(error);
-                alert("Erro ao salvar! Verifique se as Regras do Firebase estão em 'true'.");
-            }
-        }
-
-        // FUNÇÃO PARA MOSTRAR AS CHAVES NO ECRÃ
-        async function atualizarLista() {
-            const snapshot = await db.ref('lista_chaves').once('value');
-            const chaves = snapshot.val() || [];
-            const container = document.getElementById('lista-chaves');
-            
-            if (chaves.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nenhuma chave gerada ainda.</p>";
-                return;
-            }
-
-            container.innerHTML = "<h4>Chaves Geradas:</h4>";
-            // Mostra as chaves mais recentes no topo
-            chaves.reverse().forEach(c => {
-                const status = c.used ? `<span class="usada">Usada por: ${c.user}</span>` : `<span class="disponivel">Disponível</span>`;
                 container.innerHTML += `
-                    <div class="chave-item">
-                        <strong>${c.code}</strong>
-                        ${status}
-                    </div>
-                `;
+                    <div class="card-aluno">
+                        <div class="info-header">
+                            <strong>NOME: ${d.aluno}</strong>
+                            <span>📅 ${d.data}</span>
+                        </div>
+                        <div class="grid-graficos">
+                            <div class="box-chart">
+                                <h3 style="text-align:center">Perfil Comportamental (DISC)</h3>
+                                <canvas id="disc-${id}"></canvas>
+                            </div>
+                            <div class="box-chart">
+                                <h3 style="text-align:center">Radar de Competências SAP</h3>
+                                <canvas id="sap-${id}"></canvas>
+                                <div class="legenda-detalhada">
+                                    <strong>Resumo das Competências:</strong><br>
+                                    ${descricoesSAP.join('<br>')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                setTimeout(() => desenhar(id, d), 100);
+            });
+        });
+
+        function desenhar(id, d) {
+            // Gráfico DISC
+            new Chart(document.getElementById('disc-'+id), {
+                type: 'bar',
+                data: {
+                    labels: ['Executor', 'Comunicador', 'Planejador', 'Analista'],
+                    datasets: [{ label: '% Perfil', data: [d.disc.E, d.disc.C, d.disc.P, d.disc.A], backgroundColor: '#ff5c3a' }]
+                },
+                options: { scales: { y: { beginAtZero: true, max: 10, grid: {color:'#333'} } } }
+            });
+
+            // Gráfico Radar SAP com as informações detalhadas
+            new Chart(document.getElementById('sap-'+id), {
+                type: 'radar',
+                data: {
+                    labels: ['Protagonismo', 'Responsab.', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'],
+                    datasets: [{
+                        label: 'Autoavaliação SAP',
+                        data: d.sap,
+                        borderColor: '#06d6a0',
+                        backgroundColor: 'rgba(6, 214, 160, 0.2)',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            min: 0, max: 5,
+                            ticks: { stepSize: 1, color: '#fff', backdropColor: 'transparent' },
+                            grid: { color: '#444' },
+                            angleLines: { color: '#444' },
+                            pointLabels: { color: '#fff', font: { size: 12 } }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return "Nota: " + context.raw + " - " + descricoesSAP[context.dataIndex];
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
-
-        // Carrega a lista assim que abrir a página
-        atualizarLista();
     </script>
 </body>
 </html>
-         
