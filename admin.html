@@ -74,4 +74,87 @@
         const db = firebase.database();
 
         const perfis = {
-            E: { n: "Dominante (D)", c: "#e17055", pdi:
+            E: { n: "Dominante (D)", c: "#e17055", pdi: "Trabalhar escuta e paciência." },
+            C: { n: "Influente (I)", c: "#fdcb6e", pdi: "Focar em organização e prazos." },
+            P: { n: "Estável (S)", c: "#55efc4", pdi: "Enfrentar mudanças com firmeza." },
+            A: { n: "Analítico (C)", c: "#74b9ff", pdi: "Evitar que o perfeccionismo trave entregas." }
+        };
+
+        db.ref('resultados_testes').on('value', snap => {
+            const lista = document.getElementById('lista-alunos');
+            lista.innerHTML = "";
+            if (!snap.exists()) return;
+
+            let somaTotalSAP = [0,0,0,0,0,0,0];
+            let somaTotalDISC = { E:0, C:0, P:0, A:0 };
+            let totalAlunos = 0;
+
+            snap.forEach(alunoSnap => {
+                const d = alunoSnap.val();
+                const id = alunoSnap.key;
+                totalAlunos++;
+
+                d.sap.forEach((v, i) => somaTotalSAP[i] += v);
+                somaTotalDISC.E += d.disc.E; somaTotalDISC.C += d.disc.C; 
+                somaTotalDISC.P += d.disc.P; somaTotalDISC.A += d.disc.A;
+
+                let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
+
+                lista.innerHTML += `
+                    <div class="card-aluno">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                            <strong>JOVEM: ${d.aluno}</strong>
+                            <span style="background:${perfis[principal].c}; padding:5px 10px; border-radius:15px; color:#2d3436; font-size:11px; font-weight:bold;">${perfis[principal].n}</span>
+                        </div>
+                        <div class="grid">
+                            <div style="max-height:200px;"><canvas id="radar-${id}"></canvas></div>
+                            <div class="pdi-box">
+                                <strong>🎯 PDI Individual:</strong><br>${perfis[principal].pdi}<br><br>
+                                <strong>📊 Média SAP:</strong> ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
+                            </div>
+                        </div>
+                    </div>`;
+                
+                setTimeout(() => {
+                    new Chart(document.getElementById('radar-'+id), {
+                        type: 'radar',
+                        data: {
+                            labels: ['P1','P2','P3','P4','P5','P6','P7'],
+                            datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)' }]
+                        },
+                        options: { 
+                            scales: { r: { min:0, max:5, grid:{color:'#4b4b4b'}, angleLines:{color:'#4b4b4b'}, pointLabels:{color:'#fff'} } },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }, 500);
+            });
+
+            // GRÁFICOS DA TURMA (DISC e SAP)
+            setTimeout(() => {
+                const mediasSAP = somaTotalSAP.map(v => v/totalAlunos);
+                
+                // Barras SAP
+                new Chart(document.getElementById('chart-sap-turma'), {
+                    type: 'bar',
+                    data: { labels:['P1','P2','P3','P4','P5','P6','P7'], datasets:[{label:'Média', data:mediasSAP, backgroundColor:'#ff7675'}]},
+                    options: { scales:{ y:{min:0, max:5, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff'}} }, plugins:{legend:{display:false}}}
+                });
+
+                // Pizza DISC (O que estava faltando!)
+                new Chart(document.getElementById('chart-disc-turma'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Dom','Inf','Est','Ana'],
+                        datasets: [{ data: [somaTotalDISC.E, somaTotalDISC.C, somaTotalDISC.P, somaTotalDISC.A], backgroundColor: ['#e17055','#fdcb6e','#55efc4','#74b9ff'] }]
+                    },
+                    options: { plugins: { legend: { position: 'bottom', labels: {color: '#fff'} } } }
+                });
+            }, 1000);
+        });
+    }
+
+    function limpar() { if(confirm("Apagar tudo?")) firebase.database().ref('resultados_testes').remove(); }
+</script>
+</body>
+</html>
