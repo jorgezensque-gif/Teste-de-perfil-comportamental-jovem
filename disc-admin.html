@@ -2,44 +2,44 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin SAP/DISC - Jorge</title>
+    <title>Painel Admin Jorge - SAP & DISC</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 25px; border-radius: 15px; margin-bottom: 40px; }
-        .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
-        .info-header { border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
-        canvas { background: rgba(255,255,255,0.02); border-radius: 10px; padding: 15px; }
-        .legenda-detalhada { font-size: 12px; color: #abb2bf; margin-top: 15px; line-height: 1.4; }
-        @media (max-width: 900px) { .grid-graficos { grid-template-columns: 1fr; } }
+        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 25px; border-radius: 15px; margin-bottom: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .info-header { border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 1.2em; }
+        
+        /* Layout dos Gráficos */
+        .sessao-titulo { color: #ff5c3a; text-transform: uppercase; letter-spacing: 2px; margin: 30px 0 15px 0; border-left: 5px solid #ff5c3a; padding-left: 10px; }
+        .grid-disc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .grid-sap { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .box-chart { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #252a35; }
+        canvas { max-width: 100%; }
+        .legenda { font-size: 11px; color: #abb2bf; margin-top: 10px; text-align: left; line-height: 1.3; }
+        
+        @media (max-width: 1000px) { .grid-disc { grid-template-columns: 1fr 1fr; } .grid-sap { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <h1>📊 Gestão de Competências SAP - Projeto Pescar</h1>
-    <div id="lista-resultados">Carregando relatórios...</div>
+    <h1 style="text-align:center;">📊 Relatórios de Desenvolvimento - Turma Pescar</h1>
+    <div id="lista-resultados">Carregando dados do Firebase...</div>
 
     <script>
+        // CONFIGURAÇÃO FIREBASE DO JORGE
         const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Descrições baseadas no formulário oficial
-        const descricoesSAP = [
-            "1-Protagonismo: Consciência de identidade e autonomia.",
-            "2-Responsabilidade: Pontualidade e cumprimento de regras.",
-            "3-Ambiental: Zelo com recursos naturais e materiais.",
-            "4-Convivência: Ética, respeito e postura cidadã.",
-            "5-Saúde: Cuidado físico e emocional.",
-            "6-Equipe: Colaboração e interesses do grupo.",
-            "7-Aprender: Busca por novos conhecimentos."
-        ];
+        const nomesSAP = ['Protagonismo', 'Responsabilidade', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'];
 
         db.ref('resultados_testes').on('value', snap => {
             const container = document.getElementById('lista-resultados');
             container.innerHTML = "";
+            
             snap.forEach(alunoSnap => {
                 const d = alunoSnap.val();
                 const id = alunoSnap.key;
@@ -47,72 +47,87 @@
                 container.innerHTML += `
                     <div class="card-aluno">
                         <div class="info-header">
-                            <strong>NOME: ${d.aluno}</strong>
+                            <strong>ALUNO: ${d.aluno}</strong>
                             <span>📅 ${d.data}</span>
                         </div>
-                        <div class="grid-graficos">
+
+                        <div class="sessao-titulo">PERFIL COMPORTAMENTAL (DISC)</div>
+                        <div class="grid-disc">
+                            <div class="box-chart"><canvas id="d1-${id}"></canvas><strong>EXECUTOR</strong></div>
+                            <div class="box-chart"><canvas id="d2-${id}"></canvas><strong>COMUNICADOR</strong></div>
+                            <div class="box-chart"><canvas id="d3-${id}"></canvas><strong>PLANEJADOR</strong></div>
+                            <div class="box-chart"><canvas id="d4-${id}"></canvas><strong>ANALISTA</strong></div>
+                        </div>
+
+                        <div class="sessao-titulo">DESENVOLVIMENTO SAP (PESCAR)</div>
+                        <div class="grid-sap">
                             <div class="box-chart">
-                                <h3 style="text-align:center">Perfil Comportamental (DISC)</h3>
-                                <canvas id="disc-${id}"></canvas>
+                                <h3>Mapeamento Radar</h3>
+                                <canvas id="sapRadar-${id}"></canvas>
                             </div>
                             <div class="box-chart">
-                                <h3 style="text-align:center">Radar de Competências SAP</h3>
-                                <canvas id="sap-${id}"></canvas>
-                                <div class="legenda-detalhada">
-                                    <strong>Resumo das Competências:</strong><br>
-                                    ${descricoesSAP.join('<br>')}
+                                <h3>Análise de Barras</h3>
+                                <canvas id="sapBarra-${id}"></canvas>
+                                <div class="legenda">
+                                    *Baseado no Formulário Autoavaliação SAP-Jovem 5.0 
                                 </div>
                             </div>
                         </div>
                     </div>`;
                 
-                setTimeout(() => desenhar(id, d), 100);
+                setTimeout(() => desenharGraficos(id, d), 100);
             });
         });
 
-        function desenhar(id, d) {
-            // Gráfico DISC
-            new Chart(document.getElementById('disc-'+id), {
-                type: 'bar',
-                data: {
-                    labels: ['Executor', 'Comunicador', 'Planejador', 'Analista'],
-                    datasets: [{ label: '% Perfil', data: [d.disc.E, d.disc.C, d.disc.P, d.disc.A], backgroundColor: '#ff5c3a' }]
-                },
-                options: { scales: { y: { beginAtZero: true, max: 10, grid: {color:'#333'} } } }
+        function desenharGraficos(id, d) {
+            const cores = { E: '#ff5c3a', C: '#ffbd2e', P: '#27ae60', A: '#2980b9', SAP: '#06d6a0' };
+
+            // --- 4 GRÁFICOS DISC (Doughnut/Rosca) ---
+            const perfis = [['d1', 'E', 'Executor'], ['d2', 'C', 'Comunicador'], ['d3', 'P', 'Planejador'], ['d4', 'A', 'Analista']];
+            perfis.forEach(p => {
+                new Chart(document.getElementById(`${p[0]}-${id}`), {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [d.disc[p[1]], 4 - d.disc[p[1]]], // 4 é o máximo de questões DISC no seu código
+                            backgroundColor: [cores[p[1]], '#111']
+                        }]
+                    },
+                    options: { cutout: '70%', plugins: { tooltip: { enabled: false } } }
+                });
             });
 
-            // Gráfico Radar SAP com as informações detalhadas
-            new Chart(document.getElementById('sap-'+id), {
+            // --- GRÁFICO 1 SAP: RADAR ---
+            new Chart(document.getElementById('sapRadar-'+id), {
                 type: 'radar',
                 data: {
-                    labels: ['Protagonismo', 'Responsab.', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'],
+                    labels: nomesSAP,
                     datasets: [{
-                        label: 'Autoavaliação SAP',
+                        label: 'Autoavaliação',
                         data: d.sap,
-                        borderColor: '#06d6a0',
+                        borderColor: cores.SAP,
                         backgroundColor: 'rgba(6, 214, 160, 0.2)',
-                        pointRadius: 5
+                        pointRadius: 4
                     }]
                 },
-                options: {
-                    scales: {
-                        r: {
-                            min: 0, max: 5,
-                            ticks: { stepSize: 1, color: '#fff', backdropColor: 'transparent' },
-                            grid: { color: '#444' },
-                            angleLines: { color: '#444' },
-                            pointLabels: { color: '#fff', font: { size: 12 } }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return "Nota: " + context.raw + " - " + descricoesSAP[context.dataIndex];
-                                }
-                            }
-                        }
-                    }
+                options: { scales: { r: { min: 0, max: 5, grid: {color:'#444'}, pointLabels: {color:'#fff'} } } }
+            });
+
+            // --- GRÁFICO 2 SAP: BARRAS (Indicado para ver discrepâncias) ---
+            new Chart(document.getElementById('sapBarra-'+id), {
+                type: 'bar',
+                data: {
+                    labels: nomesSAP,
+                    datasets: [{
+                        label: 'Nota (1 a 5)',
+                        data: d.sap,
+                        backgroundColor: cores.SAP,
+                        borderRadius: 5
+                    }]
+                },
+                options: { 
+                    indexAxis: 'y',
+                    scales: { x: { min: 0, max: 5, grid: {color:'#333'} }, y: { ticks: {color:'#fff'} } }
                 }
             });
         }
