@@ -76,3 +76,14 @@
     </script>
 </body>
 </html>
+} else {
+                        // CHAVE VÁLIDA: Marca como usada e salva quem usou
+                        chaves[index].used = true;
+                        chaves[index].user = nome;
+                        await db.ref('lista_chaves').set(chaves);
+
+                        alert("Acesso autorizado! Bem-vindo, " + nome);
+                        
+                        // CORRIGIDO: Agora aponta para questoes.html
+                        window.location.href = "questoes.html"; 
+                    }
