@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Admin - Jorge</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
+        .login { text-align: center; margin-top: 100px; }
+        input { padding: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; background: #ff5c3a; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .painel { display: none; }
+        .card { background: #181c24; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #252a35; }
+        canvas { max-width: 400px; margin: auto; }
+    </style>
+</head>
+<body>
+    <div id="area-login" class="login">
+        <h2>Acesso Restrito - Instrutor Jorge</h2>
+        <input type="password" id="senha" placeholder="Digite a senha">
+        <button onclick="logar()">Entrar</button>
+    </div>
+
+    <div id="area-painel" class="painel">
+        <h1>📊 Resultados da Turma</h1>
+        <div id="lista-resultados"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function logar() {
+            if (document.getElementById('senha').value === "PITUKINHA") {
+                document.getElementById('area-login').style.display = "none";
+                document.getElementById('area-painel').style.display = "block";
+                carregarDados();
+            } else { alert("Senha Incorreta!"); }
+        }
+
+        function carregarDados() {
+            db.ref('resultados_testes').on('value', (snap) => {
+                const div = document.getElementById('lista-resultados');
+                div.innerHTML = "";
+                snap.forEach(child => {
+                    const d = child.val();
+                    const id = child.key;
+                    div.innerHTML += `<div class="card">
+                        <h3>Aluno: ${d.aluno}</h3>
+                        <p>Data: ${d.data}</p>
+                        <canvas id="chart-disc-${id}"></canvas>
+                        <canvas id="chart-sap-${id}"></canvas>
+                    </div>`;
+                    
+                    // Pequeno delay para os gráficos carregarem
+                    setTimeout(() => {
+                        criarGraficoDISC(id, d.disc);
+                        criarGraficoSAP(id, d.sap);
+                    }, 500);
+                });
+            });
+        }
+
+        function criarGraficoDISC(id, dados) {
+            new Chart(document.getElementById('chart-disc-'+id), {
+                type: 'bar',
+                data: { labels: ['E', 'C', 'P', 'A'], datasets: [{ label: 'Perfil DISC', data: [dados.E, dados.C, dados.P, dados.A], backgroundColor: '#ff5c3a' }] }
+            });
+        }
+
+        function criarGraficoSAP(id, dados) {
+            new Chart(document.getElementById('chart-sap-'+id), {
+                type: 'radar',
+                data: { labels: ['Prot.', 'Resp.', 'Amb.', 'Valores', 'Saúde', 'Equipe', 'Aprender'], datasets: [{ label: 'Desenvolvimento SAP', data: dados, borderColor: '#06d6a0' }] }
+            });
+        }
+    </script>
+</body>
+</html>
