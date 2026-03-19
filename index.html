@@ -1,0 +1,67 @@
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+  // 2. CONFIGURAÇÃO (Deve ser EXATAMENTE igual à que o Jorge usou no Admin)
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "seu-projeto.firebaseapp.com",
+    databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
+    projectId: "seu-projeto",
+    storageBucket: "seu-projeto.appspot.com",
+    messagingSenderId: "00000000",
+    appId: "1:000000:web:000000"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // 3. FUNÇÃO DE ACESSO (Substitua a sua antiga por esta)
+  async function verificarAcesso() {
+    const inputCodigo = document.getElementById('codigoInput').value.trim().toUpperCase();
+    const nomeUtilizador = document.getElementById('nomeInput').value.trim();
+
+    if (!inputCodigo || !nomeUtilizador) {
+      alert("Por favor, preencha o nome e o código de acesso.");
+      return;
+    }
+
+    try {
+      // Procura os códigos na nuvem
+      const snapshot = await db.ref('disc_codes').once('value');
+      let codes = snapshot.val() || [];
+      
+      // Tenta encontrar o código digitado
+      const index = codes.findIndex(c => c.code === inputCodigo);
+
+      if (index === -1) {
+        alert("Código inválido! Verifique se digitou corretamente.");
+        return;
+      }
+
+      if (codes[index].used) {
+        alert("Este código já foi utilizado por: " + codes[index].usedBy);
+        return;
+      }
+
+      // Se chegou aqui, o código é válido! 
+      // Marcamos como usado na nuvem para ninguém mais usar
+      codes[index].used = true;
+      codes[index].usedBy = nomeUtilizador;
+      codes[index].usedAt = new Date().toISOString();
+
+      await db.ref('disc_codes').set(codes);
+
+      // SUCESSO: Liberta o acesso ao teste
+      alert("Acesso autorizado! Bem-vindo, " + nomeUtilizador);
+      document.getElementById('tela-login').style.display = 'none';
+      document.getElementById('tela-teste').style.display = 'block';
+      
+      // Iniciar o teste DISC...
+      
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao validar acesso. Verifique a sua ligação à internet.");
+    }
+  }
+</script>
