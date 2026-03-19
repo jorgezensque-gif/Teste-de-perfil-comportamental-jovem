@@ -3,31 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Jorge - SAP & DISC</title>
+    <title>Avaliação Pescar - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 750px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header-teste { text-align: center; border-bottom: 2px solid #ff5c3a; padding-bottom: 15px; margin-bottom: 20px; }
-        .header-teste h1 { color: #ff5c3a; margin: 0; font-size: 22px; }
-        .tipo-tag { background: #ff5c3a; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 10px; display: inline-block; }
-        .descricao-sap { background: #0a0c10; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; color: #abb2bf; margin-top: 15px; border-left: 4px solid #ff5c3a; }
-        .evidencias { color: #ff8e75; font-size: 13px; margin: 15px 0; font-style: italic; }
-        .opcoes button { width: 100%; padding: 15px; margin: 8px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; }
-        .opcoes button:hover { background: #ff5c3a; transform: translateX(5px); }
-        .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin-bottom: 25px; }
+        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 600px; width: 100%; text-align: center; }
+        input { width: 80%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; }
+        button { background: #ff5c3a; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .opcoes button { text-align: left; background: #252a35; margin: 5px 0; }
+        .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin: 20px 0; }
         .barra-fill { height: 100%; background: #ff5c3a; width: 0%; transition: 0.4s; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header-teste">
-        <h1 id="titulo-etapa">AUTOAVALIAÇÃO SAP-JOVEM</h1>
-        <div id="tag-etapa" class="tipo-tag">ETAPA 1/2</div>
-    </div>
-    <div class="barra-bg"><div class="barra-fill" id="barra"></div></div>
-    <div id="quiz"><h2>Iniciando...</h2></div>
+
+<div class="container" id="box">
+    <h2>Identificação</h2>
+    <p>Por favor, digite seu nome completo:</p>
+    <input type="text" id="nomeAluno" placeholder="Nome do Jovem">
+    <button onclick="iniciar()">COMEÇAR AVALIAÇÃO</button>
 </div>
 
 <script>
@@ -35,53 +30,53 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const sapPerguntas = [
-        { t: "1-SER PROTAGONISTA", d: "Conscientiza-se de sua identidade, atua com autonomia e constrói seu destino.", e: "Referência no grupo, respeito mútuo, construção do Projeto de Vida." },
-        { t: "2-SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, cumprimento de prazos e respeito às normas.", e: "Assiduidade, cuidado com materiais, cumprimento de tarefas." },
-        { t: "3-TER CONSCIÊNCIA AMBIENTAL", d: "Cuidado com o ambiente e uso consciente de recursos.", e: "Descarte correto, economia de água/luz, preservação." },
-        { t: "4-VIVER VALORES DE CONVIVÊNCIA", d: "Ética, respeito às diferenças e postura cidadã.", e: "Cordialidade, tolerância, honestidade." },
-        { t: "5-CUIDAR DA SAÚDE E BEM-ESTAR", d: "Cuidado físico, emocional e hábitos saudáveis.", e: "Higiene, alimentação, equilíbrio emocional." },
-        { t: "6-TRABALHAR EM EQUIPE", d: "Colaboração e prioridade ao interesse coletivo.", e: "Busca por consenso, aceitação de críticas, união." },
-        { t: "7-APRENDER A APRENDER", d: "Habilidade de buscar e aplicar novos conhecimentos.", e: "Curiosidade, compromisso escolar, lições de vida." }
+    let nomeDoJovem = "";
+    let fase = "SAP"; let indice = 0;
+    let resSAP = []; let resDISC = {E:0, C:0, P:0, A:0};
+
+    const perguntasSAP = [
+        { t: "1-PROTAGONISMO", q: "Como você avalia sua autonomia?" },
+        { t: "2-RESPONSABILIDADE", q: "Como você avalia seu compromisso?" },
+        { t: "3-AMBIENTAL", q: "Como você avalia seu cuidado ambiental?" },
+        { t: "4-CONVIVÊNCIA", q: "Como você avalia sua ética?" },
+        { t: "5-SAÚDE", q: "Como você avalia seu bem-estar?" },
+        { t: "6-EQUIPE", q: "Como você avalia seu trabalho em grupo?" },
+        { t: "7-APRENDER", q: "Como você avalia seu desejo de aprender?" }
     ];
 
-    const discPerguntas = [
-        { q: "Em um desafio em grupo, eu prefiro:", o: [{t:"Assumir a frente e focar no resultado.", v:"E"}, {t:"Animar a galera e mediar a conversa.", v:"C"}, {t:"Seguir o plano e apoiar os colegas.", v:"P"}, {t:"Analisar os riscos e os detalhes técnicos.", v:"A"}] },
-        { q: "Minha forma de agir é mais:", o: [{t:"Direta e decidida.", v:"E"}, {t:"Sociável e convincente.", v:"C"}, {t:"Calma e diplomática.", v:"P"}, {t:"Precisa e reservada.", v:"A"}] },
-        { q: "Gosto quando o ambiente é:", o: [{t:"Competitivo e dinâmico.", v:"E"}, {t:"Descontraído e com pessoas.", v:"C"}, {t:"Previsível e harmonioso.", v:"P"}, {t:"Organizado e lógico.", v:"A"}] },
-        { q: "Para resolver um problema, eu:", o: [{t:"Decido logo e arrisco.", v:"E"}, {t:"Peço opinião e converso.", v:"C"}, {t:"Espero o momento certo.", v:"P"}, {t:"Estudo todos os dados.", v:"A"}] }
+    const perguntasDISC = [
+        { q: "Em um desafio, prefiro:", o: [{t:"Comandar",v:"E"},{t:"Animar",v:"C"},{t:"Apoiar",v:"P"},{t:"Analisar",v:"A"}] },
+        { q: "Sou mais:", o: [{t:"Decidido",v:"E"},{t:"Influente",v:"C"},{t:"Estável",v:"P"},{t:"Cauteloso",v:"A"}] }
     ];
 
-    let fase = "SAP"; let atual = 0;
-    let dadosSAP = []; let dadosDISC = { E:0, C:0, P:0, A:0 };
+    function iniciar() {
+        nomeDoJovem = document.getElementById('nomeAluno').value;
+        if(nomeDoJovem.length < 3) { alert("Digite seu nome!"); return; }
+        mostrar();
+    }
 
-    function render() {
-        let html = "";
+    function mostrar() {
+        let html = `<div class="barra-bg"><div class="barra-fill" style="width:${(indice/7)*100}%"></div></div>`;
         if(fase === "SAP") {
-            const p = sapPerguntas[atual];
-            html = `<h2>${p.t}</h2><div class="descricao-sap">${p.d}</div><div class="evidencias"><strong>Evidências:</strong> ${p.e}</div><p>Sua nota (1 a 5):</p><div class="opcoes">`;
-            for(let i=1; i<=5; i++) html += `<button onclick="votoSAP(${i})">${i} - ${i==1?'Iniciante':i==5?'Protagonista':''}</button>`;
+            const p = perguntasSAP[indice];
+            html += `<h2>${p.t}</h2><p>${p.q}</p><div class="opcoes">`;
+            for(let i=1; i<=5; i++) html += `<button onclick="votarSAP(${i})">${i}</button>`;
         } else {
-            const p = discPerguntas[atual];
-            document.getElementById('titulo-etapa').innerText = "PERFIL COMPORTAMENTAL (DISC)";
-            document.getElementById('tag-etapa').innerText = "ETAPA 2/2";
-            html = `<h2>Questão ${atual+1}</h2><p>${p.q}</p><div class="opcoes">`;
-            p.o.forEach(opt => html += `<button onclick="votoDISC('${opt.v}')">${opt.t}</button>`);
+            const d = perguntasDISC[indice];
+            html += `<h2>Perfil DISC</h2><p>${d.q}</p><div class="opcoes">`;
+            d.o.forEach(o => html += `<button onclick="votarDISC('${o.v}')">${o.t}</button>`);
         }
-        document.getElementById('quiz').innerHTML = html + "</div>";
-        document.getElementById('barra').style.width = (((fase=="SAP"?atual:sapPerguntas.length+atual) / (sapPerguntas.length+discPerguntas.length)) * 100) + "%";
+        document.getElementById('box').innerHTML = html + "</div>";
     }
 
-    function votoSAP(v) { dadosSAP.push(v); atual++; if(atual>=sapPerguntas.length){ fase="DISC"; atual=0; } render(); }
-    function votoDISC(v) { dadosDISC[v]++; atual++; if(atual>=discPerguntas.length) enviar(); else render(); }
+    function votarSAP(v) { resSAP.push(v); indice++; if(indice>=7){ fase="DISC"; indice=0; } mostrar(); }
+    function votarDISC(v) { resDISC[v]++; indice++; if(indice>=2) finalizar(); else mostrar(); }
 
-    async function enviar() {
-        document.getElementById('quiz').innerHTML = "<h2>Salvando...</h2>";
-        const nome = localStorage.getItem('nomeAluno') || "Jovem";
-        await db.ref('resultados_testes').push({ aluno: nome, data: new Date().toLocaleString(), sap: dadosSAP, disc: dadosDISC });
-        document.getElementById('quiz').innerHTML = "<h2>Sucesso!</h2><p>Jorge já recebeu seu relatório.</p>";
+    async function finalizar() {
+        document.getElementById('box').innerHTML = "<h2>Enviando...</h2>";
+        await db.ref('resultados_testes').push({ aluno: nomeDoJovem, data: new Date().toLocaleString(), sap: resSAP, disc: resDISC });
+        document.getElementById('box').innerHTML = "<h2>Sucesso!</h2><p>Jorge recebeu seu relatório.</p>";
     }
-    render();
 </script>
 </body>
 </html>
