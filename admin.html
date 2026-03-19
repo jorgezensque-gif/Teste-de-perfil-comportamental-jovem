@@ -8,51 +8,110 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .menu { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; position: sticky; top: 0; background: #0a0c10; padding: 10px; z-index: 100; border-bottom: 2px solid #333; }
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 12px; }
-        .btn-ex { background: #27ae60; } .btn-del { background: #e74c3c; } .btn-print { background: #3498db; }
-        .sessao { background: #181c24; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card-aluno { background: #1e2430; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #ff5c3a; page-break-inside: avoid; }
-        .pdi-box { background: #0a0c10; padding: 15px; border-radius: 8px; margin-top: 10px; font-size: 14px; color: #cbd5e0; line-height: 1.5; border: 1px dashed #444; }
-        h2 { color: #ff5c3a; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
-        .tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: #000; }
-        @media print { .menu { display: none; } body { background: white; color: black; } .sessao, .card-aluno { border: 1px solid #ccc; background: white; color: black; } }
+        /* Cores mais suaves e profissionais */
+        :root {
+            --bg-body: #f0f2f5; /* Fundo claro acinzentado */
+            --bg-card: #ffffff; /* Cartões brancos para máximo contraste */
+            --texto-principal: #1c1e21;
+            --texto-secundario: #606770;
+            --cor-primaria: #ff5c3a; /* Laranja Pescar */
+            --borda: #dddfe2;
+        }
+
+        body { 
+            background: var(--bg-body); 
+            color: var(--texto-principal); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            margin: 0;
+        }
+
+        .menu { 
+            display: flex; gap: 15px; justify-content: center; 
+            margin-bottom: 30px; position: sticky; top: 0; 
+            background: rgba(240, 242, 245, 0.9); 
+            padding: 15px; z-index: 1000; backdrop-filter: blur(5px);
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .btn { 
+            padding: 12px 24px; border: none; border-radius: 8px; 
+            cursor: pointer; font-weight: bold; color: white; 
+            text-transform: uppercase; font-size: 13px; transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-del { background: #e74c3c; } 
+        .btn-print { background: #007bff; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .sessao { 
+            background: var(--bg-card); padding: 30px; 
+            border-radius: 15px; margin-bottom: 30px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); 
+            border: 1px solid var(--borda);
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+        .card-aluno { 
+            background: var(--bg-card); padding: 25px; 
+            border-radius: 15px; margin-top: 20px; 
+            border: 1px solid var(--borda);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            page-break-inside: avoid;
+        }
+
+        .pdi-box { 
+            background: #f8f9fa; padding: 18px; 
+            border-radius: 10px; margin-top: 15px; 
+            font-size: 14px; color: #444; line-height: 1.6; 
+            border-left: 5px solid var(--cor-primaria);
+        }
+
+        h1 { color: #2c3e50; font-weight: 800; }
+        h2 { color: var(--cor-primaria); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .tag { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; }
+
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+        
+        @media print { 
+            .menu { display: none; } 
+            body { background: white; padding: 0; }
+            .sessao, .card-aluno { box-shadow: none; border: 1px solid #ccc; margin-bottom: 20px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="menu">
-        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir PDIs e Relatórios</button>
-        <button class="btn btn-del" onclick="limparBanco()">🗑️ Limpar Dados da Turma</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Gerar Relatório / Imprimir</button>
+        <button class="btn btn-del" onclick="limparBanco()">🗑️ Limpar Turma</button>
     </div>
 
-    <h1 style="text-align:center;">📊 Painel de Controle - Instrutor Jorge</h1>
+    <h1 style="text-align:center;">📊 Dashboard de Avaliação - Jorge</h1>
 
     <div id="area-turma" class="sessao" style="display:none;">
-        <h2>📈 Diagnóstico Geral da Turma</h2>
+        <h2>📈 Visão Geral da Turma</h2>
         <div class="grid">
             <div><canvas id="canvas-turma-sap"></canvas></div>
             <div><canvas id="canvas-turma-disc"></canvas></div>
         </div>
-        <div id="feedback-turma" class="pdi-box" style="margin-top:20px; background: rgba(255,92,58,0.1);"></div>
+        <div id="feedback-turma" class="pdi-box" style="background: #fff5f2; border-color: #ff5c3a;"></div>
     </div>
 
-    <div id="lista-alunos">Aguardando dados...</div>
+    <div id="lista-alunos">Buscando dados no servidor...</div>
 
 <script>
-    // Configuração do Firebase do Jorge
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Dicionário DISC baseado no PDF
     const perfisDISC = {
-        E: { n: "Dominante (D)", c: "#e74c3c", pdi: "Focar em paciência e escuta ativa. Reduzir a pressa em decidir sozinho e envolver mais a equipe." },
-        C: { n: "Influente (I)", c: "#f1c40f", pdi: "Melhorar o foco em detalhes e o cumprimento de prazos. Utilizar listas de verificação." },
-        P: { n: "Estável (S)", c: "#2ecc71", pdi: "Desenvolver abertura para mudanças e expressar opiniões de forma mais direta e firme." },
-        A: { n: "Analítico (C)", c: "#3498db", pdi: "Trabalhar a agilidade. Evitar que a busca pela perfeição trave a entrega dos projetos." }
+        E: { n: "Dominante (D)", c: "#d93025", pdi: "Focar em paciência e escuta ativa. Reduzir a pressa em decidir sozinho e envolver mais a equipe." },
+        C: { n: "Influente (I)", c: "#f9ab00", pdi: "Melhorar o foco em detalhes e o cumprimento de prazos. Utilizar listas de verificação." },
+        P: { n: "Estável (S)", c: "#188038", pdi: "Desenvolver abertura para mudanças e expressar opiniões de forma mais direta e firme." },
+        A: { n: "Analítico (C)", c: "#1a73e8", pdi: "Trabalhar a agilidade. Evitar que a busca pela perfeição trave a entrega dos projetos." }
     };
 
     const nomesSAP = ['Protagonismo', 'Responsabilidade', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'];
@@ -62,7 +121,7 @@
         lista.innerHTML = "";
         
         if (!snap.exists()) {
-            lista.innerHTML = "<div class='sessao'>Nenhum aluno avaliado ainda.</div>";
+            lista.innerHTML = "<div class='sessao' style='text-align:center'>Nenhuma resposta registrada.</div>";
             document.getElementById('area-turma').style.display = "none";
             return;
         }
@@ -77,85 +136,72 @@
             const id = alunoSnap.key;
             contador++;
 
-            // Cálculos da Turma
             d.sap.forEach((v, i) => somaTotalSAP[i] += v);
             somaTotalDISC.E += d.disc.E; somaTotalDISC.C += d.disc.C; 
             somaTotalDISC.P += d.disc.P; somaTotalDISC.A += d.disc.A;
 
-            // Perfil Predominante
             let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
 
             lista.innerHTML += `
                 <div class="card-aluno">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong>JOVEM: ${d.aluno}</strong>
+                        <span style="font-size:18px;"><strong>Jovem:</strong> ${d.aluno}</span>
                         <span class="tag" style="background:${perfisDISC[principal].c}">${perfisDISC[principal].n}</span>
                     </div>
-                    <div class="grid" style="margin-top:20px;">
-                        <div>
-                            <canvas id="radar-${id}" height="200"></canvas>
-                        </div>
+                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                    <div class="grid">
+                        <div style="max-height:300px;"><canvas id="radar-${id}"></canvas></div>
                         <div>
                             <div class="pdi-box">
-                                <strong>🎯 PDI (Plano de Desenvolvimento Individual):</strong><br>
-                                ${perfisDISC[principal].pdi}
+                                <strong>🎯 PDI Individual:</strong><br>${perfisDISC[principal].pdi}
                             </div>
-                            <div class="pdi-box" style="border-color: #06d6a0;">
-                                <strong>💡 Análise SAP:</strong><br>
-                                O aluno apresenta média de ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)} nas competências Pescar.
+                            <div class="pdi-box" style="border-color: #27ae60; background: #f2faf5;">
+                                <strong>💡 Média SAP:</strong> O aluno atingiu nota média de ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
                             </div>
                         </div>
                     </div>
                 </div>`;
             
-            // Desenha Radar Individual
             setTimeout(() => {
                 new Chart(document.getElementById('radar-'+id), {
                     type: 'radar',
                     data: {
                         labels: ['P1','P2','P3','P4','P5','P6','P7'],
-                        datasets: [{ label: 'Competências', data: d.sap, borderColor: '#06d6a0', backgroundColor: 'rgba(6,214,160,0.1)' }]
+                        datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255, 92, 58, 0.2)', borderWidth: 2 }]
                     },
-                    options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } }, plugins: { legend: { display: false } } }
+                    options: { 
+                        scales: { r: { min: 0, max: 5, grid: { color: '#ddd' }, angleLines: { color: '#ddd' }, pointLabels: { font: { size: 10 } } } },
+                        plugins: { legend: { display: false } }
+                    }
                 });
             }, 300);
         });
 
-        // Gráficos Coletivos
         setTimeout(() => {
             const mediasSAP = somaTotalSAP.map(v => v/contador);
-            
-            // Barra SAP Turma
             new Chart(document.getElementById('canvas-turma-sap'), {
                 type: 'bar',
-                data: {
-                    labels: nomesSAP,
-                    datasets: [{ label: 'Média da Turma', data: mediasSAP, backgroundColor: '#06d6a0' }]
-                },
+                data: { labels: nomesSAP, datasets: [{ label: 'Média SAP', data: mediasSAP, backgroundColor: '#ff5c3a' }] },
                 options: { scales: { y: { min: 0, max: 5 } } }
             });
 
-            // Pizza DISC Turma
             new Chart(document.getElementById('canvas-turma-disc'), {
                 type: 'pie',
                 data: {
-                    labels: ['Exec/Dom','Comu/Inf','Plan/Est','Anal/Cau'],
-                    datasets: [{ data: [somaTotalDISC.E, somaTotalDISC.C, somaTotalDISC.P, somaTotalDISC.A], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }]
+                    labels: ['Dom','Inf','Est','Ana'],
+                    datasets: [{ data: [somaTotalDISC.E, somaTotalDISC.C, somaTotalDISC.P, somaTotalDISC.A], backgroundColor: ['#d93025','#f9ab00','#188038','#1a73e8'] }]
                 }
             });
 
-            // Feedback Inteligente
-            const menorNotaIndex = mediasSAP.indexOf(Math.min(...mediasSAP));
+            const menorIndex = mediasSAP.indexOf(Math.min(...mediasSAP));
             document.getElementById('feedback-turma').innerHTML = `
-                <strong>📢 Diagnóstico para o Instrutor Jorge:</strong><br>
-                A turma está com o menor desempenho em <b>${nomesSAP[menorNotaIndex]}</b>. 
-                Sugerimos focar as próximas dinâmicas nesta competência.
-            `;
+                <strong>📢 Análise de Grupo:</strong> A competência com menor média é <b>${nomesSAP[menorIndex]}</b>. 
+                Recomendamos reforçar este tema com a turma.`;
         }, 600);
     });
 
     function limparBanco() {
-        if(confirm("Jorge, você deseja apagar TODOS os resultados para iniciar uma nova turma?")) {
+        if(confirm("Jorge, confirma a limpeza de todos os dados desta turma?")) {
             db.ref('resultados_testes').remove();
         }
     }
