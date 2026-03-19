@@ -2,120 +2,53 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin Jorge - SAP & DISC</title>
+    <title>Painel Jorge - Admin</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; position: sticky; top: 0; background: #0a0c10; padding: 15px; z-index: 100; border-bottom: 2px solid #333; }
-        .btn { padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; text-transform: uppercase; }
-        .btn-excel { background: #27ae60; border: 2px solid #2ecc71; }
-        .btn-limpar { background: #e74c3c; border: 2px solid #c0392b; }
-        .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
-        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 25px; border-radius: 15px; margin-bottom: 50px; }
-        .grid-disc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .grid-sap { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .box-chart { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; text-align: center; }
-        .info-header { border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-size: 1.2em; }
-        @media (max-width: 900px) { .grid-disc { grid-template-columns: 1fr 1fr; } .grid-sap { grid-template-columns: 1fr; } }
+        .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
+        .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; }
+        .btn-excel { background: #27ae60; }
+        .btn-limpar { background: #e74c3c; }
+        .card-aluno { background: #181c24; border: 1px solid #353b48; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; }
     </style>
 </head>
 <body>
-
     <div class="controles">
-        <button class="btn btn-excel" onclick="exportarExcel()">📗 Exportar Relatório Excel</button>
-        <button class="btn btn-limpar" onclick="limparBanco()">🗑️ Limpar Banco de Dados</button>
+        <button class="btn btn-excel" onclick="exportar()">📗 EXPORTAR EXCEL</button>
+        <button class="btn btn-limpar" onclick="limpar()">🗑️ LIMPAR TUDO</button>
     </div>
-
-    <h1 style="text-align:center; color:#ff5c3a;">📊 Gestão de Resultados Turma Pescar</h1>
-    <div id="lista-resultados">Carregando dados...</div>
-
-    <script>
-        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let listaParaPlanilha = [];
-
-        db.ref('resultados_testes').on('value', snap => {
-            const container = document.getElementById('lista-resultados');
-            container.innerHTML = "";
-            listaParaPlanilha = [];
-            
-            if(!snap.exists()) { container.innerHTML = "<p style='text-align:center;'>Nenhum dado encontrado.</p>"; return; }
-
-            snap.forEach(alunoSnap => {
-                const d = alunoSnap.val();
-                const id = alunoSnap.key;
-                
-                // Organiza dados para o Excel
-                listaParaPlanilha.push({
-                    "Nome do Aluno": d.aluno,
-                    "Data do Teste": d.data,
-                    "Protagonismo": d.sap[0], "Responsabilidade": d.sap[1], "Ambiental": d.sap[2], 
-                    "Convivência": d.sap[3], "Saúde": d.sap[4], "Equipe": d.sap[5], "Aprender": d.sap[6],
-                    "Exec": d.disc.E, "Comu": d.disc.C, "Plan": d.disc.P, "Anal": d.disc.A
-                });
-
-                container.innerHTML += `
-                    <div class="card-aluno">
-                        <div class="info-header"><strong>ALUNO: ${d.aluno}</strong><span>📅 ${d.data}</span></div>
-                        <h3 style="color:#ffbd2e; text-align:center;">PERFIL COMPORTAMENTAL (DISC)</h3>
-                        <div class="grid-disc">
-                            <div class="box-chart"><canvas id="d1-${id}"></canvas><strong>E</strong></div>
-                            <div class="box-chart"><canvas id="d2-${id}"></canvas><strong>C</strong></div>
-                            <div class="box-chart"><canvas id="d3-${id}"></canvas><strong>P</strong></div>
-                            <div class="box-chart"><canvas id="d4-${id}"></canvas><strong>A</strong></div>
-                        </div>
-                        <h3 style="color:#06d6a0; text-align:center;">DESENVOLVIMENTO SAP (PESCAR)</h3>
-                        <div class="grid-sap">
-                            <div class="box-chart"><canvas id="radar-${id}"></canvas></div>
-                            <div class="box-chart"><canvas id="barra-${id}"></canvas></div>
-                        </div>
-                    </div>`;
-                
-                setTimeout(() => desenharGraficos(id, d), 100);
-            });
+    <div id="lista"></div>
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let dadosExcel = [];
+    db.ref('resultados_testes').on('value', snap => {
+        const container = document.getElementById('lista'); container.innerHTML = ""; dadosExcel = [];
+        snap.forEach(alunoSnap => {
+            const d = alunoSnap.val(); const id = alunoSnap.key;
+            dadosExcel.push({ Aluno: d.aluno, Data: d.data, Exec: d.disc.E, Comu: d.disc.C, Plan: d.disc.P, Anal: d.disc.A });
+            container.innerHTML += `<div class="card-aluno"><h3>${d.aluno}</h3><div class="grid">
+                <div class="box"><canvas id="radar-${id}"></canvas></div>
+                <div class="box"><canvas id="barra-${id}"></canvas></div>
+            </div></div>`;
+            setTimeout(() => {
+                new Chart(document.getElementById('radar-'+id), { type: 'radar', data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'SAP', data: d.sap, borderColor: '#06d6a0' }] } });
+                new Chart(document.getElementById('barra-'+id), { type: 'bar', data: { labels: ['E','C','P','A'], datasets: [{ label:'DISC', data: [d.disc.E, d.disc.C, d.disc.P, d.disc.A], backgroundColor: '#ff5c3a' }] } });
+            }, 100);
         });
-
-        function desenharGraficos(id, d) {
-            const cores = { E: '#ff5c3a', C: '#ffbd2e', P: '#27ae60', A: '#2980b9' };
-            // DISC
-            [['d1','E'],['d2','C'],['d3','P'],['d4','A']].forEach(p => {
-                new Chart(document.getElementById(`${p[0]}-${id}`), {
-                    type: 'doughnut', data: { datasets: [{ data:[d.disc[p[1]], 4-d.disc[p[1]]], backgroundColor:[cores[p[1]], '#111'] }] },
-                    options: { cutout: '75%', plugins: { tooltip: {enabled: false} } }
-                });
-            });
-            // RADAR SAP
-            new Chart(document.getElementById('radar-'+id), {
-                type: 'radar',
-                data: { labels: ['Protag.','Resp.','Amb.','Conv.','Saúde','Equipe','Apr.'], datasets: [{ label:'SAP', data: d.sap, borderColor:'#06d6a0', backgroundColor:'rgba(6,214,160,0.2)' }] },
-                options: { scales: { r: { min:0, max:5, grid:{color:'#444'}, ticks: {display:false} } } }
-            });
-            // BARRA SAP
-            new Chart(document.getElementById('barra-'+id), {
-                type: 'bar',
-                data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'Nota', data: d.sap, backgroundColor:'#06d6a0' }] },
-                options: { scales: { y: { min:0, max:5 } } }
-            });
-        }
-
-        function exportarExcel() {
-            if(listaParaPlanilha.length === 0) return alert("Jorge, não há dados para exportar ainda.");
-            const ws = XLSX.utils.json_to_sheet(listaParaPlanilha);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Resultados Turma");
-            XLSX.writeFile(wb, "Relatorio_Projeto_Pescar_Jorge.xlsx");
-        }
-
-        function limparBanco() {
-            if(confirm("ATENÇÃO JORGE: Deseja apagar todas as avaliações desta turma para começar uma nova rodada?")) {
-                db.ref('resultados_testes').remove();
-                alert("O banco de dados foi zerado!");
-            }
-        }
-    </script>
+    });
+    function exportar() {
+        const ws = XLSX.utils.json_to_sheet(dadosExcel); const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultados"); XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
+    }
+    function limpar() { if(confirm("Limpar tudo?")) db.ref('resultados_testes').remove(); }
+</script>
 </body>
 </html>
