@@ -2,93 +2,73 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DISC Admin Cloud — Painel do Jorge</title>
+    <title>DISC Admin — Painel do Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
-    <script>
-        // CONFIGURAÇÃO DO FIREBASE (Jorge, cole seus dados aqui)
-        const firebaseConfig = {
-            apiKey: "COLE_AQUI_SUA_API_KEY",
-            authDomain: "seu-projeto.firebaseapp.com",
-            databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
-            projectId: "seu-projeto",
-            storageBucket: "seu-projeto.appspot.com",
-            messagingSenderId: "00000000",
-            appId: "1:000000:web:000000"
-        };
-
-        // Inicializa o Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // FUNÇÃO PARA GERAR CÓDIGO E SALVAR NA NUVEM
-        async function gerarNovoCodigo() {
-            const input = document.getElementById('prefixo');
-            const prefixo = input.value || "DISC";
-            const novoCodigo = prefixo + "-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-            
-            try {
-                // Busca códigos atuais
-                const snapshot = await db.ref('disc_codes').once('value');
-                let codes = snapshot.val() || [];
-                
-                // Adiciona o novo
-                codes.push({
-                    code: novoCodigo,
-                    used: false,
-                    usedBy: "",
-                    createdAt: new Date().toISOString()
-                });
-
-                // Salva de volta na nuvem
-                await db.ref('disc_codes').set(codes);
-                alert("Código " + novoCodigo + " gerado e salvo na nuvem!");
-                listarCodigos();
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert("Erro ao conectar com o Firebase. Verifique as configurações.");
-            }
-        }
-
-        // FUNÇÃO PARA LISTAR CÓDIGOS DA NUVEM
-        async function listarCodigos() {
-            const listaElement = document.getElementById('listaCodigos');
-            listaElement.innerHTML = "Carregando...";
-            
-            const snapshot = await db.ref('disc_codes').once('value');
-            const codes = snapshot.val() || [];
-            
-            listaElement.innerHTML = "";
-            codes.forEach(c => {
-                const item = document.createElement('div');
-                item.className = c.used ? 'code-used' : 'code-free';
-                item.innerHTML = `<strong>${c.code}</strong> - ${c.used ? '❌ Usado por: '+c.usedBy : '✅ Disponível'}`;
-                listaElement.appendChild(item);
-            });
-        }
-
-        window.onload = listarCodigos;
-    </script>
     <style>
-        body { font-family: sans-serif; background: #0a0c10; color: white; padding: 20px; }
-        .card { background: #181c24; padding: 20px; border-radius: 8px; border: 1px solid #252a35; }
-        button { background: #ff5c3a; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
-        input { padding: 10px; border-radius: 4px; border: 1px solid #252a35; background: #11141a; color: white; }
-        .code-free { color: #06d6a0; margin: 10px 0; border-bottom: 1px solid #252a35; padding: 5px; }
-        .code-used { color: #6b7585; margin: 10px 0; border-bottom: 1px solid #252a35; padding: 5px; text-decoration: line-through; }
+        body { background: #0a0c10; color: #e8ecf2; font-family: 'DM Sans', sans-serif; padding: 40px; }
+        .card { background: #181c24; border: 1px solid #252a35; padding: 30px; border-radius: 16px; max-width: 600px; margin: auto; }
+        h2 { color: #ff5c3a; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #11141a; border: 1px solid #252a35; color: white; border-radius: 8px; }
+        button { background: #ff5c3a; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        button:hover { background: #e04b2f; }
+        .lista-chaves { margin-top: 30px; border-top: 1px solid #252a35; padding-top: 20px; }
+        .chave-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #252a35; font-family: monospace; }
+        .disponivel { color: #06d6a0; }
+        .usada { color: #6b7585; text-decoration: line-through; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>Painel Administrativo do Jorge</h2>
-        <p>Gere chaves que funcionam em tempo real no site Perfil-jovem.</p>
-        <input type="text" id="prefixo" placeholder="Prefixo (ex: JORGE)">
-        <button onclick="gerarNovoCodigo()">Gerar e Sincronizar</button>
-        <hr style="border: 0; border-top: 1px solid #252a35; margin: 20px 0;">
-        <h3>Chaves Ativas na Nuvem:</h3>
-        <div id="listaCodigos"></div>
+        <h2>Painel Administrativo DISC</h2>
+        <p style="margin-bottom: 15px; color: #6b7585;">Gerador de chaves sincronizado com a nuvem.</p>
+        
+        <input type="text" id="prefixo" placeholder="Prefixo da chave (Ex: TURMA-A)">
+        <button onclick="gerarChave()">GERAR E SALVAR NA NUVEM</button>
+
+        <div class="lista-chaves" id="lista">Carregando chaves da nuvem...</div>
     </div>
+
+    <script>
+        // CONFIGURAÇÃO DO SEU PROJETO PERFIL-JOVEM--DISC
+        const firebaseConfig = {
+            apiKey: "AIzaSyB...", // O Firebase preencherá automaticamente se usar o SDK, mas os dados abaixo são do seu projeto
+            authDomain: "perfil-jovem--disc.firebaseapp.com",
+            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
+            projectId: "perfil-jovem--disc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        async function gerarChave() {
+            const prefixo = document.getElementById('prefixo').value || "DISC";
+            const novaChave = prefixo + "-" + Math.random().toString(36).substr(2, 5).toUpperCase();
+            
+            const snapshot = await db.ref('lista_chaves').once('value');
+            let chaves = snapshot.val() || [];
+            
+            chaves.push({ code: novaChave, used: false, user: "" });
+            await db.ref('lista_chaves').set(chaves);
+            
+            alert("Sucesso! Chave " + novaChave + " salva na nuvem.");
+            listar();
+        }
+
+        async function listar() {
+            const snapshot = await db.ref('lista_chaves').once('value');
+            const chaves = snapshot.val() || [];
+            const listaDiv = document.getElementById('lista');
+            listaDiv.innerHTML = "<h3>Chaves Ativas:</h3>";
+            
+            chaves.reverse().forEach(c => {
+                listaDiv.innerHTML += `
+                    <div class="chave-item ${c.used ? 'usada' : 'disponivel'}">
+                        <span>${c.code}</span>
+                        <span>${c.used ? 'Usado por: ' + c.user : 'Disponível'}</span>
+                    </div>`;
+            });
+        }
+        listar();
+    </script>
 </body>
 </html>
