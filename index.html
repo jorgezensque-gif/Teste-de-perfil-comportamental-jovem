@@ -6,7 +6,6 @@
     <title>Teste DISC - Perfil Jovem</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .login-card { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; width: 300px; text-align: center; }
@@ -17,7 +16,6 @@
     </style>
 </head>
 <body>
-
     <div class="login-card">
         <h2>Acesso ao Teste</h2>
         <input type="text" id="nome-aluno" placeholder="Seu Nome Completo">
@@ -26,7 +24,6 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO PROJETO DO JORGE
         const firebaseConfig = {
             databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
             projectId: "perfil-jovem--disc"
@@ -44,46 +41,29 @@
             }
 
             try {
-                // Busca a lista de chaves no seu Firebase
                 const snapshot = await db.ref('lista_chaves').once('value');
                 let chaves = snapshot.val() || [];
-
-                // Procura a chave digitada
                 const index = chaves.findIndex(c => c.code === chave);
 
                 if (index !== -1) {
                     if (chaves[index].used) {
                         alert("Esta chave já foi usada por: " + chaves[index].user);
                     } else {
-                        // CHAVE VÁLIDA: Marca como usada e salva quem usou
                         chaves[index].used = true;
                         chaves[index].user = nome;
                         await db.ref('lista_chaves').set(chaves);
-
                         alert("Acesso autorizado! Bem-vindo, " + nome);
                         
-                        // AQUI O JORGE COLOCA O LINK PARA A PÁGINA DAS PERGUNTAS
+                        // AQUI ESTÁ O SEGREDO: Q maiúsculo para não dar 404
                         window.location.href = "Questoes.html"; 
                     }
                 } else {
-                    alert("Chave inválida! Verifique se digitou corretamente.");
+                    alert("Chave inválida!");
                 }
             } catch (error) {
-                console.error(error);
-                alert("Erro de conexão. Verifique se as regras do Firebase estão em 'true'.");
+                alert("Erro de conexão!");
             }
         }
     </script>
 </body>
 </html>
-} else {
-                        // CHAVE VÁLIDA: Marca como usada e salva quem usou
-                        chaves[index].used = true;
-                        chaves[index].user = nome;
-                        await db.ref('lista_chaves').set(chaves);
-
-                        alert("Acesso autorizado! Bem-vindo, " + nome);
-                        
-                        // CORRIGIDO: Agora aponta para questoes.html
-                        window.location.href = "questoes.html"; 
-                    }
