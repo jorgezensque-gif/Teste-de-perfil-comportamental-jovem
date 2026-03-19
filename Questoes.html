@@ -3,134 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste DISC & SAP Jovem 5.0</title>
+    <title>Avaliação Completa - Instrutor Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
         .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 700px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: #ff5c3a; margin-top: 0; text-align: center; border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; }
+        h2 { color: #ff5c3a; text-align: center; border-bottom: 2px solid #ff5c3a; padding-bottom: 10px; }
         .descricao-sap { background: #0a0c10; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; line-height: 1.4; color: #abb2bf; }
-        .evidencias { background: #1f242d; padding: 12px; border-radius: 5px; margin-bottom: 20px; font-size: 13px; color: #ff8e75; font-style: italic; border-left: 3px solid #ff5c3a; }
-        .pergunta-texto { font-size: 17px; font-weight: bold; margin-bottom: 15px; display: block; color: #fff; }
-        .opcoes button { width: 100%; padding: 14px; margin: 6px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; font-size: 14px; }
-        .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; transform: translateX(5px); }
-        .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin-bottom: 20px; }
+        .opcoes button { width: 100%; padding: 12px; margin: 5px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; }
+        .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; }
+        .barra-bg { width: 100%; height: 10px; background: #0a0c10; border-radius: 5px; margin-bottom: 20px; }
         .barra-fill { height: 100%; background: #ff5c3a; width: 0%; transition: 0.4s; }
+        .tipo-teste { text-align: center; color: #ff8e75; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
     </style>
 </head>
 <body>
-
 <div class="container">
+    <div id="status" class="tipo-teste">ETAPA 1: AUTOAVALIAÇÃO SAP</div>
     <div class="barra-bg"><div class="barra-fill" id="barra"></div></div>
-    <div id="conteudo-quiz"><h2>Carregando Questões...</h2></div>
+    <div id="quiz"><h2>Carregando...</h2></div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-        projectId: "perfil-jovem--disc"
-    };
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const perguntas = [
-        { 
-            titulo: "1 - SER PROTAGONISTA",
-            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo e construtor do seu destino. Consegue responder a problemas reais como sujeito principal.",
-            evid: "• Sou referência construtiva • Respeito e me faço respeitar • Construo meu Projeto de Vida • Reconheço meus potenciais e pontos a melhorar.",
-            q: "Baseado no texto acima, qual atitude você mais pratica?", 
-            o: [
-                {t:"Eu tomo a iniciativa de mudar minha realidade e lidero ações. (Executor)", v:"E"},
-                {t:"Eu influencio meus colegas a também serem protagonistas. (Comunicador)", v:"C"},
-                {t:"Eu planejo meu futuro passo a passo com segurança. (Planejador)", v:"P"},
-                {t:"Eu analiso meus erros e acertos para melhorar sempre. (Analista)", v:"A"}
-            ]
-        },
-        { 
-            titulo: "2 - RESPONSÁVEL E COMPROMETIDO",
-            desc: "É comprometer-se com suas atividades, ser pontual, cumprir o exigido e respeitar regras de convivência. É esforçar-se para obter bons resultados e melhorar seu desempenho.",
-            evid: "• Sou pontual e assíduo • Cumpro prazos e tarefas • Respeito as normas da UPP • Sou cuidadoso com materiais e equipamentos.",
-            q: "Como você demonstra sua responsabilidade no dia a dia?", 
-            o: [
-                {t:"Foco em entregar tudo rápido e com máxima eficiência. (Executor)", v:"E"},
-                {t:"Uso minha comunicação para ajudar o grupo a seguir as regras. (Comunicador)", v:"C"},
-                {t:"Gosto de rotina e horários bem definidos para me organizar. (Planejador)", v:"P"},
-                {t:"Prezo pela perfeição e sigo as normas detalhadamente. (Analista)", v:"A"}
-            ]
-        },
-        { 
-            titulo: "6 - TRABALHAR E PRODUZIR EM EQUIPE",
-            desc: "Capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses do grupo acima dos interesses pessoais.",
-            evid: "• Penso no bem-estar do grupo • Busco o consenso • Aceito críticas e sugestões • Transmito informações com fidelidade.",
-            q: "No trabalho coletivo, qual é o seu papel principal?", 
-            o: [
-                {t:"Eu foco em cobrar agilidade para o grupo bater a meta. (Executor)", v:"E"},
-                {t:"Eu sou o que une as pessoas e mantém o clima animado. (Comunicador)", v:"C"},
-                {t:"Eu ouço todos com paciência para evitar conflitos. (Planejador)", v:"P"},
-                {t:"Eu organizo os dados e garanto que nada saia errado. (Analista)", v:"A"}
-            ]
-        },
-        { 
-            titulo: "7 - APRENDER A APRENDER",
-            desc: "Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática o que aprendeu em todos os espaços da vida.",
-            evid: "• Construo novos conhecimentos • Tenho compromisso com a vida escolar • Tiro lições de situações boas ou ruins • Questiono e indago.",
-            q: "Qual o seu estilo de aprendizado e curiosidade?", 
-            o: [
-                {t:"Aprendo fazendo na prática e buscando resultados imediatos. (Executor)", v:"E"},
-                {t:"Aprendo trocando ideias e conversando com outras pessoas. (Comunicador)", v:"C"},
-                {t:"Aprendo observando e seguindo métodos que já funcionam. (Planejador)", v:"P"},
-                {t:"Aprendo pesquisando a fundo, lendo e analisando dados. (Analista)", v:"A"}
-            ]
-        }
+    const perguntasSAP = [
+        { t: "1-SER PROTAGONISTA", d: "Conscientiza-se de sua identidade, atua com autonomia e constrói seu destino.", q: "Em uma escala de 1 a 5, como você se avalia em protagonismo?" },
+        { t: "2-SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, cumprimento de prazos e respeito às normas.", q: "Como você avalia seu compromisso com as regras?" },
+        { t: "3-TER CONSCIÊNCIA AMBIENTAL", d: "Cuidado com o meio ambiente e uso consciente de recursos.", q: "Como você avalia sua postura ambiental?" },
+        { t: "4-VIVER VALORES DE CONVIVÊNCIA", d: "Ética, respeito às diferenças e postura cidadã.", q: "Como você avalia sua ética e convivência?" },
+        { t: "5-CUIDAR DA SAÚDE E DO BEM-ESTAR", d: "Cuidado físico, emocional e hábitos saudáveis.", q: "Como você avalia o cuidado com sua saúde?" },
+        { t: "6-TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaboração e colocar o interesse do grupo acima do pessoal.", q: "Como você avalia sua produção em grupo?" },
+        { t: "7-APRENDER A APRENDER", d: "Habilidade de buscar novos conhecimentos constantemente.", q: "Como você avalia seu desejo de aprender?" }
     ];
 
-    let indice = 0;
-    let pontos = { E: 0, C: 0, P: 0, A: 0 };
+    const perguntasDISC = [
+        { q: "Em uma tarefa difícil, eu prefiro:", o: [{t:"Resolver rápido e assumir o comando", v:"E"}, {t:"Conversar com todos e motivar", v:"C"}, {t:"Seguir um plano com calma", v:"P"}, {t:"Analisar os dados com perfeição", v:"A"}] },
+        { q: "Meu maior medo é:", o: [{t:"Falhar e perder o controle", v:"E"}, {t:"Ser rejeitado pelo grupo", v:"C"}, {t:"Mudanças bruscas e caos", v:"P"}, {t:"Cometer erros técnicos", v:"A"}] }
+    ];
 
-    function mostrarQuestao() {
-        if (indice >= perguntas.length) {
-            salvarEResultar();
-            return;
+    let etapa = "SAP"; let indice = 0; 
+    let resSAP = []; let resDISC = { E: 0, C: 0, P: 0, A: 0 };
+
+    function mostrar() {
+        let html = "";
+        if (etapa === "SAP") {
+            const p = perguntasSAP[indice];
+            document.getElementById('status').innerText = "ETAPA 1: AUTOAVALIAÇÃO SAP (Competência " + (indice+1) + "/7)";
+            html = `<h2>${p.t}</h2><div class="descricao-sap">${p.d}</div><p>${p.q}</p><div class="opcoes">`;
+            for(let n=1; n<=5; n++) { html += `<button onclick="votarSAP(${n})">${n} - ${n===1?'Preciso Melhorar':n===5?'Excelente':''}</button>`; }
+        } else {
+            const p = perguntasDISC[indice];
+            document.getElementById('status').innerText = "ETAPA 2: PERFIL COMPORTAMENTAL (Questão " + (indice+1) + "/2)";
+            html = `<h2>Mapeamento de Perfil</h2><p>${p.q}</p><div class="opcoes">`;
+            p.o.forEach(opt => { html += `<button onclick="votarDISC('${opt.v}')">${opt.t}</button>`; });
         }
-        const p = perguntas[indice];
-        let html = `<h2>${p.titulo}</h2>
-                    <div class="descricao-sap">${p.desc}</div>
-                    <div class="evidencias"><strong>Evidências:</strong><br>${p.evid}</div>
-                    <span class="pergunta-texto">${p.q}</span>
-                    <div class="opcoes">`;
-        
-        p.o.forEach(opt => {
-            html += `<button onclick="votar('${opt.v}')">${opt.t}</button>`;
-        });
-        
-        html += `</div>`;
-        document.getElementById('conteudo-quiz').innerHTML = html;
-        document.getElementById('barra').style.width = ((indice / perguntas.length) * 100) + "%";
+        document.getElementById('quiz').innerHTML = html + "</div>";
+        atualizarBarra();
     }
 
-    function votar(v) {
-        pontos[v]++;
-        indice++;
-        mostrarQuestao();
+    function votarSAP(n) {
+        resSAP.push(n); indice++;
+        if (indice >= perguntasSAP.length) { etapa = "DISC"; indice = 0; }
+        mostrar();
     }
 
-    async function salvarEResultar() {
-        document.getElementById('conteudo-quiz').innerHTML = "<h2>Salvando no banco de dados do Jorge...</h2>";
-        const nomeAlun = localStorage.getItem('nomeAluno') || "Jovem";
-        try {
-            await db.ref('resultados_testes').push({ aluno: nomeAlun, data: new Date().toLocaleString(), perfil: pontos });
-            document.getElementById('conteudo-quiz').innerHTML = `
-                <h2 style="color:#06d6a0">Excelente, ${nomeAlun}!</h2>
-                <p>Suas respostas foram enviadas para o sistema do Jorge. Você concluiu sua Autoavaliação SAP-Jovem 5.0.</p>
-                <button onclick="window.location.href='index.html'" style="margin-top:20px; background:#ff5c3a; color:white; border:none; padding:12px 25px; border-radius:8px; cursor:pointer; font-weight:bold;">FINALIZAR</button>
-            `;
-        } catch (e) {
-            document.getElementById('conteudo-quiz').innerHTML = "<h2>Erro ao salvar! Verifique sua conexão.</h2>";
-        }
+    function votarDISC(v) {
+        resDISC[v]++; indice++;
+        if (indice >= perguntasDISC.length) { finalizar(); } else { mostrar(); }
     }
 
-    mostrarQuestao();
+    function atualizarBarra() {
+        let total = perguntasSAP.length + perguntasDISC.length;
+        let prog = etapa === "SAP" ? indice : perguntasSAP.length + indice;
+        document.getElementById('barra').style.width = (prog / total * 100) + "%";
+    }
+
+    async function finalizar() {
+        document.getElementById('quiz').innerHTML = "<h2>Enviando resultados...</h2>";
+        const nome = localStorage.getItem('nomeAluno') || "Jovem";
+        await db.ref('resultados_testes').push({ aluno: nome, data: new Date().toLocaleString(), sap: resSAP, disc: resDISC });
+        document.getElementById('quiz').innerHTML = "<h2>Concluído!</h2><p>Jorge recebeu sua avaliação.</p>";
+    }
+    mostrar();
 </script>
 </body>
 </html>
