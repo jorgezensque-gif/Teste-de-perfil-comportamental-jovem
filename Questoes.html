@@ -8,12 +8,13 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 500px; width: 100%; text-align: center; }
+        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { color: #ff5c3a; margin-bottom: 20px; }
         .opcoes button { width: 100%; padding: 15px; margin: 10px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; font-size: 16px; }
-        .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; }
+        .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; transform: translateX(5px); }
         .barra-bg { width: 100%; height: 8px; background: #0a0c10; border-radius: 4px; margin-bottom: 20px; }
         .barra-fill { height: 100%; background: #ff5c3a; width: 0%; transition: 0.4s; border-radius: 4px; }
+        p { color: #8892b0; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -26,6 +27,7 @@
 </div>
 
 <script>
+    // Configuração do Firebase do Jorge
     const firebaseConfig = {
         databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
         projectId: "perfil-jovem--disc"
@@ -33,15 +35,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Perguntas que unem Sólides (DISC) e SAP Jovem
     const perguntas = [
-        { q: "No dia a dia, o que mais te define?", 
-          o: [{t:"DETERMINAÇÃO: Foco em resultados e rapidez.", v:"E"}, {t:"ENTUSIASMO: Gosto de falar e motivar.", v:"C"}, {t:"PACIÊNCIA: Gosto de rotina e calma.", v:"P"}, {t:"EXATIDÃO: Gosto de detalhes e perfeição.", v:"A"}] },
-        { q: "Como você age em grupo (SAP 6.0)?", 
-          o: [{t:"Tomo a frente e decido logo.", v:"E"}, {t:"Animo a galera e comunico as ideias.", v:"C"}, {t:"Ajudo a todos e busco harmonia.", v:"P"}, {t:"Analiso os riscos e sigo o plano.", v:"A"}] },
+        { q: "No dia a dia, qual característica te define melhor?", 
+          o: [{t:"DETERMINAÇÃO: Foco em resultados.", v:"E"}, {t:"ENTUSIASMO: Falar e motivar pessoas.", v:"C"}, {t:"PACIÊNCIA: Gosto de rotina e calma.", v:"P"}, {t:"EXATIDÃO: Gosto de detalhes e regras.", v:"A"}] },
+        { q: "Como você prefere agir em grupo (SAP 6.0)?", 
+          o: [{t:"Lidero e decido o que fazer.", v:"E"}, {t:"Animo o grupo e comunico as ideias.", v:"C"}, {t:"Ajudo os outros e busco união.", v:"P"}, {t:"Analiso os riscos e sigo o plano.", v:"A"}] },
         { q: "Sobre Protagonismo (SAP 1.0):", 
-          o: [{t:"Eu faço acontecer e lidero.", v:"E"}, {t:"Eu influencio as pessoas ao redor.", v:"C"}, {t:"Eu planejo meu futuro com calma.", v:"P"}, {t:"Eu estudo e analiso minhas escolhas.", v:"A"}] },
-        { q: "Como lida com regras (SAP 2.0)?", 
-          o: [{t:"Sigo se for para ganhar tempo.", v:"E"}, {t:"Sigo para não chatear o grupo.", v:"C"}, {t:"Sigo porque me sinto seguro.", v:"P"}, {t:"Sigo porque é o correto e organizado.", v:"A"}] }
+          o: [{t:"Eu tomo a iniciativa e faço acontecer.", v:"E"}, {t:"Eu influencio e inspiro meus colegas.", v:"C"}, {t:"Eu planejo meu futuro com segurança.", v:"P"}, {t:"Eu estudo muito bem minhas escolhas.", v:"A"}] },
+        { q: "Como você lida com regras (SAP 2.0)?", 
+          o: [{t:"Sigo se for prático e eficiente.", v:"E"}, {t:"Sigo para manter o bom clima no grupo.", v:"C"}, {t:"Sigo porque me sinto seguro assim.", v:"P"}, {t:"Sigo rigorosamente porque é o correto.", v:"A"}] }
     ];
 
     let indice = 0;
@@ -53,7 +56,7 @@
             return;
         }
         const p = perguntas[indice];
-        let html = `<h2>Questão ${indice + 1}</h2><p style="margin-bottom:20px">${p.q}</p><div class="opcoes">`;
+        let html = `<h2>Questão ${indice + 1}</h2><p>${p.q}</p><div class="opcoes">`;
         p.o.forEach(opt => {
             html += `<button onclick="votar('${opt.v}')">${opt.t}</button>`;
         });
@@ -70,12 +73,20 @@
 
     async function salvarEResultar() {
         document.getElementById('conteudo-quiz').innerHTML = "<h2>Salvando seu Perfil...</h2>";
-        const nomeAlun = localStorage.getItem('nomeAluno') || "Jovem";
+        const nomeSalvo = localStorage.getItem('nomeAluno') || "Jovem";
         try {
-            await db.ref('resultados_testes').push({ aluno: nomeAlun, data: new Date().toLocaleString(), perfil: pontos });
-            document.getElementById('conteudo-quiz').innerHTML = `<h2>Pronto, ${nomeAlun}!</h2><p>Seu teste foi enviado com sucesso para o Jorge.</p>`;
+            await db.ref('resultados_testes').push({
+                aluno: nomeSalvo,
+                data: new Date().toLocaleString(),
+                perfil: pontos
+            });
+            document.getElementById('conteudo-quiz').innerHTML = `
+                <h2 style="color:#06d6a0">Pronto, ${nomeSalvo}!</h2>
+                <p>Seu teste foi enviado com sucesso para o instrutor Jorge.</p>
+                <button onclick="window.location.href='index.html'" style="margin-top:20px; background:#ff5c3a; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">SAIR</button>
+            `;
         } catch (e) {
-            document.getElementById('conteudo-quiz').innerHTML = "<h2>Erro de conexão!</h2>";
+            document.getElementById('conteudo-quiz').innerHTML = "<h2>Erro ao salvar. Verifique a internet.</h2>";
         }
     }
 
