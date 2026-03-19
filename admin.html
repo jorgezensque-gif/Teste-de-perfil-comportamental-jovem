@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Educador Jorge</title>
+    <title>Painel Jorge - Educador Socioemocional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -14,7 +14,7 @@
         .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; outline: none; }
         #painel-conteudo { display: none; }
         .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 12px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 11px; }
         .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
         .card-aluno { background: var(--card); padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #4b4b4b; page-break-inside: avoid; }
@@ -55,7 +55,18 @@
 </div>
 
 <script>
-    let activeCharts = {}; // Objeto para controlar e destruir gráficos antigos
+    let activeCharts = {}; 
+
+    // Nomes oficiais das competências P1 a P7
+    const nomesCompetencias = [
+        'Protagonismo', 
+        'Responsabilidade', 
+        'Consciência Ambiental', 
+        'Convivência Social', 
+        'Saúde e Higiene', 
+        'Trabalho em Equipe', 
+        'Desejo de Aprender'
+    ];
 
     function verificarLogin() {
         if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === 'pitukinha') {
@@ -65,7 +76,6 @@
         }
     }
 
-    // Função vital para não travar: Destrói o gráfico antes de criar outro no mesmo lugar
     function safeRender(id, config) {
         if (activeCharts[id]) { activeCharts[id].destroy(); }
         const el = document.getElementById(id);
@@ -87,7 +97,7 @@
         db.ref('resultados_testes').on('value', snap => {
             const lista = document.getElementById('lista-alunos');
             lista.innerHTML = "";
-            if (!snap.exists()) { lista.innerHTML = "Aguardando novos dados..."; return; }
+            if (!snap.exists()) return;
 
             let somaSAP = [0,0,0,0,0,0,0];
             let somaDISC = { E:0, C:0, P:0, A:0 };
@@ -118,16 +128,15 @@
                         </div>
                     </div>`;
                 
-                // Renderiza radar individual
                 setTimeout(() => {
                     safeRender('radar-'+id, {
                         type: 'radar',
                         data: {
-                            labels: ['P1','P2','P3','P4','P5','P6','P7'],
+                            labels: nomesCompetencias,
                             datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)', borderWidth: 2 }]
                         },
                         options: { 
-                            scales: { r: { min:0, max:5, grid:{color:'#4b4b4b'}, angleLines:{color:'#4b4b4b'}, pointLabels:{color:'#fff', font:{size:10}} } },
+                            scales: { r: { min:0, max:5, grid:{color:'#4b4b4b'}, angleLines:{color:'#4b4b4b'}, pointLabels:{color:'#fff', font:{size:9}} } },
                             plugins: { legend: { display: false } },
                             responsive: true, maintainAspectRatio: false
                         }
@@ -135,21 +144,18 @@
                 }, 100);
             });
 
-            // Gráficos Coletivos
             const med = somaSAP.map(v => v/total);
             
-            // SAP Barra
             safeRender('chart-sap-turma', {
                 type: 'bar',
-                data: { labels:['P1','P2','P3','P4','P5','P6','P7'], datasets:[{label:'Média SAP', data:med, backgroundColor:'#ff7675'}]},
+                data: { labels: nomesCompetencias, datasets:[{label:'Média SAP', data:med, backgroundColor:'#ff7675'}]},
                 options: { 
-                    scales:{ y:{min:0, max:5, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff'}} },
-                    plugins:{ legend:{ labels:{color:'#fff'} } },
+                    scales:{ y:{min:0, max:5, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff', font:{size:8}}} },
+                    plugins:{ legend:{ display: false } },
                     responsive: true, maintainAspectRatio: false
                 }
             });
 
-            // DISC Pizza
             safeRender('chart-disc-turma', {
                 type: 'pie',
                 data: {
