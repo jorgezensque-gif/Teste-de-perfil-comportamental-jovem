@@ -2,209 +2,116 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Jorge - Gestão SAP & DISC</title>
+    <title>Painel Educador Jorge - SAP & DISC</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        /* Cores mais suaves e profissionais */
         :root {
-            --bg-body: #f0f2f5; /* Fundo claro acinzentado */
-            --bg-card: #ffffff; /* Cartões brancos para máximo contraste */
-            --texto-principal: #1c1e21;
-            --texto-secundario: #606770;
-            --cor-primaria: #ff5c3a; /* Laranja Pescar */
-            --borda: #dddfe2;
+            --bg-geral: #ffffff;
+            --texto: #2d3436;
+            --primaria: #ff5c3a;
+            --cinza-claro: #f8f9fa;
+            --borda: #ececec;
         }
 
-        body { 
-            background: var(--bg-body); 
-            color: var(--texto-principal); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 20px; 
-            margin: 0;
+        body { background: var(--bg-geral); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        
+        /* Estilo do Login */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; display: flex; align-items: center; justify-content: center; z-index: 2000;
         }
-
-        .menu { 
-            display: flex; gap: 15px; justify-content: center; 
-            margin-bottom: 30px; position: sticky; top: 0; 
-            background: rgba(240, 242, 245, 0.9); 
-            padding: 15px; z-index: 1000; backdrop-filter: blur(5px);
-            border-bottom: 1px solid var(--borda);
+        .login-box { 
+            padding: 40px; border-radius: 15px; border: 1px solid var(--borda); 
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 300px;
         }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--borda); border-radius: 8px; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 12px; background: var(--primaria); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        .btn { 
-            padding: 12px 24px; border: none; border-radius: 8px; 
-            cursor: pointer; font-weight: bold; color: white; 
-            text-transform: uppercase; font-size: 13px; transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-del { background: #e74c3c; } 
-        .btn-print { background: #007bff; }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        .sessao { 
-            background: var(--bg-card); padding: 30px; 
-            border-radius: 15px; margin-bottom: 30px; 
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08); 
-            border: 1px solid var(--borda);
-        }
-
+        /* Estilo do Painel */
+        #painel-conteudo { display: none; }
+        .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; position: sticky; top: 0; background: white; padding: 15px; border-bottom: 1px solid var(--cinza-claro); z-index: 100; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 12px; }
+        .btn-print { background: #0984e3; }
+        .btn-del { background: #ff7675; }
+        
+        .sessao { background: #fff; padding: 30px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--borda); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-
-        .card-aluno { 
-            background: var(--bg-card); padding: 25px; 
-            border-radius: 15px; margin-top: 20px; 
-            border: 1px solid var(--borda);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            page-break-inside: avoid;
-        }
-
-        .pdi-box { 
-            background: #f8f9fa; padding: 18px; 
-            border-radius: 10px; margin-top: 15px; 
-            font-size: 14px; color: #444; line-height: 1.6; 
-            border-left: 5px solid var(--cor-primaria);
-        }
-
-        h1 { color: #2c3e50; font-weight: 800; }
-        h2 { color: var(--cor-primaria); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .card-aluno { background: #fff; padding: 25px; border-radius: 12px; margin-top: 25px; border: 1px solid var(--borda); page-break-inside: avoid; }
+        .pdi-box { background: var(--cinza-claro); padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 5px solid var(--primaria); font-size: 14px; }
         
-        .tag { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase; }
-
-        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-        
-        @media print { 
-            .menu { display: none; } 
-            body { background: white; padding: 0; }
-            .sessao, .card-aluno { box-shadow: none; border: 1px solid #ccc; margin-bottom: 20px; }
-        }
+        .tag { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; }
+        @media print { .menu, #login-screen { display: none; } .card-aluno { box-shadow: none; border: 1px solid #eee; } }
     </style>
 </head>
 <body>
 
-    <div class="menu">
-        <button class="btn btn-print" onclick="window.print()">🖨️ Gerar Relatório / Imprimir</button>
-        <button class="btn btn-del" onclick="limparBanco()">🗑️ Limpar Turma</button>
-    </div>
-
-    <h1 style="text-align:center;">📊 Dashboard de Avaliação - Jorge</h1>
-
-    <div id="area-turma" class="sessao" style="display:none;">
-        <h2>📈 Visão Geral da Turma</h2>
-        <div class="grid">
-            <div><canvas id="canvas-turma-sap"></canvas></div>
-            <div><canvas id="canvas-turma-disc"></canvas></div>
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color: var(--primaria)">Acesso Restrito</h2>
+            <input type="text" id="user" placeholder="Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-login" onclick="verificarLogin()">Entrar no Painel</button>
+            <p id="erro-msg" style="color: red; font-size: 12px; display: none; margin-top: 10px;">Acesso negado!</p>
         </div>
-        <div id="feedback-turma" class="pdi-box" style="background: #fff5f2; border-color: #ff5c3a;"></div>
     </div>
 
-    <div id="lista-alunos">Buscando dados no servidor...</div>
+    <div id="painel-conteudo">
+        <div class="menu">
+            <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir PDIs</button>
+            <button class="btn btn-del" onclick="limparBanco()">🗑️ Zerar Turma</button>
+        </div>
+
+        <div style="text-align:center; margin-bottom:40px;">
+            <h1 style="font-size: 22px; color: #2d3436;">DASHBOARD DE AVALIAÇÃO SOCIOEMOCIONAL</h1>
+            <p style="color:#636e72;">Educador Socioemocional/Social: <strong>Jorge</strong></p>
+        </div>
+
+        <div id="area-turma" class="sessao" style="display:none;">
+            <h2 style="color:var(--primaria); font-size: 18px;">📈 Diagnóstico Geral da Turma</h2>
+            <div class="grid">
+                <div><canvas id="canvas-turma-sap"></canvas></div>
+                <div><canvas id="canvas-turma-disc"></canvas></div>
+            </div>
+            <div id="feedback-turma" class="pdi-box" style="margin-top:20px;"></div>
+        </div>
+
+        <h2 style="text-align:center; margin-top:50px; color: #636e72;">👤 Acompanhamento Individual</h2>
+        <div id="lista-alunos">Buscando dados...</div>
+    </div>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const perfisDISC = {
-        E: { n: "Dominante (D)", c: "#d93025", pdi: "Focar em paciência e escuta ativa. Reduzir a pressa em decidir sozinho e envolver mais a equipe." },
-        C: { n: "Influente (I)", c: "#f9ab00", pdi: "Melhorar o foco em detalhes e o cumprimento de prazos. Utilizar listas de verificação." },
-        P: { n: "Estável (S)", c: "#188038", pdi: "Desenvolver abertura para mudanças e expressar opiniões de forma mais direta e firme." },
-        A: { n: "Analítico (C)", c: "#1a73e8", pdi: "Trabalhar a agilidade. Evitar que a busca pela perfeição trave a entrega dos projetos." }
-    };
-
-    const nomesSAP = ['Protagonismo', 'Responsabilidade', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'];
-
-    db.ref('resultados_testes').on('value', snap => {
-        const lista = document.getElementById('lista-alunos');
-        lista.innerHTML = "";
-        
-        if (!snap.exists()) {
-            lista.innerHTML = "<div class='sessao' style='text-align:center'>Nenhuma resposta registrada.</div>";
-            document.getElementById('area-turma').style.display = "none";
-            return;
-        }
-
-        document.getElementById('area-turma').style.display = "block";
-        let somaTotalSAP = [0,0,0,0,0,0,0];
-        let somaTotalDISC = { E:0, C:0, P:0, A:0 };
-        let contador = 0;
-
-        snap.forEach(alunoSnap => {
-            const d = alunoSnap.val();
-            const id = alunoSnap.key;
-            contador++;
-
-            d.sap.forEach((v, i) => somaTotalSAP[i] += v);
-            somaTotalDISC.E += d.disc.E; somaTotalDISC.C += d.disc.C; 
-            somaTotalDISC.P += d.disc.P; somaTotalDISC.A += d.disc.A;
-
-            let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
-
-            lista.innerHTML += `
-                <div class="card-aluno">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:18px;"><strong>Jovem:</strong> ${d.aluno}</span>
-                        <span class="tag" style="background:${perfisDISC[principal].c}">${perfisDISC[principal].n}</span>
-                    </div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                    <div class="grid">
-                        <div style="max-height:300px;"><canvas id="radar-${id}"></canvas></div>
-                        <div>
-                            <div class="pdi-box">
-                                <strong>🎯 PDI Individual:</strong><br>${perfisDISC[principal].pdi}
-                            </div>
-                            <div class="pdi-box" style="border-color: #27ae60; background: #f2faf5;">
-                                <strong>💡 Média SAP:</strong> O aluno atingiu nota média de ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            
-            setTimeout(() => {
-                new Chart(document.getElementById('radar-'+id), {
-                    type: 'radar',
-                    data: {
-                        labels: ['P1','P2','P3','P4','P5','P6','P7'],
-                        datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255, 92, 58, 0.2)', borderWidth: 2 }]
-                    },
-                    options: { 
-                        scales: { r: { min: 0, max: 5, grid: { color: '#ddd' }, angleLines: { color: '#ddd' }, pointLabels: { font: { size: 10 } } } },
-                        plugins: { legend: { display: false } }
-                    }
-                });
-            }, 300);
-        });
-
-        setTimeout(() => {
-            const mediasSAP = somaTotalSAP.map(v => v/contador);
-            new Chart(document.getElementById('canvas-turma-sap'), {
-                type: 'bar',
-                data: { labels: nomesSAP, datasets: [{ label: 'Média SAP', data: mediasSAP, backgroundColor: '#ff5c3a' }] },
-                options: { scales: { y: { min: 0, max: 5 } } }
-            });
-
-            new Chart(document.getElementById('canvas-turma-disc'), {
-                type: 'pie',
-                data: {
-                    labels: ['Dom','Inf','Est','Ana'],
-                    datasets: [{ data: [somaTotalDISC.E, somaTotalDISC.C, somaTotalDISC.P, somaTotalDISC.A], backgroundColor: ['#d93025','#f9ab00','#188038','#1a73e8'] }]
-                }
-            });
-
-            const menorIndex = mediasSAP.indexOf(Math.min(...mediasSAP));
-            document.getElementById('feedback-turma').innerHTML = `
-                <strong>📢 Análise de Grupo:</strong> A competência com menor média é <b>${nomesSAP[menorIndex]}</b>. 
-                Recomendamos reforçar este tema com a turma.`;
-        }, 600);
-    });
-
-    function limparBanco() {
-        if(confirm("Jorge, confirma a limpeza de todos os dados desta turma?")) {
-            db.ref('resultados_testes').remove();
+    // LOGIN
+    function verificarLogin() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(u === 'admin' && p === 'pitukinha') {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('painel-conteudo').style.display = 'block';
+            iniciarFirebase();
+        } else {
+            document.getElementById('erro-msg').style.display = 'block';
         }
     }
-</script>
-</body>
-</html>
+
+    // FIREBASE & LÓGICA
+    function iniciarFirebase() {
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const perfisDISC = {
+            E: { n: "Dominante (D)", c: "#e17055", pdi: "Focar em paciência e escuta ativa. Envolver mais a equipe nas decisões." },
+            C: { n: "Influente (I)", c: "#fdcb6e", pdi: "Melhorar foco em detalhes e prazos. Utilizar listas de verificação (Checklists)." },
+            P: { n: "Estável (S)", c: "#55efc4", pdi: "Desenvolver abertura para mudanças e expressar opiniões com mais firmeza." },
+            A: { n: "Analítico (C)", c: "#74b9ff", pdi: "Trabalhar agilidade. Evitar que o perfeccionismo trave a entrega dos projetos." }
+        };
+
+        const nomesSAP = ['Protagonismo', 'Responsabilidade', 'Ambiental', 'Convivência', 'Saúde', 'Equipe', 'Aprender'];
+
+        db.ref('resultados_testes').on('value', snap => {
+            const lista = document.getElementById('lista-alunos');
+            lista.innerHTML = "";
+            if (!snap.exists()) { lista.innerHTML = "<div class='sessao' style='text-align:center'>
