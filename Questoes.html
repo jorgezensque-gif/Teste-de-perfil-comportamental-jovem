@@ -2,72 +2,81 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Resultados - Instrutor Jorge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Perfil - DISC & SAP Jovem</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        h1 { color: #ff5c3a; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: #181c24; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #252a35; }
-        th { background: #252a35; color: #ff5c3a; }
-        tr:hover { background: #1f242d; }
-        .tag { padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
-        .e { background: #e63946; } /* Executor */
-        .c { background: #ffb703; } /* Comunicador */
-        .p { background: #2a9d8f; } /* Planejador */
-        .a { background: #457b9d; } /* Analista */
+        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; max-width: 650px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        h2 { color: #ff5c3a; margin-top: 0; }
+        .opcoes button { width: 100%; padding: 15px; margin: 10px 0; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; text-align: left; font-size: 16px; transition: 0.3s; }
+        .opcoes button:hover { background: #ff5c3a; border-color: #ff5c3a; }
+        .progresso { height: 12px; background: #0a0c10; border-radius: 6px; margin-bottom: 30px; overflow: hidden; border: 1px solid #252a35; }
+        .barra { height: 100%; background: linear-gradient(90deg, #ff5c3a, #ff8e75); width: 0%; transition: 0.5s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 Relatório de Perfis - Projeto Pescar</h1>
-        <table id="tabela-resultados">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Aluno</th>
-                    <th>E</th>
-                    <th>C</th>
-                    <th>P</th>
-                    <th>A</th>
-                    <th>Pontos SAP</th>
-                </tr>
-            </thead>
-            <tbody id="corpo-tabela">
-                </tbody>
-        </table>
+
+<div class="container">
+    <div class="progresso"><div class="barra" id="barra-progresso"></div></div>
+    <div id="quiz">
+        <h2>Carregando teste...</h2>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = {
-            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-            projectId: "perfil-jovem--disc"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<script>
+    // Configuração Firebase do Jorge
+    const firebaseConfig = {
+        databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
+        projectId: "perfil-jovem--disc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        db.ref('resultados_testes').on('value', (snapshot) => {
-            const corpo = document.getElementById('corpo-tabela');
-            corpo.innerHTML = "";
-            
-            snapshot.forEach((childSnapshot) => {
-                const dado = childSnapshot.val();
-                const p = dado.pontos;
-                
-                const linha = `<tr>
-                    <td>${dado.data || '-'}</td>
-                    <td><strong>${dado.aluno || 'Anônimo'}</strong></td>
-                    <td><span class="tag e">${p.E}</span></td>
-                    <td><span class="tag c">${p.C}</span></td>
-                    <td><span class="tag p">${p.P}</span></td>
-                    <td><span class="tag a">${p.A}</span></td>
-                    <td>${p.SAP} / 3</td>
-                </tr>`;
-                corpo.innerHTML += linha;
-            });
-        });
-    </script>
+    // Perguntas baseadas no DISC (Sólides) e SAP Jovem
+    const perguntas = [
+        { q: "No dia a dia, qual característica é mais forte em você?", 
+          o: [{t:"DETERMINAÇÃO: Foco em resultados e rapidez.", v:"E"}, {t:"ENTUSIASMO: Gosto de falar e motivar.", v:"C"}, {t:"PACIÊNCIA: Gosto de rotina e calma.", v:"P"}, {t:"EXATIDÃO: Gosto de detalhes e perfeição.", v:"A"}] },
+        { q: "Como você age em grupo (SAP 6.0)?", 
+          o: [{t:"Tomo a frente e decido logo.", v:"E"}, {t:"Animo a galera e comunico as ideias.", v:"C"}, {t:"Ajudo a todos e busco harmonia.", v:"P"}, {t:"Analiso os riscos e sigo o plano.", v:"A"}] },
+        { q: "Sobre Protagonismo (SAP 1.0):", 
+          o: [{t:"Eu faço acontecer e lidero.", v:"E"}, {t:"Eu influencio as pessoas ao redor.", v:"C"}, {t:"Eu planejo meu futuro com calma.", v:"P"}, {t:"Eu estudo e analiso minhas escolhas.", v:"A"}] }
+    ];
+
+    let perguntaAtual = 0;
+    let pontuacao = { E: 0, C: 0, P: 0, A: 0 };
+
+    function carregarPergunta() {
+        if (perguntaAtual >= perguntas.length) {
+            finalizarTeste();
+            return;
+        }
+        const item = perguntas[perguntaAtual];
+        let html = `<h2>Questão ${perguntaAtual + 1}</h2><p>${item.q}</p><div class="opcoes">`;
+        item.o.forEach(opt => { html += `<button onclick="responder('${opt.v}')">${opt.t}</button>`; });
+        html += `</div>`;
+        document.getElementById('quiz').innerHTML = html;
+        document.getElementById('barra-progresso').style.width = ((perguntaAtual / perguntas.length) * 100) + "%";
+    }
+
+    function responder(v) {
+        pontuacao[v]++;
+        perguntaAtual++;
+        carregarPergunta();
+    }
+
+    async function finalizarTeste() {
+        document.getElementById('quiz').innerHTML = "<h2>Salvando seu Perfil...</h2>";
+        const nome = localStorage.getItem('nomeAluno') || "Jovem";
+        try {
+            await db.ref('resultados_testes').push({ aluno: nome, data: new Date().toLocaleString(), pontos: pontuacao });
+            document.getElementById('quiz').innerHTML = `<h2>Parabéns, ${nome}!</h2><p>Seu teste foi enviado ao Jorge com sucesso.</p>`;
+        } catch (e) { document.getElementById('quiz').innerHTML = "<h2>Erro ao salvar.</h2>"; }
+    }
+
+    // Iniciar o teste
+    carregarPergunta();
+</script>
 </body>
 </html>
