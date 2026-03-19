@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DISC Admin Cloud — Painel do Jorge</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // CONFIGURAÇÃO DO FIREBASE (Jorge, cole seus dados aqui)
+        const firebaseConfig = {
+            apiKey: "COLE_AQUI_SUA_API_KEY",
+            authDomain: "seu-projeto.firebaseapp.com",
+            databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
+            projectId: "seu-projeto",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "00000000",
+            appId: "1:000000:web:000000"
+        };
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // FUNÇÃO PARA GERAR CÓDIGO E SALVAR NA NUVEM
+        async function gerarNovoCodigo() {
+            const input = document.getElementById('prefixo');
+            const prefixo = input.value || "DISC";
+            const novoCodigo = prefixo + "-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            
+            try {
+                // Busca códigos atuais
+                const snapshot = await db.ref('disc_codes').once('value');
+                let codes = snapshot.val() || [];
+                
+                // Adiciona o novo
+                codes.push({
+                    code: novoCodigo,
+                    used: false,
+                    usedBy: "",
+                    createdAt: new Date().toISOString()
+                });
+
+                // Salva de volta na nuvem
+                await db.ref('disc_codes').set(codes);
+                alert("Código " + novoCodigo + " gerado e salvo na nuvem!");
+                listarCodigos();
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+                alert("Erro ao conectar com o Firebase. Verifique as configurações.");
+            }
+        }
+
+        // FUNÇÃO PARA LISTAR CÓDIGOS DA NUVEM
+        async function listarCodigos() {
+            const listaElement = document.getElementById('listaCodigos');
+            listaElement.innerHTML = "Carregando...";
+            
+            const snapshot = await db.ref('disc_codes').once('value');
+            const codes = snapshot.val() || [];
+            
+            listaElement.innerHTML = "";
+            codes.forEach(c => {
+                const item = document.createElement('div');
+                item.className = c.used ? 'code-used' : 'code-free';
+                item.innerHTML = `<strong>${c.code}</strong> - ${c.used ? '❌ Usado por: '+c.usedBy : '✅ Disponível'}`;
+                listaElement.appendChild(item);
+            });
+        }
+
+        window.onload = listarCodigos;
+    </script>
+    <style>
+        body { font-family: sans-serif; background: #0a0c10; color: white; padding: 20px; }
+        .card { background: #181c24; padding: 20px; border-radius: 8px; border: 1px solid #252a35; }
+        button { background: #ff5c3a; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+        input { padding: 10px; border-radius: 4px; border: 1px solid #252a35; background: #11141a; color: white; }
+        .code-free { color: #06d6a0; margin: 10px 0; border-bottom: 1px solid #252a35; padding: 5px; }
+        .code-used { color: #6b7585; margin: 10px 0; border-bottom: 1px solid #252a35; padding: 5px; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Painel Administrativo do Jorge</h2>
+        <p>Gere chaves que funcionam em tempo real no site Perfil-jovem.</p>
+        <input type="text" id="prefixo" placeholder="Prefixo (ex: JORGE)">
+        <button onclick="gerarNovoCodigo()">Gerar e Sincronizar</button>
+        <hr style="border: 0; border-top: 1px solid #252a35; margin: 20px 0;">
+        <h3>Chaves Ativas na Nuvem:</h3>
+        <div id="listaCodigos"></div>
+    </div>
+</body>
+</html>
