@@ -2,67 +2,30 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Educador Jorge - SAP & DISC</title>
+    <title>Painel Jorge - Educador</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        :root {
-            --bg-grafite: #2c3e50; /* Cinza Grafite Profissional */
-            --bg-card: #34495e;    /* Card levemente contrastante */
-            --primaria: #ff5c3a;   /* Laranja Pescar */
-            --texto: #ffffff;
-            --borda: #576574;
-        }
-
-        body { 
-            background: var(--bg-grafite); 
-            color: var(--texto); 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 20px; 
-        }
-
-        /* Login */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-grafite); display: flex; align-items: center; justify-content: center; z-index: 2000;
-        }
-        .login-box { 
-            background: var(--bg-card); padding: 40px; border-radius: 15px; 
-            text-align: center; width: 320px; border: 1px solid var(--borda);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .login-box input { 
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; 
-            border: 1px solid var(--borda); background: #2c3e50; color: white;
-        }
-
-        /* Painel */
-        #painel-conteudo { display: none; }
-        .menu { 
-            display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; 
-            position: sticky; top: 0; background: var(--bg-grafite); padding: 15px; 
-            border-bottom: 1px solid var(--borda); z-index: 100; 
-        }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-print { background: #0984e3; } .btn-del { background: #eb4d4b; }
-
-        .sessao { background: var(--bg-card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid var(--borda); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .card-aluno { background: var(--bg-card); padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--borda); page-break-inside: avoid; }
+        :root { --grafite: #2d3436; --card: #353b48; --primaria: #ff5c3a; --texto: #ffffff; }
+        body { background: var(--grafite); color: var(--texto); font-family: sans-serif; margin: 0; padding: 20px; }
         
-        .pdi-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 5px solid var(--primaria); font-size: 14px; color: #ecf0f1; }
-        .tag { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #2c3e50; }
-
-        h1 { font-size: 20px; color: #fff; text-align: center; margin-bottom: 5px; }
-        h2 { font-size: 16px; border-bottom: 1px solid var(--borda); padding-bottom: 8px; color: var(--primaria); text-transform: uppercase; }
-
-        @media print { 
-            .menu, #login-screen { display: none; } 
-            body { background: white; color: black; } 
-            .card-aluno, .sessao { border: 1px solid #ccc; color: black; background: white; }
-        }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--grafite); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 15px; text-align: center; width: 300px; border: 1px solid #4b4b4b; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
+        
+        #painel-conteudo { display: none; }
+        .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        
+        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card-aluno { background: var(--card); padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #4b4b4b; }
+        .pdi-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border-left: 5px solid var(--primaria); font-size: 14px; }
+        
+        canvas { max-width: 100% !important; height: auto !important; }
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -72,45 +35,37 @@
             <h2 style="color:var(--primaria)">Acesso Jorge</h2>
             <input type="text" id="user" placeholder="Usuário">
             <input type="password" id="pass" placeholder="Senha">
-            <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">ENTRAR NO PAINEL</button>
-            <p id="erro" style="color:#ff7675; display:none; margin-top:10px;">Usuário ou senha inválidos!</p>
+            <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">ENTRAR</button>
         </div>
     </div>
 
     <div id="painel-conteudo">
         <div class="menu">
-            <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR RELATÓRIOS</button>
-            <button class="btn btn-del" onclick="limparBanco()">🗑️ ZERAR DADOS</button>
+            <button class="btn" style="background:#0984e3" onclick="window.print()">🖨️ IMPRIMIR</button>
+            <button class="btn" style="background:#eb4d4b" onclick="limpar()">🗑️ ZERAR</button>
         </div>
 
-        <h1>PAINEL DE AVALIAÇÃO SOCIOEMOCIONAL</h1>
-        <p style="text-align:center; color:#bdc3c7; margin-top:0;">Educador Socioemocional/Social: <strong>Jorge</strong></p>
+        <h1 style="text-align:center; font-size: 20px;">DASHBOARD EDUCADOR SOCIOEMOCIONAL</h1>
+        <p style="text-align:center; color: #bdc3c7;">Responsável: <strong>Jorge</strong></p>
 
-        <div id="area-turma" class="sessao" style="display:none;">
-            <h2>📈 DIAGNÓSTICO COLETIVO (DISC & SAP)</h2>
+        <div id="area-turma" class="sessao">
+            <h2 style="color:var(--primaria); font-size: 16px;">📈 MÉDIAS DA TURMA (SAP & DISC)</h2>
             <div class="grid">
-                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
-                    <canvas id="canvas-turma-sap"></canvas>
-                </div>
-                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
-                    <canvas id="canvas-turma-disc"></canvas>
-                </div>
+                <div style="min-height: 250px;"><canvas id="chart-sap-turma"></canvas></div>
+                <div style="min-height: 250px;"><canvas id="chart-disc-turma"></canvas></div>
             </div>
-            <div id="feedback-turma" class="pdi-box" style="border-left-color:#00d2d3;">Analizando dados da turma...</div>
         </div>
 
-        <div id="lista-alunos">Buscando informações no banco de dados...</div>
+        <div id="lista-alunos">Buscando dados...</div>
     </div>
 
 <script>
-    const LOGIN = { u: "admin", p: "pitukinha" };
-    
     function verificarLogin() {
-        if(document.getElementById('user').value === LOGIN.u && document.getElementById('pass').value === LOGIN.p) {
+        if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === 'pitukinha') {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('painel-conteudo').style.display = 'block';
             iniciarApp();
-        } else { document.getElementById('erro').style.display = 'block'; }
+        }
     }
 
     function iniciarApp() {
@@ -119,103 +74,4 @@
         const db = firebase.database();
 
         const perfis = {
-            E: { n: "Dominante (D)", c: "#e17055", pdi: "Focar em paciência e escuta. Evitar decisões isoladas." },
-            C: { n: "Influente (I)", c: "#fdcb6e", pdi: "Focar em organização e prazos. Usar listas de tarefas." },
-            P: { n: "Estável (S)", c: "#55efc4", pdi: "Enfrentar mudanças com mais segurança e firmeza." },
-            A: { n: "Analítico (C)", c: "#74b9ff", pdi: "Agilizar entregas. Não deixar o perfeccionismo travar o trabalho." }
-        };
-
-        db.ref('resultados_testes').on('value', snap => {
-            const lista = document.getElementById('lista-alunos');
-            lista.innerHTML = "";
-            if (!snap.exists()) {
-                lista.innerHTML = "<p style='text-align:center'>Nenhum aluno avaliado.</p>";
-                return;
-            }
-
-            document.getElementById('area-turma').style.display = "block";
-            let somaSAP = [0,0,0,0,0,0,0];
-            let somaDISC = { E:0, C:0, P:0, A:0 };
-            let total = 0;
-
-            snap.forEach(alunoSnap => {
-                const d = alunoSnap.val();
-                const id = alunoSnap.key;
-                total++;
-                d.sap.forEach((v, i) => somaSAP[i] += v);
-                somaDISC.E += d.disc.E; somaDISC.C += d.disc.C; somaDISC.P += d.disc.P; somaDISC.A += d.disc.A;
-
-                let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
-
-                lista.innerHTML += `
-                    <div class="card-aluno">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                            <strong>ALUNO: ${d.aluno}</strong>
-                            <span class="tag" style="background:${perfis[principal].c}">${perfis[principal].n}</span>
-                        </div>
-                        <div class="grid">
-                            <canvas id="radar-${id}"></canvas>
-                            <div class="pdi-box">
-                                <strong>🎯 PDI Individual:</strong><br>${perfis[principal].pdi}<br><br>
-                                <strong>📊 Média SAP:</strong> ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
-                            </div>
-                        </div>
-                    </div>`;
-                
-                setTimeout(() => {
-                    new Chart(document.getElementById('radar-'+id), {
-                        type: 'radar',
-                        data: {
-                            labels: ['P1','P2','P3','P4','P5','P6','P7'],
-                            datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)', borderWidth: 2 }]
-                        },
-                        options: { 
-                            scales: { r: { min: 0, max: 5, grid: {color:'#485460'}, angleLines: {color:'#485460'}, pointLabels: {color:'#fff', font:{size:10}} } },
-                            plugins: { legend: { display: false } }
-                        }
-                    });
-                }, 500);
-            });
-
-            // Gráficos Coletivos (O DISC ESTÁ AQUI!)
-            setTimeout(() => {
-                const med = somaSAP.map(v => v/total);
-                
-                // Gráfico SAP (Barras)
-                new Chart(document.getElementById('canvas-turma-sap'), {
-                    type: 'bar',
-                    data: { labels: ['P1','P2','P3','P4','P5','P6','P7'], datasets: [{ label:'Média SAP', data: med, backgroundColor:'#ff7675' }] },
-                    options: { 
-                        scales: { 
-                            y: { min:0, max:5, ticks:{color:'#fff'} }, 
-                            x: { ticks:{color:'#fff'} } 
-                        },
-                        plugins:{ legend:{ labels:{color:'#fff'} } }
-                    }
-                });
-
-                // Gráfico DISC (Pizza)
-                new Chart(document.getElementById('canvas-turma-disc'), {
-                    type: 'pie',
-                    data: { 
-                        labels:['Dom (D)','Inf (I)','Est (S)','Ana (C)'], 
-                        datasets:[{ data:[somaDISC.E, somaDISC.C, somaDISC.P, somaDISC.A], backgroundColor:['#e17055','#fdcb6e','#55efc4','#74b9ff'] }] 
-                    },
-                    options: { 
-                        plugins: { 
-                            legend: { position:'bottom', labels: {color:'#fff', font:{size:11}} },
-                            title: { display:true, text:'Distribuição DISC da Turma', color:'#fff' }
-                        }
-                    }
-                });
-                
-                const mIdx = med.indexOf(Math.min(...med));
-                document.getElementById('feedback-turma').innerHTML = `<strong>📌 Plano de Aula:</strong> O maior gap da turma está na competência <b>P${mIdx+1}</b>. Foque nela nos próximos encontros.`;
-            }, 1000);
-        });
-    }
-
-    function limparBanco() { if(confirm("Jorge, deseja realmente apagar todos os dados desta turma?")) firebase.database().ref('resultados_testes').remove(); }
-</script>
-</body>
-</html>
+            E: { n: "Dominante (D)", c: "#e17055", pdi:
