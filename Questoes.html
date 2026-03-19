@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Integrada - Jorge</title>
+    <title>Avaliação Completa - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -14,7 +14,7 @@
         .desc-texto { background: #0a0c10; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.6; color: #abb2bf; margin: 15px 0; border-left: 4px solid #ff5c3a; }
         .evidencias { background: rgba(255, 92, 58, 0.05); padding: 12px; border-radius: 8px; font-size: 13px; color: #ff8e75; margin-bottom: 20px; font-style: italic; }
         .opcoes { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .btn-acao { padding: 15px; border-radius: 8px; border: 1px solid #353b48; background: #252a35; color: white; cursor: pointer; transition: 0.3s; }
+        .btn-acao { padding: 15px; border-radius: 8px; border: 1px solid #353b48; background: #252a35; color: white; cursor: pointer; transition: 0.3s; width: 100%; text-align: left; }
         .btn-acao:hover { background: #ff5c3a; transform: translateX(5px); }
         .grid-notas { display: flex; justify-content: space-between; gap: 5px; }
         .btn-nota { flex: 1; padding: 20px; background: #252a35; color: white; border: 1px solid #353b48; border-radius: 8px; cursor: pointer; font-weight: bold; }
@@ -26,13 +26,14 @@
 </head>
 <body>
 
-<div class="container" id="quiz-box">
+<div class="container" id="tela-quiz">
     <div class="header-box">
-        <h2>Identificação do Aluno</h2>
-        <p>Projeto Pescar</p>
+        <h2>Identificação</h2>
+        <p>Projeto Pescar - Unidade Parceira</p>
     </div>
-    <input type="text" id="nomeInput" placeholder="Digite seu nome completo">
-    <button class="btn-acao" style="width:100%; font-weight:bold;" onclick="iniciar()">COMEÇAR TESTE</button>
+    <p>Digite seu nome para iniciar:</p>
+    <input type="text" id="nomeJovem" placeholder="Nome Completo">
+    <button class="btn-acao" style="text-align:center; font-weight:bold;" onclick="iniciarQuiz()">COMEÇAR AVALIAÇÃO</button>
 </div>
 
 <script>
@@ -40,13 +41,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let nomeDoJovem = "";
-    let fase = "SAP"; 
-    let indice = 0;
-    let notasSAP = [];
-    let pontosDISC = { E: 0, C: 0, P: 0, A: 0 };
+    let nomeGlobal = "";
+    let faseAtual = "SAP"; 
+    let indexPergunta = 0;
+    let dadosSAP = [];
+    let dadosDISC = { E: 0, C: 0, P: 0, A: 0 };
 
-    const sapPerguntas = [
+    const sapLista = [
         { t: "1-SER PROTAGONISTA", d: "Conscientiza-se de sua identidade, reconhece-se como ser atuante, autônomo e construtor do seu destino.", e: "Referência no grupo, respeito mútuo, construção do Projeto de Vida." },
         { t: "2-RESPONSÁVEL E COMPROMETIDO", d: "Compromisso com atividades, pontualidade, cumprimento de normas e busca por resultados.", e: "Assiduidade, cumprimento de prazos, cuidado com materiais." },
         { t: "3-CONSCIÊNCIA AMBIENTAL", d: "Cuidado com o meio ambiente e uso consciente dos recursos naturais e materiais.", e: "Descarte correto, economia de água/luz, zelo pelo patrimônio." },
@@ -56,73 +57,73 @@
         { t: "7-APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos na vida e no trabalho.", e: "Compromisso escolar, curiosidade, lições de erros e acertos." }
     ];
 
-    const discPerguntas = [
-        { q: "Em um desafio, qual sua atitude?", o: [{t:"Tomo a frente e decido logo.", v:"E"}, {t:"Animo o grupo e converso.", v:"C"}, {t:"Mantenho a calma e apoio os outros.", v:"P"}, {t:"Analiso os detalhes com cautela.", v:"A"}] },
-        { q: "Qual sua maior característica?", o: [{t:"Determinação e foco.", v:"E"}, {t:"Entusiasmo e alegria.", v:"C"}, {t:"Paciência e lealdade.", v:"P"}, {t:"Organização e lógica.", v:"A"}] },
-        { q: "Como você prefere trabalhar?", o: [{t:"Com autonomia e rapidez.", v:"E"}, {t:"Com interação e pessoas.", v:"C"}, {t:"Com rotina e segurança.", v:"P"}, {t:"Com métodos e precisão.", v:"A"}] },
-        { q: "O que mais te motiva?", o: [{t:"Vencer desafios difíceis.", v:"E"}, {t:"Ser reconhecido pelo grupo.", v:"C"}, {t:"Ter um ambiente harmonioso.", v:"P"}, {t:"Entregar um trabalho perfeito.", v:"A"}] }
+    const discLista = [
+        { q: "Qual sua atitude em um desafio?", o: [{t:"Tomo a frente e decido.",v:"E"}, {t:"Animo e converso com todos.",v:"C"}, {t:"Mantenho a calma e apoio.",v:"P"}, {t:"Analiso os fatos com lógica.",v:"A"}] },
+        { q: "Como você prefere trabalhar?", o: [{t:"Com rapidez e metas claras.",v:"E"}, {t:"Com criatividade e pessoas.",v:"C"}, {t:"Com rotina e segurança.",v:"P"}, {t:"Com regras e perfeição.",v:"A"}] },
+        { q: "Qual seu ponto mais forte?", o: [{t:"Determinação e coragem.",v:"E"}, {t:"Comunicação e entusiasmo.",v:"C"}, {t:"Paciência e lealdade.",v:"P"}, {t:"Organização e precisão.",v:"A"}] },
+        { q: "O que mais te motiva?", o: [{t:"Vencer desafios.",v:"E"}, {t:"Ter reconhecimento social.",v:"C"}, {t:"Ter estabilidade e paz.",v:"P"}, {t:"Entregar tudo sem erros.",v:"A"}] }
     ];
 
-    function iniciar() {
-        nomeDoJovem = document.getElementById('nomeInput').value;
-        if(nomeDoJovem.length < 3) { alert("Digite seu nome completo!"); return; }
-        renderizar();
+    function iniciarQuiz() {
+        nomeGlobal = document.getElementById('nomeJovem').value;
+        if(nomeGlobal.length < 3) { alert("Por favor, digite seu nome!"); return; }
+        proximaEtapa();
     }
 
-    function renderizar() {
-        let total = sapPerguntas.length + discPerguntas.length;
-        let atual = (fase === "SAP" ? indice : sapPerguntas.length + indice);
-        let html = `<div class="barra-bg"><div class="barra-fill" style="width:${(atual/total)*100}%"></div></div>`;
+    function proximaEtapa() {
+        let totalPerguntas = sapLista.length + discLista.length;
+        let atual = (faseAtual === "SAP" ? indexPergunta : sapLista.length + indexPergunta);
+        let html = `<div class="barra-bg"><div class="barra-fill" style="width:${(atual/totalPerguntas)*100}%"></div></div>`;
 
-        if(fase === "SAP") {
-            const p = sapPerguntas[indice];
-            html += `<div class="header-box"><span class="etapa-tag">Etapa 1: SAP (${indice+1}/7)</span><h2>${p.t}</h2></div>
+        if(faseAtual === "SAP") {
+            const p = sapLista[indexPergunta];
+            html += `<div class="header-box"><span class="etapa-tag">ETAPA 1: SAP (${indexPergunta+1}/7)</span><h2>${p.t}</h2></div>
                      <div class="desc-texto">${p.d}</div>
                      <div class="evidencias"><strong>Evidências:</strong> ${p.e}</div>
-                     <p style="text-align:center">Sua nota de 1 a 5:</p>
+                     <p style="text-align:center">Dê sua nota de 1 a 5:</p>
                      <div class="grid-notas">`;
-            for(let i=1; i<=5; i++) html += `<button class="btn-nota" onclick="votoSAP(${i})">${i}</button>`;
+            for(let i=1; i<=5; i++) html += `<button class="btn-nota" onclick="salvarSAP(${i})">${i}</button>`;
             html += `</div>`;
         } else {
-            const d = discPerguntas[indice];
-            html += `<div class="header-box"><span class="etapa-tag">Etapa 2: DISC (${indice+1}/4)</span><h2>Perfil Comportamental</h2></div>
-                     <p style="font-size:18px; margin:20px 0; text-align:center;">${d.q}</p>
+            const d = discLista[indexPergunta];
+            html += `<div class="header-box"><span class="etapa-tag">ETAPA 2: DISC (${indexPergunta+1}/4)</span><h2>Perfil Comportamental</h2></div>
+                     <p style="font-size:18px; text-align:center; margin:20px 0;">${d.q}</p>
                      <div class="opcoes">`;
-            d.o.forEach(opt => html += `<button class="btn-acao" onclick="votoDISC('${opt.v}')">${opt.t}</button>`);
+            d.o.forEach(opt => html += `<button class="btn-acao" onclick="salvarDISC('${opt.v}')">${opt.t}</button>`);
             html += `</div>`;
         }
-        document.getElementById('quiz-box').innerHTML = html;
+        document.getElementById('tela-quiz').innerHTML = html;
     }
 
-    function votoSAP(v) { 
-        notasSAP.push(v); 
-        indice++; 
-        if(indice >= sapPerguntas.length) { 
-            fase = "DISC"; 
-            indice = 0; 
-        } 
-        renderizar(); 
+    function salvarSAP(v) {
+        dadosSAP.push(v);
+        indexPergunta++;
+        if(indexPergunta >= sapLista.length) {
+            faseAtual = "DISC";
+            indexPergunta = 0;
+        }
+        proximaEtapa();
     }
 
-    function votoDISC(v) { 
-        pontosDISC[v]++; 
-        indice++; 
-        if(indice >= discPerguntas.length) {
-            enviar(); 
+    function salvarDISC(v) {
+        dadosDISC[v]++;
+        indexPergunta++;
+        if(indexPergunta >= discLista.length) {
+            finalizarTudo();
         } else {
-            renderizar();
+            proximaEtapa();
         }
     }
 
-    async function enviar() {
-        document.getElementById('quiz-box').innerHTML = "<h2>Salvando seus resultados...</h2>";
+    async function finalizarTudo() {
+        document.getElementById('tela-quiz').innerHTML = "<h2>Enviando para o Instrutor Jorge...</h2>";
         await db.ref('resultados_testes').push({
-            aluno: nomeDoJovem,
+            aluno: nomeGlobal,
             data: new Date().toLocaleString(),
-            sap: notasSAP,
-            disc: pontosDISC
+            sap: dadosSAP,
+            disc: dadosDISC
         });
-        document.getElementById('quiz-box').innerHTML = `<h2>Show, ${nomeDoJovem}!</h2><p>Jorge já recebeu sua Autoavaliação SAP e seu perfil DISC.</p>`;
+        document.getElementById('tela-quiz').innerHTML = `<h2>Excelente trabalho, ${nomeGlobal}!</h2><p>Seus dados foram salvos com sucesso.</p>`;
     }
 </script>
 </body>
