@@ -1,39 +1,78 @@
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste DISC - Perfil Jovem</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <style>
+        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; width: 300px; text-align: center; }
+        h2 { color: #ff5c3a; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #0a0c10; border: 1px solid #252a35; color: white; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #ff5c3a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #e04b2f; }
+    </style>
+</head>
+<body>
 
-<script>
-  // Configuração oficial do seu projeto Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSy...", // Jorge, pegue esta chave no painel do Firebase (Configurações do Projeto)
-    authDomain: "perfil-jovem--disc.firebaseapp.com",
-    databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-    projectId: "perfil-jovem--disc"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    <div class="login-card">
+        <h2>Acesso ao Teste</h2>
+        <input type="text" id="nome-aluno" placeholder="Seu Nome Completo">
+        <input type="text" id="chave-acesso" placeholder="Digite sua Chave (Ex: DISC-XXXX)">
+        <button onclick="validarEntrada()">ENTRAR NO TESTE</button>
+    </div>
 
-  async function validarCodigo() {
-    const nome = document.getElementById('nome').value;
-    const inputKey = document.getElementById('codigo').value.trim().toUpperCase();
+    <script>
+        // CONFIGURAÇÃO DO PROJETO DO JORGE
+        const firebaseConfig = {
+            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
+            projectId: "perfil-jovem--disc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    if (!nome || !inputKey) return alert("Preencha o nome e a chave!");
+        async function validarEntrada() {
+            const nome = document.getElementById('nome-aluno').value.trim();
+            const chave = document.getElementById('chave-acesso').value.trim().toUpperCase();
 
-    // Busca as chaves na nuvem (Firebase)
-    const snapshot = await db.ref('chaves').once('value');
-    let listaChaves = snapshot.val() || [];
+            if (!nome || !chave) {
+                alert("Por favor, preencha o seu nome e a chave de acesso.");
+                return;
+            }
 
-    const index = listaChaves.findIndex(c => c.code === inputKey);
+            try {
+                // Busca a lista de chaves no seu Firebase
+                const snapshot = await db.ref('lista_chaves').once('value');
+                let chaves = snapshot.val() || [];
 
-    if (index !== -1 && !listaChaves[index].used) {
-      // Chave válida! Marca como usada na nuvem
-      listaChaves[index].used = true;
-      listaChaves[index].user = nome;
-      await db.ref('chaves').set(listaChaves);
+                // Procura a chave digitada
+                const index = chaves.findIndex(c => c.code === chave);
 
-      alert("Acesso Autorizado! Boa sorte no teste.");
-      window.location.href = "questoes.html"; // Nome da sua página de perguntas
-    } else {
-      alert("Chave inválida ou já utilizada por outro aluno.");
-    }
-  }
-</script>
+                if (index !== -1) {
+                    if (chaves[index].used) {
+                        alert("Esta chave já foi usada por: " + chaves[index].user);
+                    } else {
+                        // CHAVE VÁLIDA: Marca como usada e salva quem usou
+                        chaves[index].used = true;
+                        chaves[index].user = nome;
+                        await db.ref('lista_chaves').set(chaves);
+
+                        alert("Acesso autorizado! Bem-vindo, " + nome);
+                        
+                        // AQUI O JORGE COLOCA O LINK PARA A PÁGINA DAS PERGUNTAS
+                        window.location.href = "perguntas.html"; 
+                    }
+                } else {
+                    alert("Chave inválida! Verifique se digitou corretamente.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão. Verifique se as regras do Firebase estão em 'true'.");
+            }
+        }
+    </script>
+</body>
+</html>
