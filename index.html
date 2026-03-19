@@ -1,37 +1,39 @@
-/* COLOQUE ESTE SCRIPT NO SEU SITE PRINCIPAL */
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
-// 1. Configure o Firebase (Igual ao Admin)
-const firebaseConfig = {
+<script>
+  // Configuração oficial do seu projeto Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSy...", // Jorge, pegue esta chave no painel do Firebase (Configurações do Projeto)
     authDomain: "perfil-jovem--disc.firebaseapp.com",
     databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
     projectId: "perfil-jovem--disc"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-// 2. Função para Validar a Chave
-async function entrarNoTeste() {
-    const nome = document.getElementById('nome-aluno').value;
-    const chave = document.getElementById('chave-acesso').value.trim().toUpperCase();
+  async function validarCodigo() {
+    const nome = document.getElementById('nome').value;
+    const inputKey = document.getElementById('codigo').value.trim().toUpperCase();
 
-    if(!nome || !chave) return alert("Preencha todos os campos!");
+    if (!nome || !inputKey) return alert("Preencha o nome e a chave!");
 
-    // Busca as chaves no Firebase
-    const snapshot = await db.ref('lista_chaves').once('value');
-    let chaves = snapshot.val() || [];
+    // Busca as chaves na nuvem (Firebase)
+    const snapshot = await db.ref('chaves').once('value');
+    let listaChaves = snapshot.val() || [];
 
-    const index = chaves.findIndex(c => c.code === chave);
+    const index = listaChaves.findIndex(c => c.code === inputKey);
 
-    if (index !== -1 && !chaves[index].used) {
-        // CHAVE VÁLIDA: Marca como usada para ninguém mais entrar com ela
-        chaves[index].used = true;
-        chaves[index].user = nome;
-        await db.ref('lista_chaves').set(chaves);
+    if (index !== -1 && !listaChaves[index].used) {
+      // Chave válida! Marca como usada na nuvem
+      listaChaves[index].used = true;
+      listaChaves[index].user = nome;
+      await db.ref('chaves').set(listaChaves);
 
-        alert("Acesso Autorizado!");
-        // Redireciona para o teste
-        window.location.href = "quiz.html"; 
+      alert("Acesso Autorizado! Boa sorte no teste.");
+      window.location.href = "questoes.html"; // Nome da sua página de perguntas
     } else {
-        alert("Chave inválida ou já utilizada por outra pessoa!");
+      alert("Chave inválida ou já utilizada por outro aluno.");
     }
-}
+  }
+</script>
