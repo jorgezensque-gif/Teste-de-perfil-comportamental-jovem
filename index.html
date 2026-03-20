@@ -3,67 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste DISC - Perfil Jovem</title>
+    <title>Avaliação Comportamental DISC - Modelo Profissional</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: #181c24; padding: 30px; border-radius: 15px; border: 1px solid #252a35; width: 300px; text-align: center; }
-        h2 { color: #ff5c3a; }
-        input { width: 100%; padding: 10px; margin: 10px 0; background: #0a0c10; border: 1px solid #252a35; color: white; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #ff5c3a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #e04b2f; }
+        :root { --primaria: #ff5c3a; --bg: #f5f6fa; --texto: #2d3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--texto); margin: 0; padding: 20px; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        h2 { color: var(--primaria); text-align: center; margin-bottom: 10px; }
+        p.instrucao { text-align: center; font-size: 14px; color: #636e72; margin-bottom: 30px; }
+        
+        .bloco-pergunta { margin-bottom: 30px; padding: 20px; border: 1px solid #dfe6e9; border-radius: 10px; background: #fafafa; }
+        .pergunta-titulo { font-weight: bold; margin-bottom: 15px; display: block; color: #2d3436; border-bottom: 2px solid var(--primaria); width: fit-content; }
+        
+        .opcao { display: grid; grid-template-columns: 1fr auto; align-items: center; margin-bottom: 10px; padding: 10px; background: white; border-radius: 8px; border: 1px solid #eee; }
+        .opcao:hover { border-color: var(--primaria); }
+        
+        select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
+        
+        .btn-enviar { width: 100%; padding: 15px; background: var(--primaria); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-enviar:hover { background: #e64a2e; }
+        
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h2>Acesso ao Teste</h2>
-        <input type="text" id="nome-aluno" placeholder="Seu Nome Completo">
-        <input type="text" id="chave-acesso" placeholder="Digite sua Chave (Ex: DISC-XXXX)">
-        <button onclick="validarEntrada()">ENTRAR NO TESTE</button>
-    </div>
 
-    <script>
-        const firebaseConfig = {
-            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-            projectId: "perfil-jovem--disc"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<div class="container">
+    <h2>Avaliação de Estilo Comportamental</h2>
+    <p class="instrucao">Para cada bloco abaixo, selecione a opção que <b>MAIS</b> se identifica com você e a que <b>MENOS</b> se identifica.</p>
 
-        async function validarEntrada() {
-            const nome = document.getElementById('nome-aluno').value.trim();
-            const chave = document.getElementById('chave-acesso').value.trim().toUpperCase();
+    <input type="text" id="nome-aluno" placeholder="Digite seu nome completo">
 
-            if (!nome || !chave) {
-                alert("Por favor, preencha o seu nome e a chave de acesso.");
-                return;
-            }
+    <div id="questoes-container"></div>
 
-            try {
-                const snapshot = await db.ref('lista_chaves').once('value');
-                let chaves = snapshot.val() || [];
-                const index = chaves.findIndex(c => c.code === chave);
+    <button class="btn-enviar" onclick="enviarTeste()">FINALIZAR E GERAR RESULTADOS</button>
+</div>
 
-                if (index !== -1) {
-                    if (chaves[index].used) {
-                        alert("Esta chave já foi usada por: " + chaves[index].user);
-                    } else {
-                        chaves[index].used = true;
-                        chaves[index].user = nome;
-                        await db.ref('lista_chaves').set(chaves);
-                        alert("Acesso autorizado! Bem-vindo, " + nome);
-                        
-                        // AQUI ESTÁ O SEGREDO: Q maiúsculo para não dar 404
-                        window.location.href = "Questoes.html"; 
-                    }
-                } else {
-                    alert("Chave inválida!");
-                }
-            } catch (error) {
-                alert("Erro de conexão!");
-            }
-        }
-    </script>
+<script>
+    // Configuração Firebase (Sua base atual)
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Modelo Profissional: 10 blocos de 4 adjetivos cada (D, I, S, C)
+    const perguntas = [
+        { id: 1, opcoes: [
+            { t: "Decidido, focado em resultados", v: "E" },
+            { t: "Entusiasta, comunicativo", v: "C" },
+            { t: "Paciente, bom ouvinte", v: "P" },
+            { t: "Preciso, analítico", v: "A" }
+        ]},
+        { id: 2, opcoes: [
+            { t: "Auto-confiante, pioneiro", v: "E" },
+            { t: "Persuasivo, otimista", v: "C" },
+            { t: "Gentil, acomodado", v: "P" },
+            { t: "Lógico, sistemático", v: "A" }
+        ]},
+        { id: 3, opcoes: [
+            { t: "Ousado, competitivo", v: "E" },
+            { t: "Sociável, alegre", v: "C" },
+            { t: "Leal, constante", v: "P" },
+            { t: "Perfeccionista, cuidadoso", v: "A" }
+        ]},
+        { id: 4, opcoes: [
+            { t: "Direto, aceita desafios", v: "E" },
+            { t: "Inspirador, influenciador", v: "C" },
+            { t: "Amigável, cooperativo", v: "P" },
+            { t: "Disciplinado, diplomático", v: "A" }
+        ]}
+        // Adicione mais blocos conforme necessário seguindo o padrão
+    ];
+
+    function renderQuestões() {
+        const container = document.getElementById('questoes-container');
+        perguntas.forEach((q, i) => {
+            let html = `<div class="bloco-pergunta"><span class="pergunta-titulo">GRUPO ${q.id}</span>`;
+            q.opcoes.forEach((opt, j) => {
+                html += `
+                    <div class="opcao">
+                        <span>${opt.t}</span>
+                        <select class="respostas" data-tipo="${opt.v}">
+                            <option value="0">Neutro</option>
+                            <option value="2">MAIS se parece</option>
+                            <option value="-1">MENOS se parece</option>
+                        </select>
+                    </div>`;
+            });
+            html += `</div>`;
+            container.innerHTML += html;
+        });
+    }
+
+    function enviarTeste() {
+        const nome = document.getElementById('nome-aluno').value;
+        if(!nome) return alert("Por favor, digite seu nome.");
+
+        let pontos = { E: 0, C: 0, P: 0, A: 0 };
+        const selects = document.querySelectorAll('.respostas');
+
+        selects.forEach(s => {
+            const tipo = s.getAttribute('data-tipo');
+            pontos[tipo] += parseInt(s.value);
+        });
+
+        // Simulação SAP (Pode ser integrado a outras perguntas)
+        const sapMock = Array.from({length: 7}, () => Math.floor(Math.random() * 5) + 1);
+
+        db.ref('resultados_testes').push({
+            aluno: nome,
+            disc: pontos,
+            sap: sapMock,
+            data: new Date().toLocaleDateString()
+        }).then(() => {
+            alert("Teste enviado com sucesso!");
+            window.location.reload();
+        });
+    }
+
+    renderQuestões();
+</script>
 </body>
 </html>
