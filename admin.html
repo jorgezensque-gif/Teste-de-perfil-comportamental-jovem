@@ -2,32 +2,32 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Jorge - Performance Global</title>
+    <title>Painel Jorge - Relatório de Assessment Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --grafite: #2d3436; --card: #353b48; --primaria: #ff5c3a; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
+        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         
-        /* Interface */
         #login-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--grafite); display:flex; align-items:center; justify-content:center; z-index:9999; }
         .login-box { background: var(--card); padding: 40px; border-radius: 15px; text-align: center; width: 300px; border: 1px solid #4b4b4b; }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #1e272e; color: white; box-sizing: border-box; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #1e272e; color: white; }
         
         #painel-conteudo { display: none; max-width: 1200px; margin: 0 auto; }
         .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; position: sticky; top: 0; background: var(--grafite); padding: 15px; z-index: 1000; border-bottom: 1px solid #4b4b4b; }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; }
         
-        .sessao { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #4b4b4b; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card-aluno { background: var(--card); padding: 30px; border-radius: 15px; margin-top: 30px; border: 1px solid #4b4b4b; page-break-after: always; }
+        .header-aluno { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-bottom: 20px; }
         
-        .card-aluno { background: var(--card); padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #4b4b4b; border-top: 5px solid var(--primaria); }
-        .pdi-box { background: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; border-left: 4px solid var(--destaque); font-size: 13px; line-height: 1.4; }
+        .grid-relatorio { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .detalhes-perfil { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; font-size: 14px; line-height: 1.6; }
+        .detalhes-perfil h3 { color: var(--destaque); margin-top: 0; border-bottom: 1px solid #4b4b4b; padding-bottom: 5px; }
         
-        canvas { width: 100% !important; max-height: 280px !important; }
+        .tag-perfil { padding: 5px 15px; border-radius: 20px; color: #000; font-weight: bold; text-transform: uppercase; font-size: 12px; }
         
-        @media print { .menu, #login-screen { display: none; } body { background: white; color: black; } }
+        @media print { .menu, #login-screen { display: none; } body { background: white; color: black; } .card-aluno { border: 1px solid #ccc; } .detalhes-perfil { background: #f9f9f9; color: #333; } }
     </style>
 </head>
 <body>
@@ -37,34 +37,53 @@
         <h2 style="color:var(--primaria)">Sistema Jorge</h2>
         <input type="text" id="user" placeholder="Usuário">
         <input type="password" id="pass" placeholder="Senha">
-        <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">ENTRAR</button>
+        <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">ACESSAR ASSESSMENT</button>
     </div>
 </div>
 
 <div id="painel-conteudo">
     <div class="menu">
-        <button class="btn" style="background:#0984e3" onclick="window.print()">🖨️ Exportar PDF</button>
-        <button class="btn" style="background:#eb4d4b" onclick="limpar()">🗑️ Zerar Ciclo</button>
+        <button class="btn" style="background:#0984e3" onclick="window.print()">🖨️ IMPRIMIR LAUDOS COMPLETOS</button>
+        <button class="btn" style="background:#eb4d4b" onclick="limpar()">🗑️ ZERAR BASE</button>
     </div>
 
-    <h1 style="text-align:center; font-size: 22px;">DASHBOARD SOCIOEMOCIONAL ESTRATÉGICO</h1>
-    <p style="text-align:center; color: var(--destaque); margin-bottom: 30px;">Responsável: <strong>Jorge</strong></p>
-
-    <div id="area-turma" class="sessao">
-        <h2 style="color:var(--primaria); font-size: 14px; text-transform: uppercase;">📈 Média da Turma vs Alvo Acadêmico</h2>
-        <div class="grid">
-            <div><canvas id="chart-sap-turma"></canvas></div>
-            <div><canvas id="chart-disc-turma"></canvas></div>
-        </div>
-    </div>
-
-    <div id="lista-alunos">Sincronizando dados com segurança...</div>
+    <div id="lista-alunos">Carregando diagnósticos detalhados...</div>
 </div>
 
 <script>
-    let activeCharts = {}; 
-    let updateTimeout;
-    const nomesCompetencias = ['Protagonismo', 'Responsabilidade', 'C. Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprendizado'];
+    let activeCharts = {};
+
+    // DADOS TÉCNICOS DOS PERFIS (Baseado nas suas imagens)
+    const infoPerfis = {
+        E: { 
+            n: "Dominância (D)", c: "#e17055",
+            caract: "Direto, decisivo, focado em resultados e aceita desafios.",
+            motivacao: "Poder, autoridade e prestígio. Liberdade para agir.",
+            medo: "Falha, perda de controle e parecer vulnerável.",
+            comunicao: "Seja breve, objetivo e foque no 'o quê'. Evite detalhes excessivos."
+        },
+        C: { 
+            n: "Influência (I)", c: "#fdcb6e",
+            caract: "Entusiasta, otimista, persuasivo e comunicativo.",
+            motivacao: "Reconhecimento social, aprovação e popularidade.",
+            medo: "Rejeição social, isolamento e rotina rígida.",
+            comunicao: "Seja amigável, entusiasta e dê espaço para ele falar. Foque no 'quem'."
+        },
+        P: { 
+            n: "Estabilidade (S)", c: "#55efc4",
+            caract: "Leal, bom ouvinte, paciente e trabalha bem em equipe.",
+            motivacao: "Segurança, estabilidade e ambientes harmoniosos.",
+            medo: "Mudanças bruscas, conflitos e perda de segurança.",
+            comunicao: "Seja gentil, calmo e dê tempo para ele processar. Foque no 'como'."
+        },
+        A: { 
+            n: "Conformidade (C)", c: "#74b9ff",
+            caract: "Preciso, analítico, perfeccionista e disciplinado.",
+            motivacao: "Precisão, qualidade e seguir normas claras.",
+            medo: "Críticas ao seu trabalho, erros e desorganização.",
+            comunicao: "Seja específico, use dados e fatos. Não pressione por decisões rápidas."
+        }
+    };
 
     function verificarLogin() {
         if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === 'pitukinha') {
@@ -74,120 +93,84 @@
         }
     }
 
-    function safeRender(id, config) {
-        if (activeCharts[id]) { activeCharts[id].destroy(); delete activeCharts[id]; }
-        const el = document.getElementById(id);
-        if (el) { activeCharts[id] = new Chart(el.getContext('2d'), config); }
-    }
-
     function iniciarApp() {
-        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com", projectId: "perfil-jovem--disc" };
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const perfis = {
-            E: { n: "Dominante", c: "#e17055", pdi: "<b>Foco em Escuta Ativa:</b> Implementar ciclos de feedback antes da tomada de decisão final." },
-            C: { n: "Influente", c: "#fdcb6e", pdi: "<b>Foco em Funções Executivas:</b> Utilizar checklists e métodos de organização para evitar dispersão." },
-            P: { n: "Estável", c: "#55efc4", pdi: "<b>Foco em Growth Mindset:</b> Desafiar o jovem a liderar pequenas mudanças e expressar opiniões críticas." },
-            A: { n: "Analítico", c: "#74b9ff", pdi: "<b>Foco em Agilidade:</b> Priorizar a conclusão de tarefas (feito é melhor que perfeito) para reduzir o stress." }
-        };
-
         db.ref('resultados_testes').on('value', snap => {
-            // DEBOUNCE: Espera 800ms para processar tudo de uma vez e não travar
-            clearTimeout(updateTimeout);
-            updateTimeout = setTimeout(() => {
-                processarDados(snap, perfis);
-            }, 800);
-        });
-    }
+            const lista = document.getElementById('lista-alunos');
+            lista.innerHTML = "";
+            if (!snap.exists()) return;
 
-    function processarDados(snap, perfis) {
-        const lista = document.getElementById('lista-alunos');
-        lista.innerHTML = "";
-        if (!snap.exists()) return;
+            snap.forEach(alunoSnap => {
+                const d = alunoSnap.val();
+                const id = alunoSnap.key;
+                
+                // Identificar Perfil Principal
+                let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
+                const info = infoPerfis[principal];
 
-        let somaSAP = [0,0,0,0,0,0,0];
-        let somaDISC = { E:0, C:0, P:0, A:0 };
-        let total = 0;
-
-        snap.forEach(alunoSnap => {
-            const d = alunoSnap.val();
-            const id = alunoSnap.key;
-            total++;
-            d.sap.forEach((v, i) => somaSAP[i] += v);
-            somaDISC.E += d.disc.E; somaDISC.C += d.disc.C; 
-            somaDISC.P += d.disc.P; somaDISC.A += d.disc.A;
-
-            let principal = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
-
-            lista.innerHTML += `
-                <div class="card-aluno">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-                        <strong>JOVEM: ${d.aluno}</strong>
-                        <span style="background:${perfis[principal].c}; padding:4px 10px; border-radius:15px; color:#2d3436; font-size:10px; font-weight:bold;">${perfis[principal].n}</span>
-                    </div>
-                    <div class="grid">
-                        <div style="height:250px;"><canvas id="radar-${id}"></canvas></div>
-                        <div class="pdi-box">
-                            <b style="color:var(--primaria)">ESTRATÉGIA PDI:</b><br>${perfis[principal].pdi}<br><br>
-                            <b>MÉDIA SAP:</b> ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
+                lista.innerHTML += `
+                    <div class="card-aluno">
+                        <div class="header-aluno">
+                            <div>
+                                <span style="font-size: 22px; font-weight: bold;">${d.aluno}</span><br>
+                                <span style="color: #bdc3c7; font-size: 12px;">Relatório de Assessment Comportamental</span>
+                            </div>
+                            <span class="tag-perfil" style="background:${info.c}">${info.n}</span>
                         </div>
-                    </div>
-                </div>`;
-            
-            setTimeout(() => {
-                safeRender('radar-'+id, {
-                    type: 'radar',
-                    data: {
-                        labels: nomesCompetencias,
-                        datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.1)', borderWidth: 2 }]
-                    },
-                    options: { 
-                        animation: false,
-                        scales: { r: { min:0, max:5, ticks:{display:false}, grid:{color:'#4b4b4b'}, pointLabels:{color:'#fff', font:{size:9}} } },
-                        plugins: { legend: { display: false } },
-                        responsive: true, maintainAspectRatio: false
-                    }
-                });
-            }, 50);
-        });
 
-        const med = somaSAP.map(v => v/total);
-        
-        // SAP Coletivo
-        safeRender('chart-sap-turma', {
-            type: 'bar',
-            data: { 
-                labels: nomesCompetencias, 
-                datasets:[
-                    { label:'Média Turma', data:med, backgroundColor:'#ff7675' },
-                    { label:'Alvo (CASEL)', data:[3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5], type: 'line', borderColor: '#00d2d3', borderWidth: 2, pointRadius: 0 }
-                ]
-            },
-            options: { 
-                animation: false,
-                scales:{ y:{min:0, max:5, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff', font:{size:8}}} },
-                plugins:{ legend:{ labels:{color:'#fff', size:10} } },
-                responsive: true, maintainAspectRatio: false
-            }
-        });
+                        <div class="grid-relatorio">
+                            <div>
+                                <canvas id="radar-${id}"></canvas>
+                                <div class="detalhes-perfil" style="margin-top:20px; border-left: 4px solid var(--primaria);">
+                                    <h3>🎯 PDI Estratégico</h3>
+                                    <p>Com base na predominância de <b>${info.n}</b>, o foco deve ser no desenvolvimento de competências complementares e no ajuste do ambiente para máxima performance.</p>
+                                </div>
+                            </div>
 
-        // DISC Coletivo
-        safeRender('chart-disc-turma', {
-            type: 'pie',
-            data: {
-                labels: ['D','I','S','C'],
-                datasets: [{ data: [somaDISC.E, somaDISC.C, somaDISC.P, somaDISC.A], backgroundColor: ['#e17055','#fdcb6e','#55efc4','#74b9ff'] }]
-            },
-            options: { 
-                animation: false,
-                plugins: { legend: { position: 'right', labels: {color: '#fff'} } },
-                responsive: true, maintainAspectRatio: false
-            }
+                            <div class="detalhes-perfil">
+                                <h3>🔍 Características do Perfil</h3>
+                                <p>${info.caract}</p>
+                                
+                                <h3>💡 Motivações</h3>
+                                <p>${info.motivacao}</p>
+                                
+                                <h3>⚠️ Medos e Tensões</h3>
+                                <p>${info.medo}</p>
+                                
+                                <h3>🗣️ Como se comunicar com este jovem</h3>
+                                <p>${info.comunicao}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                setTimeout(() => {
+                    const ctx = document.getElementById('radar-'+id).getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'],
+                            datasets: [{
+                                label: 'Perfil Atual',
+                                data: [d.disc.E, d.disc.C, d.disc.P, d.disc.A],
+                                borderColor: info.c,
+                                backgroundColor: info.c + '33',
+                                borderWidth: 3
+                            }]
+                        },
+                        options: {
+                            scales: { r: { min: -5, max: 15, grid:{color:'#4b4b4b'}, pointLabels:{color:'#fff'} } },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }, 100);
+            });
         });
     }
 
-    function limpar() { if(confirm("Jorge, deseja zerar a base de dados para iniciar um novo ciclo?")) firebase.database().ref('resultados_testes').remove(); }
+    function limpar() { if(confirm("Deseja apagar todos os laudos?")) firebase.database().ref('resultados_testes').remove(); }
 </script>
 </body>
 </html>
