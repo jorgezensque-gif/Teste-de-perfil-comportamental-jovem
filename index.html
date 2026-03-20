@@ -2,26 +2,64 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Assessment DISC Profissional - Jorge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Completo - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .bloco { border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 25px; }
-        .linha { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .header-grid { font-weight: bold; color: var(--primaria); font-size: 12px; margin-bottom: 10px; }
-        .btn-enviar { width: 100%; padding: 20px; background: var(--primaria); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        input[type="text"] { width: 100%; padding: 15px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        :root { --primaria: #ff5c3a; --grafite: #2d3436; --card: #353b48; --texto: #ffffff; }
+        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 850px; margin: auto; }
+        h1, h2 { text-align: center; color: var(--primaria); }
+        
+        /* Inputs Iniciais */
+        .header-box { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #1e272e; color: white; font-size: 16px; box-sizing: border-box; }
+
+        /* Sessão SAP */
+        .sessao-sap { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        .pergunta-sap { margin-bottom: 20px; border-bottom: 1px solid #4b4b4b; padding-bottom: 10px; }
+        .opcoes-sap { display: flex; justify-content: space-between; margin-top: 10px; }
+        .opcoes-sap label { font-size: 11px; text-align: center; cursor: pointer; }
+
+        /* Sessão DISC (28 Blocos) */
+        .bloco-disc { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #4b4b4b; }
+        .linha-header { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; font-weight: bold; color: var(--primaria); font-size: 12px; padding-bottom: 10px; text-align: center; }
+        .linha-disc { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
+        .linha-disc:last-child { border-bottom: none; }
+        .col-center { display: flex; justify-content: center; align-items: center; }
+        
+        /* Radio Buttons Customizados */
+        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--primaria); }
+
+        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }
+        .btn-enviar:hover { transform: translateY(-2px); background: #e64a2e; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>Avaliação DISC - 28 Blocos</h2>
-    <input type="text" id="nome-aluno" placeholder="Nome Completo">
-    <div id="quiz"></div>
-    <button class="btn-enviar" onclick="enviar()">GERAR MEU PERFIL</button>
+    <div class="header-box">
+        <h1>AVALIAÇÃO SOCIOEMOCIONAL & DISC</h1>
+        <p style="text-align:center; color:#bdc3c7">Responsável: Jorge</p>
+        <input type="text" id="nome-aluno" placeholder="Nome Completo do Aluno">
+    </div>
+
+    <div class="sessao-sap">
+        <h2 style="text-align:left; font-size: 18px;">PARTE 1: COMPETÊNCIAS SAP</h2>
+        <p style="font-size: 13px; color:#bdc3c7">Dê uma nota de 1 a 5 para cada competência abaixo:</p>
+        
+        <div id="container-sap"></div>
+    </div>
+
+    <div class="sessao-disc">
+        <h2 style="text-align:left; font-size: 18px;">PARTE 2: ESTILO COMPORTAMENTAL (DISC)</h2>
+        <p style="font-size: 13px; color:#bdc3c7">Em cada bloco, escolha uma opção que <b>MAIS</b> se parece com você e uma que <b>MENOS</b> se parece.</p>
+        
+        <div id="container-disc"></div>
+    </div>
+
+    <button class="btn-enviar" onclick="enviarDados()">FINALIZAR ASSESSMENT</button>
 </div>
 
 <script>
@@ -29,48 +67,82 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Matriz simplificada dos 28 blocos (Adjetivos Reais)
-    const perguntas = [
+    const compsSAP = ["Protagonismo", "Responsabilidade", "Consciência Ambiental", "Convivência Social", "Saúde e Higiene", "Trabalho em Equipe", "Desejo de Aprender"];
+    
+    // Dados para os 28 blocos (resumidos para o código, você pode expandir as labels)
+    const matrizDISC = [
         {id:1, opts:[{t:"Entusiasta",v:"I"},{t:"Ousado",v:"D"},{t:"Diplomata",v:"C"},{t:"Satisfeito",v:"S"}]},
         {id:2, opts:[{t:"Cauteloso",v:"C"},{t:"Decidido",v:"D"},{t:"Receptivo",v:"S"},{t:"Amigável",v:"I"}]},
-        // ... (Repetir para os 28 blocos conforme a lógica D,I,S,C)
+        {id:3, opts:[{t:"Amigável",v:"S"},{t:"Preciso",v:"C"},{t:"Franco",v:"D"},{t:"Eloquente",v:"I"}]},
+        // ... repete o padrão até 28
     ];
-    // Para teste rápido, usei 5 blocos aqui. Expanda para 28 seguindo o mesmo padrão abaixo:
-    for(let i=3; i<=28; i++) { perguntas.push({id:i, opts:[{t:"Opção D",v:"D"},{t:"Opção I",v:"I"},{t:"Opção S",v:"S"},{t:"Opção C",v:"C"}]}); }
+    for(let i=4; i<=28; i++) { matrizDISC.push({id:i, opts:[{t:"Firme e Direto",v:"D"},{t:"Animado e Falante",v:"I"},{t:"Calmo e Estável",v:"S"},{t:"Exato e Correto",v:"C"}]}); }
 
     function render() {
-        const quiz = document.getElementById('quiz');
-        perguntas.forEach(b => {
-            let html = `<div class="bloco"><div class="linha header-grid"><span>Bloco ${b.id}</span><span>MAIS</span><span>MENOS</span></div>`;
+        // Render SAP
+        const cSap = document.getElementById('container-sap');
+        compsSAP.forEach((c, idx) => {
+            cSap.innerHTML += `
+                <div class="pergunta-sap">
+                    <label>${c}</label>
+                    <div class="opcoes-sap">
+                        ${[1,2,3,4,5].map(n => `<label><input type="radio" name="sap${idx}" value="${n}"><br>${n}</label>`).join('')}
+                    </div>
+                </div>`;
+        });
+
+        // Render DISC
+        const cDisc = document.getElementById('container-disc');
+        matrizDISC.forEach(b => {
+            let html = `<div class="bloco-disc"><div class="linha-header"><span>Bloco ${b.id}</span><span>MAIS</span><span>MENOS</span></div>`;
             b.opts.forEach(o => {
-                html += `<div class="linha"><span>${o.t}</span>
-                    <input type="radio" name="m${b.id}" value="${o.v}">
-                    <input type="radio" name="l${b.id}" value="${o.v}"></div>`;
+                html += `
+                    <div class="linha-disc">
+                        <span>${o.t}</span>
+                        <div class="col-center"><input type="radio" name="m${b.id}" value="${o.v}"></div>
+                        <div class="col-center"><input type="radio" name="l${b.id}" value="${o.v}"></div>
+                    </div>`;
             });
-            quiz.innerHTML += html + `</div>`;
+            cDisc.innerHTML += html + `</div>`;
         });
     }
 
-    function enviar() {
+    function enviarDados() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Digite seu nome");
-        
+        if(!nome) return alert("Por favor, insira o nome.");
+
+        // Coleta SAP
+        let notasSAP = [];
+        for(let i=0; i<7; i++) {
+            const r = document.querySelector(`input[name="sap${i}"]:checked`);
+            if(!r) return alert("Responda todas as perguntas SAP.");
+            notasSAP.push(parseInt(r.value));
+        }
+
+        // Coleta DISC
         let d=0, i=0, s=0, c=0;
         for(let j=1; j<=28; j++) {
-            const m = document.querySelector(`input[name="m${j}"]:checked`);
-            const l = document.querySelector(`input[name="l${j}"]:checked`);
-            if(!m || !l) return alert("Responda todos os campos do bloco " + j);
-            if(m.value === 'D') d++; if(m.value === 'I') i++; if(m.value === 'S') s++; if(m.value === 'C') c++;
-            if(l.value === 'D') d--; if(l.value === 'I') i--; if(l.value === 'S') s--; if(l.value === 'C') c--;
+            const mais = document.querySelector(`input[name="m${j}"]:checked`);
+            const menos = document.querySelector(`input[name="l${j}"]:checked`);
+            if(!mais || !menos) return alert("Preencha o Bloco " + j + " do DISC.");
+            if(mais.value === menos.value) return alert("No Bloco " + j + ", você não pode escolher a mesma opção para MAIS e MENOS.");
+            
+            // Cálculo de dominância
+            if(mais.value === 'D') d++; if(mais.value === 'I') i++; if(mais.value === 'S') s++; if(mais.value === 'C') c++;
+            if(menos.value === 'D') d--; if(menos.value === 'I') i--; if(menos.value === 'S') s--; if(menos.value === 'C') c--;
         }
 
         db.ref('resultados_testes').push({
             aluno: nome,
+            sap: notasSAP,
             disc: {D:d, I:i, S:s, C:c},
-            sap: [4,4,4,4,4,4,4],
             data: new Date().toLocaleString()
-        }).then(() => { alert("Enviado!"); location.reload(); });
+        }).then(() => {
+            alert("Sucesso, Jorge! Dados enviados para o painel.");
+            location.reload();
+        });
     }
+
     render();
 </script>
 </body>
