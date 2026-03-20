@@ -2,92 +2,80 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Comportamental DISC - Modelo Profissional</title>
+    <title>Assessment DISC Profissional - 28 Grupos</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --bg: #f5f6fa; --texto: #2d3436; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--texto); margin: 0; padding: 20px; }
-        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
-        h2 { color: var(--primaria); text-align: center; margin-bottom: 10px; }
-        p.instrucao { text-align: center; font-size: 14px; color: #636e72; margin-bottom: 30px; }
-        
-        .bloco-pergunta { margin-bottom: 30px; padding: 20px; border: 1px solid #dfe6e9; border-radius: 10px; background: #fafafa; }
-        .pergunta-titulo { font-weight: bold; margin-bottom: 15px; display: block; color: #2d3436; border-bottom: 2px solid var(--primaria); width: fit-content; }
-        
-        .opcao { display: grid; grid-template-columns: 1fr auto; align-items: center; margin-bottom: 10px; padding: 10px; background: white; border-radius: 8px; border: 1px solid #eee; }
-        .opcao:hover { border-color: var(--primaria); }
-        
-        select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; outline: none; cursor: pointer; }
-        
-        .btn-enviar { width: 100%; padding: 15px; background: var(--primaria); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-enviar:hover { background: #e64a2e; }
-        
-        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        :root { --primaria: #ff5c3a; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .bloco { border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 25px; background: #fff; }
+        .linha-adjetivo { display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .header-labels { display: grid; grid-template-columns: 1fr 60px 60px; gap: 20px; font-weight: bold; font-size: 12px; color: var(--primaria); text-transform: uppercase; margin-bottom: 10px; }
+        .btn-enviar { width: 100%; padding: 20px; background: var(--primaria); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        input[type="text"] { width: 100%; padding: 15px; margin-bottom: 30px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Avaliação de Estilo Comportamental</h2>
-    <p class="instrucao">Para cada bloco abaixo, selecione a opção que <b>MAIS</b> se identifica com você e a que <b>MENOS</b> se identifica.</p>
+    <h2 style="text-align:center">Avaliação Comportamental DISC</h2>
+    <p style="text-align:center; color: #666">Responda aos 28 blocos abaixo para gerar seu perfil detalhado.</p>
+    
+    <input type="text" id="nome-aluno" placeholder="Nome Completo do Aluno">
 
-    <input type="text" id="nome-aluno" placeholder="Digite seu nome completo">
+    <div id="quiz-container"></div>
 
-    <div id="questoes-container"></div>
-
-    <button class="btn-enviar" onclick="enviarTeste()">FINALIZAR E GERAR RESULTADOS</button>
+    <button class="btn-enviar" onclick="processarDISC()">GERAR MEU RELATÓRIO PROFISSIONAL</button>
 </div>
 
 <script>
-    // Configuração Firebase (Sua base atual)
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Modelo Profissional: 10 blocos de 4 adjetivos cada (D, I, S, C)
-    const perguntas = [
-        { id: 1, opcoes: [
-            { t: "Decidido, focado em resultados", v: "E" },
-            { t: "Entusiasta, comunicativo", v: "C" },
-            { t: "Paciente, bom ouvinte", v: "P" },
-            { t: "Preciso, analítico", v: "A" }
-        ]},
-        { id: 2, opcoes: [
-            { t: "Auto-confiante, pioneiro", v: "E" },
-            { t: "Persuasivo, otimista", v: "C" },
-            { t: "Gentil, acomodado", v: "P" },
-            { t: "Lógico, sistemático", v: "A" }
-        ]},
-        { id: 3, opcoes: [
-            { t: "Ousado, competitivo", v: "E" },
-            { t: "Sociável, alegre", v: "C" },
-            { t: "Leal, constante", v: "P" },
-            { t: "Perfeccionista, cuidadoso", v: "A" }
-        ]},
-        { id: 4, opcoes: [
-            { t: "Direto, aceita desafios", v: "E" },
-            { t: "Inspirador, influenciador", v: "C" },
-            { t: "Amigável, cooperativo", v: "P" },
-            { t: "Disciplinado, diplomático", v: "A" }
-        ]}
-        // Adicione mais blocos conforme necessário seguindo o padrão
+    // Dados baseados nos modelos de Assessment de 28 questões
+    const matriz28 = [
+        {id:1, opts:[{t:"Entusiasta",v:"I"},{t:"Ousado",v:"D"},{t:"Diplomata",v:"C"},{t:"Satisfeito",v:"S"}]},
+        {id:2, opts:[{t:"Cauteloso",v:"C"},{t:"Decidido",v:"D"},{t:"Receptivo",v:"S"},{t:"Amigável",v:"I"}]},
+        {id:3, opts:[{t:"Amigável",v:"S"},{t:"Preciso",v:"C"},{t:"Franco",v:"D"},{t:"Eloquente",v:"I"}]},
+        {id:4, opts:[{t:"Moderado",v:"S"},{t:"Controlado",v:"C"},{t:"Persuasivo",v:"I"},{t:"Decisivo",v:"D"}]},
+        {id:5, opts:[{t:"Atrevido",v:"D"},{t:"Convivial",v:"I"},{t:"Paciente",v:"S"},{t:"Estrito",v:"C"}]},
+        {id:6, opts:[{t:"Persuasivo",v:"I"},{t:"Gentil",v:"S"},{t:"Humilde",v:"C"},{t:"Original",v:"D"}]},
+        {id:7, opts:[{t:"Expressivo",v:"I"},{t:"Consciencioso",v:"C"},{t:"Dominante",v:"D"},{t:"Responsivo",v:"S"}]},
+        {id:8, opts:[{t:"Pioneiro",v:"D"},{t:"Influente",v:"I"},{t:"Submisso",v:"S"},{t:"Cauteloso",v:"C"}]},
+        {id:9, opts:[{t:"Força de Vontade",v:"D"},{t:"Otimista",v:"I"},{t:"Acomodado",v:"S"},{t:"Exato",v:"C"}]},
+        {id:10, opts:[{t:"Estimulante",v:"I"},{t:"Complacente",v:"S"},{t:"Medroso",v:"C"},{t:"Independente",v:"D"}]},
+        {id:11, opts:[{t:"Vigoroso",v:"D"},{t:"Afável",v:"I"},{t:"Discreto",v:"C"},{t:"Resignado",v:"S"}]},
+        {id:12, opts:[{t:"Tagarela",v:"I"},{t:"Convencional",v:"C"},{t:"Ousado",v:"D"},{t:"Calmo",v:"S"}]},
+        {id:13, opts:[{t:"Competitivo",v:"D"},{t:"Alegre",v:"I"},{t:"Agradável",v:"S"},{t:"Retraído",v:"C"}]},
+        {id:14, opts:[{t:"Satisfeito",v:"S"},{t:"Obediente",v:"C"},{t:"Firme",v:"D"},{t:"Brincalhão",v:"I"}]},
+        {id:15, opts:[{t:"Confiante",v:"I"},{t:"Simpático",v:"S"},{t:"Tolerante",v:"C"},{t:"Agressivo",v:"D"}]},
+        {id:16, opts:[{t:"Adaptável",v:"S"},{t:"Sistemático",v:"C"},{t:"Vigoroso",v:"D"},{t:"Sociável",v:"I"}]},
+        {id:17, opts:[{t:"Vibrante",v:"I"},{t:"Analítico",v:"C"},{t:"Afirmativo",v:"D"},{t:"Sereno",v:"S"}]},
+        {id:18, opts:[{t:"Inovador",v:"D"},{t:"Popular",v:"I"},{t:"Amável",v:"S"},{t:"Perfeccionista",v:"C"}]},
+        {id:19, opts:[{t:"Argumentador",v:"D"},{t:"Gentil",v:"S"},{t:"Metódico",v:"C"},{t:"Inspirador",v:"I"}]},
+        {id:20, opts:[{t:"Destemido",v:"D"},{t:"Espirituoso",v:"I"},{t:"Pacificador",v:"S"},{t:"Sensível",v:"C"}]},
+        {id:21, opts:[{t:"Polido",v:"C"},{t:"Audaz",v:"D"},{t:"Refinado",v:"I"},{t:"Generoso",v:"S"}]},
+        {id:22, opts:[{t:"Incentivador",v:"I"},{t:"Prudente",v:"C"},{t:"Determinado",v:"D"},{t:"Prestativo",v:"S"}]},
+        {id:23, opts:[{t:"Autossuficiente",v:"D"},{t:"Dócil",v:"S"},{t:"Idealista",v:"I"},{t:"Objetivo",v:"C"}]},
+        {id:24, opts:[{t:"Direto",v:"D"},{t:"Entusiasta",v:"I"},{t:"Tolerante",v:"S"},{t:"Convencional",v:"C"}]},
+        {id:25, opts:[{t:"Persistente",v:"D"},{t:"Colaborativo",v:"S"},{t:"Cauteloso",v:"C"},{t:"Divertido",v:"I"}]},
+        {id:26, opts:[{t:"Exigente",v:"D"},{t:"Conciliador",v:"S"},{t:"Animado",v:"I"},{t:"Preciso",v:"C"}]},
+        {id:27, opts:[{t:"Inquieto",v:"D"},{t:"Amigável",v:"I"},{t:"Estável",v:"S"},{t:"Cuidadoso",v:"C"}]},
+        {id:28, opts:[{t:"Respeitoso",v:"C"},{t:"Pioneiro",v:"D"},{t:"Otimista",v:"I"},{t:"Atencioso",v:"S"}]}
     ];
 
-    function renderQuestões() {
-        const container = document.getElementById('questoes-container');
-        perguntas.forEach((q, i) => {
-            let html = `<div class="bloco-pergunta"><span class="pergunta-titulo">GRUPO ${q.id}</span>`;
-            q.opcoes.forEach((opt, j) => {
+    function render() {
+        const container = document.getElementById('quiz-container');
+        matriz28.forEach(bloco => {
+            let html = `<div class="bloco"><div class="header-labels"><span>Bloco ${bloco.id}</span><span>MAIS</span><span>MENOS</span></div>`;
+            bloco.opts.forEach((opt, idx) => {
                 html += `
-                    <div class="opcao">
+                    <div class="linha-adjetivo">
                         <span>${opt.t}</span>
-                        <select class="respostas" data-tipo="${opt.v}">
-                            <option value="0">Neutro</option>
-                            <option value="2">MAIS se parece</option>
-                            <option value="-1">MENOS se parece</option>
-                        </select>
+                        <input type="radio" name="mais_${bloco.id}" value="${opt.v}">
+                        <input type="radio" name="menos_${bloco.id}" value="${opt.v}">
                     </div>`;
             });
             html += `</div>`;
@@ -95,33 +83,26 @@
         });
     }
 
-    function enviarTeste() {
+    function processarDISC() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Por favor, digite seu nome.");
-
-        let pontos = { E: 0, C: 0, P: 0, A: 0 };
-        const selects = document.querySelectorAll('.respostas');
-
-        selects.forEach(s => {
-            const tipo = s.getAttribute('data-tipo');
-            pontos[tipo] += parseInt(s.value);
-        });
-
-        // Simulação SAP (Pode ser integrado a outras perguntas)
-        const sapMock = Array.from({length: 7}, () => Math.floor(Math.random() * 5) + 1);
+        if(!nome) return alert("Insira o nome");
+        
+        let resultados = { D:0, I:0, S:0, C:0 };
+        for(let i=1; i<=28; i++) {
+            const m = document.querySelector(`input[name="mais_${i}"]:checked`);
+            const n = document.querySelector(`input[name="menos_${i}"]:checked`);
+            if(m) resultados[m.value] += 1;
+            if(n) resultados[n.value] -= 1;
+        }
 
         db.ref('resultados_testes').push({
             aluno: nome,
-            disc: pontos,
-            sap: sapMock,
-            data: new Date().toLocaleDateString()
-        }).then(() => {
-            alert("Teste enviado com sucesso!");
-            window.location.reload();
-        });
+            disc: resultados,
+            sap: [4,3,5,4,2,5,3], // Simulação SAP
+            data: new Date().toLocaleString()
+        }).then(() => { alert("Assessment Finalizado!"); window.location.reload(); });
     }
-
-    renderQuestões();
+    render();
 </script>
 </body>
 </html>
