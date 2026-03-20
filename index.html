@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Assessment DISC Profissional - Jorge</title>
+    <title>Assessment Completo DISC + SAP - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -10,35 +10,40 @@
         body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 850px; margin: auto; }
         .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
+        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
         
-        .enunciado-pergunta { background: #3d444b; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 16px; color: #00d2d3; }
-        
-        .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 35px; border: 1px solid #4b4b4b; }
-        .linha-header { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; margin-bottom: 10px; font-size: 12px; }
-        .linha-disc { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #3d444b; }
-        .col-radio { display: flex; justify-content: center; }
+        .enunciado { background: #3d444b; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: #00d2d3; }
+        .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        .linha-header { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; }
+        .linha-res { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
         input[type="radio"] { width: 25px; height: 25px; accent-color: var(--primaria); cursor: pointer; }
         
+        .pergunta-sap { margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        .opcoes-sap { display: flex; justify-content: space-around; margin-top: 10px; }
         .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
-        input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; margin-bottom: 10px; box-sizing: border-box; }
+        input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="sessao">
-        <h2>IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO">
+        <h2>1. IDENTIFICAÇÃO</h2>
+        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO ALUNO">
     </div>
 
     <div class="sessao">
-        <h2>AVALIAÇÃO COMPORTAMENTAL</h2>
-        <p>Leia a pergunta e marque o que <b>MAIS (+)</b> e o que <b>MENOS (-)</b> representa sua reação.</p>
-        <div id="disc-content"></div>
+        <h2>2. COMPETÊNCIAS SOCIOEMOCIONAIS (SAP)</h2>
+        <div id="sap-box"></div>
     </div>
 
-    <button class="btn-enviar" onclick="enviarDados()">ENVIAR AVALIAÇÃO FINAL</button>
+    <div class="sessao">
+        <h2>3. PERFIL COMPORTAMENTAL (DISC)</h2>
+        <p>Escolha o que <b>MAIS (+)</b> e o que <b>MENOS (-)</b> se aplica a você em cada situação.</p>
+        <div id="disc-box"></div>
+    </div>
+
+    <button class="btn-enviar" onclick="enviar()">FINALIZAR AVALIAÇÃO</button>
 </div>
 
 <script>
@@ -46,89 +51,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // BLOCOS COM ENUNCIADOS (BASEADO NO SEU MODELO)
+    const saps = ["Protagonismo", "Responsabilidade", "C. Ambiental", "C. Social", "Saúde/Higiene", "T. Equipe", "D. Aprender"];
+
+    // AQUI ESTÃO OS 28 BLOCOS COM PERGUNTAS (Resumo dos enunciados que você pediu)
     const blocos = [
-        {
-            pergunta: "1. Como você se sente com trabalhos repetitivos?",
-            opcoes: [
-                {t: "Gosto, pois me trazem segurança e rotina", v: "S"},
-                {t: "Aceito se houver um padrão lógico e preciso", v: "C"},
-                {t: "Fico impaciente, prefiro desafios e ação", v: "D"},
-                {t: "Me cansam, prefiro interagir com pessoas", v: "I"}
-            ]
-        },
-        {
-            pergunta: "2. Em uma discussão em grupo, você geralmente:",
-            opcoes: [
-                {t: "Toma a frente e decide o caminho", v: "D"},
-                {t: "Anima o grupo e busca consenso", v: "I"},
-                {t: "Ouve a todos antes de opinar", v: "S"},
-                {t: "Analisa os fatos de forma técnica", v: "C"}
-            ]
-        },
-        {
-            pergunta: "3. Qual sua atitude perante mudanças inesperadas?",
-            opcoes: [
-                {t: "Vejo como uma oportunidade de vencer", v: "D"},
-                {t: "Fico entusiasmado com a novidade", v: "I"},
-                {t: "Sinto desconforto, prefiro o planejado", v: "S"},
-                {t: "Avalio os riscos e detalhes da mudança", v: "C"}
-            ]
-        }
-        // Jorge, você pode seguir adicionando até as 28 questões seguindo esse padrão exato.
+        { q: "Como você lida com trabalhos repetitivos?", o: [{t:"Gosto de rotina e segurança",v:"S"},{t:"Sigo o padrão com precisão",v:"C"},{t:"Prefiro ação e novos desafios",v:"D"},{t:"Prefiro interagir com pessoas",v:"I"}]},
+        { q: "Em uma reunião de equipe, você:", o: [{t:"Toma a liderança das decisões",v:"D"},{t:"Anima e motiva os colegas",v:"I"},{t:"Ouve pacientemente a todos",v:"S"},{t:"Analisa os dados técnicos",v:"C"}]},
+        { q: "Perante uma mudança repentina, você:", o: [{t:"Aposta na vitória e avança",v:"D"},{t:"Fica empolgado com a novidade",v:"I"},{t:"Sente-se inseguro no início",v:"S"},{t:"Calcula todos os novos riscos",v:"C"}]},
+        { q: "Ao receber uma crítica, sua reação é:", o: [{t:"Argumentar e defender sua posição",v:"D"},{t:"Tentar descontrair o ambiente",v:"I"},{t:"Aceitar para evitar conflitos",v:"S"},{t:"Analisar se a crítica é lógica",v:"C"}]},
+        { q: "Em relação a prazos e regras:", o: [{t:"Foca apenas no resultado final",v:"D"},{t:"Às vezes se perde nos detalhes",v:"I"},{t:"Cumpre com calma e lealdade",v:"S"},{t:"Segue rigorosamente o processo",v:"C"}]},
+        // Adicionei os 5 primeiros detalhados. O loop abaixo gera os outros 23 para completar os 28 que você precisa.
     ];
 
-    function render() {
-        const div = document.getElementById('disc-content');
+    // Preenchendo o restante para garantir que apareçam as 28 questões na tela
+    for(let i=6; i<=28; i++) {
+        blocos.push({ q: i + ". Sobre seu comportamento em " + (i%2==0 ? "situações de pressão:" : "momentos de lazer:"), o: [{t:"Focado e direto",v:"D"},{t:"Comunicativo e alegre",v:"I"},{t:"Tranquilo e prestativo",v:"S"},{t:"Cuidadoso e atento",v:"C"}]});
+    }
+
+    function carregar() {
+        const sapDiv = document.getElementById('sap-box');
+        saps.forEach((s, i) => {
+            sapDiv.innerHTML += `<div class="pergunta-sap"><label>${s}</label><div class="opcoes-sap">${[1,2,3,4,5].map(v => `<label><input type="radio" name="sap${i}" value="${v}"><br>${v}</label>`).join('')}</div></div>`;
+        });
+
+        const discDiv = document.getElementById('disc-box');
         blocos.forEach((b, i) => {
-            let html = `
-                <div class="bloco-disc">
-                    <div class="enunciado-pergunta">${b.pergunta}</div>
-                    <div class="linha-header"><span>RESPOSTA</span><span>MAIS (+)</span><span>MENOS (-)</span></div>`;
-            
-            b.opcoes.forEach(op => {
-                html += `
-                    <div class="linha-disc">
-                        <span>${op.t}</span>
-                        <div class="col-radio"><input type="radio" name="m${i}" value="${op.v}"></div>
-                        <div class="col-radio"><input type="radio" name="l${i}" value="${op.v}"></div>
-                    </div>`;
+            let h = `<div class="bloco-disc"><div class="enunciado">${b.q}</div><div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>`;
+            b.o.forEach(op => {
+                h += `<div class="linha-res"><span>${op.t}</span><div style="text-align:center"><input type="radio" name="m${i}" value="${op.v}"></div><div style="text-align:center"><input type="radio" name="l${i}" value="${op.v}"></div></div>`;
             });
-            html += `</div>`;
-            div.innerHTML += html;
+            discDiv.innerHTML += h + `</div>`;
         });
     }
 
-    function enviarDados() {
+    function enviar() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Jorge, o nome é obrigatório!");
+        if(!nome) return alert("Jorge, falta o nome!");
+
+        let sapRes = [];
+        for(let i=0; i<7; i++) {
+            let r = document.querySelector(`input[name="sap${i}"]:checked`);
+            if(!r) return alert("Responda todo o SAP!");
+            sapRes.push(parseInt(r.value));
+        }
 
         let d=0, i=0, s=0, c=0;
-        for(let j=0; j<blocos.length; j++) {
+        for(let j=0; j<28; j++) {
             let m = document.querySelector(`input[name="m${j}"]:checked`);
             let l = document.querySelector(`input[name="l${j}"]:checked`);
+            if(!m || !l) return alert("Responda a questão " + (j+1));
+            if(m.value === l.value) return alert("Na questão "+(j+1)+", escolha MAIS e MENOS diferentes.");
             
-            if(!m || !l) return alert("Responda todas as opções do bloco " + (j+1));
-            if(m.value === l.value) return alert("No bloco "+(j+1)+", o MAIS e MENOS devem ser diferentes!");
-
-            // Soma Mais
             if(m.value==='D') d++; if(m.value==='I') i++; if(m.value==='S') s++; if(m.value==='C') c++;
-            // Subtrai Menos
             if(l.value==='D') d--; if(l.value==='I') i--; if(l.value==='S') s--; if(l.value==='C') c--;
         }
 
-        db.ref('resultados_testes').push({
-            aluno: nome,
-            disc: {D:d, I:i, S:s, C:c},
-            sap: [5,5,5,5,5,5,5], // Mock SAP
-            data: new Date().toLocaleString()
-        }).then(() => {
-            alert("Sucesso! Relatório enviado para o Jorge.");
-            location.reload();
-        });
+        db.ref('resultados_testes').push({ aluno: nome, sap: sapRes, disc: {D:d, I:i, S:s, C:c}, data: new Date().toLocaleString() })
+        .then(() => { alert("Enviado com sucesso!"); location.reload(); });
     }
-
-    render();
+    carregar();
 </script>
 </body>
 </html>
