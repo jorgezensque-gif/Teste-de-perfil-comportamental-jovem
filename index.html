@@ -2,64 +2,52 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Completo - Jorge</title>
+    <title>Assessment Completo DISC + SAP - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #2d3436; --card: #353b48; --texto: #ffffff; }
+        :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; }
         body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 850px; margin: auto; }
-        h1, h2 { text-align: center; color: var(--primaria); }
+        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        h2 { color: var(--primaria); border-bottom: 1px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
         
-        /* Inputs Iniciais */
-        .header-box { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #1e272e; color: white; font-size: 16px; box-sizing: border-box; }
-
-        /* Sessão SAP */
-        .sessao-sap { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        .pergunta-sap { margin-bottom: 20px; border-bottom: 1px solid #4b4b4b; padding-bottom: 10px; }
-        .opcoes-sap { display: flex; justify-content: space-between; margin-top: 10px; }
-        .opcoes-sap label { font-size: 11px; text-align: center; cursor: pointer; }
-
-        /* Sessão DISC (28 Blocos) */
-        .bloco-disc { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #4b4b4b; }
-        .linha-header { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; font-weight: bold; color: var(--primaria); font-size: 12px; padding-bottom: 10px; text-align: center; }
-        .linha-disc { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
-        .linha-disc:last-child { border-bottom: none; }
-        .col-center { display: flex; justify-content: center; align-items: center; }
+        /* Alinhamento DISC */
+        .bloco-disc { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #4b4b4b; }
+        .linha-header { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 13px; }
+        .linha-disc { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #3d444b; }
+        .col-radio { display: flex; justify-content: center; }
+        input[type="radio"] { width: 22px; height: 22px; accent-color: var(--primaria); cursor: pointer; }
         
-        /* Radio Buttons Customizados */
-        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--primaria); }
-
-        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s; }
-        .btn-enviar:hover { transform: translateY(-2px); background: #e64a2e; }
+        /* SAP */
+        .pergunta-sap { margin-bottom: 20px; padding: 10px; border-bottom: 1px solid #3d444b; }
+        .opcoes-sap { display: flex; justify-content: space-around; margin-top: 10px; }
+        
+        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; margin-bottom: 20px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-box">
-        <h1>AVALIAÇÃO SOCIOEMOCIONAL & DISC</h1>
-        <p style="text-align:center; color:#bdc3c7">Responsável: Jorge</p>
-        <input type="text" id="nome-aluno" placeholder="Nome Completo do Aluno">
+    <div class="sessao">
+        <h2>IDENTIFICAÇÃO</h2>
+        <input type="text" id="nome-aluno" placeholder="Digite seu nome completo">
     </div>
 
-    <div class="sessao-sap">
-        <h2 style="text-align:left; font-size: 18px;">PARTE 1: COMPETÊNCIAS SAP</h2>
-        <p style="font-size: 13px; color:#bdc3c7">Dê uma nota de 1 a 5 para cada competência abaixo:</p>
-        
+    <div class="sessao">
+        <h2>PARTE 1: COMPETÊNCIAS SOCIOEMOCIONAIS (SAP)</h2>
+        <p>Avalie-se de 1 (Mínimo) a 5 (Máximo):</p>
         <div id="container-sap"></div>
     </div>
 
-    <div class="sessao-disc">
-        <h2 style="text-align:left; font-size: 18px;">PARTE 2: ESTILO COMPORTAMENTAL (DISC)</h2>
-        <p style="font-size: 13px; color:#bdc3c7">Em cada bloco, escolha uma opção que <b>MAIS</b> se parece com você e uma que <b>MENOS</b> se parece.</p>
-        
+    <div class="sessao">
+        <h2>PARTE 2: ESTILO COMPORTAMENTAL (DISC)</h2>
+        <p>Para cada bloco, escolha um adjetivo que <b>MAIS</b> se parece com você e um que <b>MENOS</b> se parece.</p>
         <div id="container-disc"></div>
     </div>
 
-    <button class="btn-enviar" onclick="enviarDados()">FINALIZAR ASSESSMENT</button>
+    <button class="btn-enviar" onclick="enviarDados()">FINALIZAR E GERAR DADOS</button>
 </div>
 
 <script>
@@ -69,80 +57,81 @@
 
     const compsSAP = ["Protagonismo", "Responsabilidade", "Consciência Ambiental", "Convivência Social", "Saúde e Higiene", "Trabalho em Equipe", "Desejo de Aprender"];
     
-    // Dados para os 28 blocos (resumidos para o código, você pode expandir as labels)
+    // OS 28 BLOCOS REAIS DO ASSESSMENT PROFISSIONAL
     const matrizDISC = [
         {id:1, opts:[{t:"Entusiasta",v:"I"},{t:"Ousado",v:"D"},{t:"Diplomata",v:"C"},{t:"Satisfeito",v:"S"}]},
         {id:2, opts:[{t:"Cauteloso",v:"C"},{t:"Decidido",v:"D"},{t:"Receptivo",v:"S"},{t:"Amigável",v:"I"}]},
         {id:3, opts:[{t:"Amigável",v:"S"},{t:"Preciso",v:"C"},{t:"Franco",v:"D"},{t:"Eloquente",v:"I"}]},
-        // ... repete o padrão até 28
+        {id:4, opts:[{t:"Moderado",v:"S"},{t:"Controlado",v:"C"},{t:"Persuasivo",v:"I"},{t:"Decisivo",v:"D"}]},
+        {id:5, opts:[{t:"Atrevido",v:"D"},{t:"Convivial",v:"I"},{t:"Paciente",v:"S"},{t:"Estrito",v:"C"}]},
+        {id:6, opts:[{t:"Persuasivo",v:"I"},{t:"Gentil",v:"S"},{t:"Humilde",v:"C"},{t:"Original",v:"D"}]},
+        {id:7, opts:[{t:"Expressivo",v:"I"},{t:"Consciencioso",v:"C"},{t:"Dominante",v:"D"},{t:"Responsivo",v:"S"}]},
+        {id:8, opts:[{t:"Pioneiro",v:"D"},{t:"Influente",v:"I"},{t:"Submisso",v:"S"},{t:"Cauteloso",v:"C"}]},
+        {id:9, opts:[{t:"Força de Vontade",v:"D"},{t:"Otimista",v:"I"},{t:"Acomodado",v:"S"},{t:"Exato",v:"C"}]},
+        {id:10, opts:[{t:"Estimulante",v:"I"},{t:"Complacente",v:"S"},{t:"Medroso",v:"C"},{t:"Independente",v:"D"}]},
+        {id:11, opts:[{t:"Vigoroso",v:"D"},{t:"Afável",v:"I"},{t:"Discreto",v:"C"},{t:"Resignado",v:"S"}]},
+        {id:12, opts:[{t:"Tagarela",v:"I"},{t:"Convencional",v:"C"},{t:"Ousado",v:"D"},{t:"Calmo",v:"S"}]},
+        {id:13, opts:[{t:"Competitivo",v:"D"},{t:"Alegre",v:"I"},{t:"Agradável",v:"S"},{t:"Retraído",v:"C"}]},
+        {id:14, opts:[{t:"Satisfeito",v:"S"},{t:"Obediente",v:"C"},{t:"Firme",v:"D"},{t:"Brincalhão",v:"I"}]},
+        {id:15, opts:[{t:"Confiante",v:"I"},{t:"Simpático",v:"S"},{t:"Tolerante",v:"C"},{t:"Agressivo",v:"D"}]},
+        {id:16, opts:[{t:"Adaptável",v:"S"},{t:"Sistemático",v:"C"},{t:"Vigoroso",v:"D"},{t:"Sociável",v:"I"}]},
+        {id:17, opts:[{t:"Vibrante",v:"I"},{t:"Analítico",v:"C"},{t:"Afirmativo",v:"D"},{t:"Sereno",v:"S"}]},
+        {id:18, opts:[{t:"Inovador",v:"D"},{t:"Popular",v:"I"},{t:"Amável",v:"S"},{t:"Perfeccionista",v:"C"}]},
+        {id:19, opts:[{t:"Argumentador",v:"D"},{t:"Gentil",v:"S"},{t:"Metódico",v:"C"},{t:"Inspirador",v:"I"}]},
+        {id:20, opts:[{t:"Destemido",v:"D"},{t:"Espirituoso",v:"I"},{t:"Pacificador",v:"S"},{t:"Sensível",v:"C"}]},
+        {id:21, opts:[{t:"Polido",v:"C"},{t:"Audaz",v:"D"},{t:"Refinado",v:"I"},{t:"Generoso",v:"S"}]},
+        {id:22, opts:[{t:"Incentivador",v:"I"},{t:"Prudente",v:"C"},{t:"Determinado",v:"D"},{t:"Prestativo",v:"S"}]},
+        {id:23, opts:[{t:"Autossuficiente",v:"D"},{t:"Dócil",v:"S"},{t:"Idealista",v:"I"},{t:"Objetivo",v:"C"}]},
+        {id:24, opts:[{t:"Direto",v:"D"},{t:"Entusiasta",v:"I"},{t:"Tolerante",v:"S"},{t:"Convencional",v:"C"}]},
+        {id:25, opts:[{t:"Persistente",v:"D"},{t:"Colaborativo",v:"S"},{t:"Cauteloso",v:"C"},{t:"Divertido",v:"I"}]},
+        {id:26, opts:[{t:"Exigente",v:"D"},{t:"Conciliador",v:"S"},{t:"Animado",v:"I"},{t:"Preciso",v:"C"}]},
+        {id:27, opts:[{t:"Inquieto",v:"D"},{t:"Amigável",v:"I"},{t:"Estável",v:"S"},{t:"Cuidadoso",v:"C"}]},
+        {id:28, opts:[{t:"Respeitoso",v:"C"},{t:"Pioneiro",v:"D"},{t:"Otimista",v:"I"},{t:"Atencioso",v:"S"}]}
     ];
-    for(let i=4; i<=28; i++) { matrizDISC.push({id:i, opts:[{t:"Firme e Direto",v:"D"},{t:"Animado e Falante",v:"I"},{t:"Calmo e Estável",v:"S"},{t:"Exato e Correto",v:"C"}]}); }
 
     function render() {
-        // Render SAP
+        // SAP Render
         const cSap = document.getElementById('container-sap');
-        compsSAP.forEach((c, idx) => {
-            cSap.innerHTML += `
-                <div class="pergunta-sap">
-                    <label>${c}</label>
-                    <div class="opcoes-sap">
-                        ${[1,2,3,4,5].map(n => `<label><input type="radio" name="sap${idx}" value="${n}"><br>${n}</label>`).join('')}
-                    </div>
-                </div>`;
+        compsSAP.forEach((c, i) => {
+            cSap.innerHTML += `<div class="pergunta-sap"><label>${c}</label><div class="opcoes-sap">${[1,2,3,4,5].map(n => `<label><input type="radio" name="sap${i}" value="${n}"><br>${n}</label>`).join('')}</div></div>`;
         });
 
-        // Render DISC
+        // DISC Render
         const cDisc = document.getElementById('container-disc');
         matrizDISC.forEach(b => {
-            let html = `<div class="bloco-disc"><div class="linha-header"><span>Bloco ${b.id}</span><span>MAIS</span><span>MENOS</span></div>`;
+            let h = `<div class="bloco-disc"><div class="linha-header"><span>Bloco ${b.id}</span><span>MAIS</span><span>MENOS</span></div>`;
             b.opts.forEach(o => {
-                html += `
-                    <div class="linha-disc">
-                        <span>${o.t}</span>
-                        <div class="col-center"><input type="radio" name="m${b.id}" value="${o.v}"></div>
-                        <div class="col-center"><input type="radio" name="l${b.id}" value="${o.v}"></div>
-                    </div>`;
+                h += `<div class="linha-disc"><span>${o.t}</span><div class="col-radio"><input type="radio" name="m${b.id}" value="${o.v}"></div><div class="col-radio"><input type="radio" name="l${b.id}" value="${o.v}"></div></div>`;
             });
-            cDisc.innerHTML += html + `</div>`;
+            cDisc.innerHTML += h + `</div>`;
         });
     }
 
     function enviarDados() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Por favor, insira o nome.");
-
-        // Coleta SAP
-        let notasSAP = [];
-        for(let i=0; i<7; i++) {
-            const r = document.querySelector(`input[name="sap${i}"]:checked`);
-            if(!r) return alert("Responda todas as perguntas SAP.");
-            notasSAP.push(parseInt(r.value));
+        if(!nome) return alert("Preencha o nome!");
+        
+        let sapRes = [];
+        for(let i=0; i<7; i++){
+            let r = document.querySelector(`input[name="sap${i}"]:checked`);
+            if(!r) return alert("Responda todo o SAP!");
+            sapRes.push(parseInt(r.value));
         }
 
-        // Coleta DISC
         let d=0, i=0, s=0, c=0;
-        for(let j=1; j<=28; j++) {
-            const mais = document.querySelector(`input[name="m${j}"]:checked`);
-            const menos = document.querySelector(`input[name="l${j}"]:checked`);
-            if(!mais || !menos) return alert("Preencha o Bloco " + j + " do DISC.");
-            if(mais.value === menos.value) return alert("No Bloco " + j + ", você não pode escolher a mesma opção para MAIS e MENOS.");
+        for(let j=1; j<=28; j++){
+            let m = document.querySelector(`input[name="m${j}"]:checked`);
+            let l = document.querySelector(`input[name="l${j}"]:checked`);
+            if(!m || !l) return alert("Responda o bloco "+j+" do DISC!");
+            if(m.value === l.value) return alert("No bloco "+j+" escolha adjetivos diferentes para MAIS e MENOS!");
             
-            // Cálculo de dominância
-            if(mais.value === 'D') d++; if(mais.value === 'I') i++; if(mais.value === 'S') s++; if(mais.value === 'C') c++;
-            if(menos.value === 'D') d--; if(menos.value === 'I') i--; if(menos.value === 'S') s--; if(menos.value === 'C') c--;
+            if(m.value==='D') d++; if(m.value==='I') i++; if(m.value==='S') s++; if(m.value==='C') c++;
+            if(l.value==='D') d--; if(l.value==='I') i--; if(l.value==='S') s--; if(l.value==='C') c--;
         }
 
-        db.ref('resultados_testes').push({
-            aluno: nome,
-            sap: notasSAP,
-            disc: {D:d, I:i, S:s, C:c},
-            data: new Date().toLocaleString()
-        }).then(() => {
-            alert("Sucesso, Jorge! Dados enviados para o painel.");
-            location.reload();
-        });
+        db.ref('resultados_testes').push({ aluno: nome, sap: sapRes, disc: {D:d, I:i, S:s, C:c}, data: new Date().toLocaleString() })
+        .then(() => { alert("Finalizado com sucesso!"); location.reload(); });
     }
-
     render();
 </script>
 </body>
