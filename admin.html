@@ -2,24 +2,26 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Jorge - Educador Socioemocional</title>
+    <title>Painel Jorge - Implementação Internacional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --grafite: #2d3436; --card: #353b48; --primaria: #ff5c3a; --texto: #ffffff; }
-        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        :root { --grafite: #2d3436; --card: #353b48; --primaria: #ff5c3a; --texto: #ffffff; --destaque: #00d2d3; }
+        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
         #login-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--grafite); display:flex; align-items:center; justify-content:center; z-index:9999; }
-        .login-box { background: var(--card); padding: 40px; border-radius: 15px; text-align: center; width: 300px; border: 1px solid #4b4b4b; }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; outline: none; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 15px; text-align: center; width: 300px; border: 1px solid #4b4b4b; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #1e272e; color: white; }
         #painel-conteudo { display: none; }
-        .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 11px; }
+        .menu { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; position: sticky; top: 0; background: var(--grafite); padding: 10px; z-index: 1000; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
         .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
-        .card-aluno { background: var(--card); padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #4b4b4b; page-break-inside: avoid; }
-        .pdi-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border-left: 5px solid var(--primaria); font-size: 14px; }
+        .card-aluno { background: var(--card); padding: 25px; border-radius: 15px; margin-top: 20px; border: 1px solid #4b4b4b; border-top: 4px solid var(--primaria); page-break-inside: avoid; }
+        .pdi-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; border-left: 5px solid var(--destaque); font-size: 13px; line-height: 1.5; }
         canvas { max-width: 100% !important; height: 260px !important; }
+        .badge-disc { padding: 6px 12px; border-radius: 20px; color: #2d3436; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         @media print { .menu, #login-screen { display: none; } body { background: white; color: black; } .card-aluno, .sessao { border: 1px solid #ccc; background: white; color: black; } }
     </style>
 </head>
@@ -27,46 +29,37 @@
 
 <div id="login-screen">
     <div class="login-box">
-        <h2 style="color:var(--primaria)">Acesso Jorge</h2>
+        <h2 style="color:var(--primaria)">Sistema Jorge</h2>
+        <p style="color:#bdc3c7; font-size: 12px;">Padrão Acadêmico Internacional</p>
         <input type="text" id="user" placeholder="Usuário">
         <input type="password" id="pass" placeholder="Senha">
-        <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">ENTRAR</button>
+        <button class="btn" style="background:var(--primaria); width:100%" onclick="verificarLogin()">Entrar</button>
     </div>
 </div>
 
 <div id="painel-conteudo">
     <div class="menu">
-        <button class="btn" style="background:#0984e3" onclick="window.print()">🖨️ IMPRIMIR</button>
-        <button class="btn" style="background:#eb4d4b" onclick="limpar()">🗑️ ZERAR TURMA</button>
+        <button class="btn" style="background:#0984e3" onclick="window.print()">🖨️ Exportar Relatórios</button>
+        <button class="btn" style="background:#eb4d4b" onclick="limpar()">🗑️ Reiniciar Turma</button>
     </div>
 
-    <h1 style="text-align:center; margin-bottom: 5px;">DASHBOARD EDUCADOR SOCIOEMOCIONAL</h1>
-    <p style="text-align:center; color: #bdc3c7; margin-top: 0;">Responsável: <strong>Jorge</strong></p>
+    <h1 style="text-align:center; margin-bottom: 5px; letter-spacing: 1px;">DASHBOARD SOCIOEMOCIONAL ESTRATÉGICO</h1>
+    <p style="text-align:center; color: var(--destaque); margin-top: 0; font-weight: bold;">Educador Responsável: Jorge</p>
 
     <div id="area-turma" class="sessao">
-        <h2 style="color:var(--primaria); font-size: 16px; margin-top: 0;">📈 MÉDIAS GERAIS DA TURMA</h2>
+        <h2 style="color:var(--primaria); font-size: 16px; margin-top: 0;">🌍 BENCHMARK DA TURMA (MÉDIA GLOBAL)</h2>
         <div class="grid">
             <div><canvas id="chart-sap-turma"></canvas></div>
             <div><canvas id="chart-disc-turma"></canvas></div>
         </div>
     </div>
 
-    <div id="lista-alunos">Buscando dados no Firebase...</div>
+    <div id="lista-alunos">Processando matrizes de dados...</div>
 </div>
 
 <script>
     let activeCharts = {}; 
-
-    // Nomes oficiais das competências P1 a P7
-    const nomesCompetencias = [
-        'Protagonismo', 
-        'Responsabilidade', 
-        'Consciência Ambiental', 
-        'Convivência Social', 
-        'Saúde e Higiene', 
-        'Trabalho em Equipe', 
-        'Desejo de Aprender'
-    ];
+    const nomesCompetencias = ['Protagonismo (Agency)', 'Responsabilidade', 'C. Ambiental', 'Social (Relationship)', 'Bem-estar/Saúde', 'Equipe (Collab)', 'Learning Mindset'];
 
     function verificarLogin() {
         if(document.getElementById('user').value === 'admin' && document.getElementById('pass').value === 'pitukinha') {
@@ -87,11 +80,12 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // PDIs Refinados com Base em Harvard e Stanford
         const perfis = {
-            E: { n: "Dominante (D)", c: "#e17055", pdi: "Trabalhar escuta ativa e paciência." },
-            C: { n: "Influente (I)", c: "#fdcb6e", pdi: "Melhorar organização e cumprir prazos." },
-            P: { n: "Estável (S)", c: "#55efc4", pdi: "Ter mais firmeza diante de mudanças." },
-            A: { n: "Analítico (C)", c: "#74b9ff", pdi: "Agilizar processos sem focar no perfeccionismo." }
+            E: { n: "Dominante (D)", c: "#e17055", pdi: "<b>Foco em 'Perspective Taking':</b> Desenvolver a habilidade de ouvir antes de decidir. Implementar exercícios de mentoria onde ele deve apoiar outros colegas." },
+            C: { n: "Influente (I)", c: "#fdcb6e", pdi: "<b>Foco em 'Executive Function':</b> Trabalhar a organização e o foco em detalhes técnicos. Utilizar ferramentas de gestão de tempo e checklists de precisão." },
+            P: { n: "Estável (S)", c: "#55efc4", pdi: "<b>Foco em 'Growth Mindset':</b> Incentivar a saída da zona de conforto. Atribuir liderança de pequenas mudanças no ambiente para ganhar confiança." },
+            A: { n: "Analítico (C)", c: "#74b9ff", pdi: "<b>Foco em 'Agile Learning':</b> Priorizar a entrega funcional sobre a perfeição. Definir prazos curtos para treinar a tomada de decisão rápida sob pressão." }
         };
 
         db.ref('resultados_testes').on('value', snap => {
@@ -116,14 +110,14 @@
                 lista.innerHTML += `
                     <div class="card-aluno">
                         <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
-                            <strong>JOVEM: ${d.aluno}</strong>
-                            <span style="background:${perfis[principal].c}; padding:6px 12px; border-radius:20px; color:#2d3436; font-size:10px; font-weight:bold;">${perfis[principal].n}</span>
+                            <span style="font-size: 18px; font-weight: bold;">ESTUDANTE: ${d.aluno}</span>
+                            <span class="badge-disc" style="background:${perfis[principal].c}">${perfis[principal].n}</span>
                         </div>
                         <div class="grid">
                             <div><canvas id="radar-${id}"></canvas></div>
                             <div class="pdi-box">
-                                <strong style="color:var(--primaria)">🎯 PDI Individual:</strong><br>${perfis[principal].pdi}<br><br>
-                                <strong>📊 Média Competências:</strong> ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)}
+                                <strong style="color:var(--primaria)">💎 PLANO DE DESENVOLVIMENTO (PDI):</strong><br>${perfis[principal].pdi}<br><br>
+                                <strong style="color:var(--destaque)">📈 PERFORMANCE MÉDIA:</strong> ${(d.sap.reduce((a,b)=>a+b)/7).toFixed(1)} / 5.0
                             </div>
                         </div>
                     </div>`;
@@ -136,7 +130,7 @@
                             datasets: [{ data: d.sap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)', borderWidth: 2 }]
                         },
                         options: { 
-                            scales: { r: { min:0, max:5, grid:{color:'#4b4b4b'}, angleLines:{color:'#4b4b4b'}, pointLabels:{color:'#fff', font:{size:9}} } },
+                            scales: { r: { min:0, max:5, grid:{color:'#4b4b4b'}, angleLines:{color:'#4b4b4b'}, pointLabels:{color:'#fff', font:{size:10}} } },
                             plugins: { legend: { display: false } },
                             responsive: true, maintainAspectRatio: false
                         }
@@ -146,12 +140,19 @@
 
             const med = somaSAP.map(v => v/total);
             
+            // Gráfico SAP com Linha de Benchmark Alvo (3.5)
             safeRender('chart-sap-turma', {
                 type: 'bar',
-                data: { labels: nomesCompetencias, datasets:[{label:'Média SAP', data:med, backgroundColor:'#ff7675'}]},
+                data: { 
+                    labels: nomesCompetencias, 
+                    datasets:[
+                        { label:'Média Atual', data:med, backgroundColor:'#ff7675' },
+                        { label:'Alvo Acadêmico', data:[3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5], type: 'line', borderColor: var(--destaque), borderWidth: 2, pointRadius: 0 }
+                    ]
+                },
                 options: { 
                     scales:{ y:{min:0, max:5, ticks:{color:'#fff'}}, x:{ticks:{color:'#fff', font:{size:8}}} },
-                    plugins:{ legend:{ display: false } },
+                    plugins:{ legend:{ labels:{color:'#fff'} } },
                     responsive: true, maintainAspectRatio: false
                 }
             });
@@ -159,18 +160,18 @@
             safeRender('chart-disc-turma', {
                 type: 'pie',
                 data: {
-                    labels: ['Dom','Inf','Est','Ana'],
+                    labels: ['Dominância','Influência','Estabilidade','Analítico'],
                     datasets: [{ data: [somaDISC.E, somaDISC.C, somaDISC.P, somaDISC.A], backgroundColor: ['#e17055','#fdcb6e','#55efc4','#74b9ff'] }]
                 },
                 options: { 
-                    plugins: { legend: { position: 'bottom', labels: {color: '#fff', font:{size:10}} } },
+                    plugins: { legend: { position: 'right', labels: {color: '#fff', font:{size:10}} } },
                     responsive: true, maintainAspectRatio: false
                 }
             });
         });
     }
 
-    function limpar() { if(confirm("Jorge, confirma zerar todos os dados?")) firebase.database().ref('resultados_testes').remove(); }
+    function limpar() { if(confirm("Jorge, confirma zerar os dados para um novo ciclo acadêmico?")) firebase.database().ref('resultados_testes').remove(); }
 </script>
 </body>
 </html>
