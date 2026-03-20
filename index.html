@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Assessment Completo - Jorge</title>
+    <title>Assessment Completo DISC + SAP - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -10,25 +10,26 @@
         body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 850px; margin: auto; }
         .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
+        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
         
         /* Estilo SAP Detalhado */
         .item-sap { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid var(--destaque); }
         .titulo-sap { font-size: 18px; font-weight: bold; color: var(--destaque); margin-bottom: 10px; display: block; }
-        .descricao-sap { font-size: 14px; color: #ced4da; line-height: 1.5; margin-bottom: 10px; }
-        .evidencias-sap { font-size: 13px; font-style: italic; color: #a29bfe; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .descricao-sap { font-size: 14px; color: #ced4da; line-height: 1.5; margin-bottom: 12px; text-align: justify; }
+        .evidencias-sap { font-size: 13px; color: #a29bfe; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px dashed #4b4b4b; }
         .opcoes-sap { display: flex; justify-content: space-around; align-items: center; background: #1e272e; padding: 15px; border-radius: 8px; }
-        .opcoes-sap label { text-align: center; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .opcoes-sap label { text-align: center; cursor: pointer; font-weight: bold; }
 
         /* Estilo DISC */
         .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
         .enunciado-disc { background: #3d444b; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: var(--destaque); }
-        .linha-header { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; margin-bottom: 10px; }
+        .linha-header { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; }
         .linha-res { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #454d5d; }
         
-        input[type="radio"] { width: 22px; height: 22px; accent-color: var(--primaria); cursor: pointer; }
+        input[type="radio"] { width: 24px; height: 24px; accent-color: var(--primaria); cursor: pointer; }
         input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
-        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 8px 0 #b33921; }
+        .btn-enviar:active { transform: translateY(4px); box-shadow: 0 4px 0 #b33921; }
     </style>
 </head>
 <body>
@@ -36,22 +37,20 @@
 <div class="container">
     <div class="sessao">
         <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO ALUNO">
+        <input type="text" id="nome-aluno" placeholder="DIGITE SEU NOME COMPLETO">
     </div>
 
     <div class="sessao">
         <h2>2. COMPETÊNCIAS SOCIOEMOCIONAIS (SAP)</h2>
-        <p>Leia atentamente a descrição de cada competência e dê sua nota de 1 a 5:</p>
         <div id="sap-container"></div>
     </div>
 
     <div class="sessao">
         <h2>3. PERFIL COMPORTAMENTAL (DISC)</h2>
-        <p>Marque o que <b>MAIS (+)</b> e o que <b>MENOS (-)</b> se aplica a você:</p>
         <div id="disc-container"></div>
     </div>
 
-    <button class="btn-enviar" onclick="enviar()">SALVAR AVALIAÇÃO COMPLETA</button>
+    <button class="btn-enviar" onclick="enviar()">ENVIAR AVALIAÇÃO PARA O JORGE</button>
 </div>
 
 <script>
@@ -62,57 +61,62 @@
     const listaSAP = [
         {
             titulo: "1 - SER PROTAGONISTA",
-            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário e construtor do seu destino.",
-            evidencia: "EVIDÊNCIAS: Sou referência nos meus grupos; Respeito e sou respeitado; Construo meu Projeto de Vida; Reconheço meus talentos e pontos a melhorar.",
+            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. Consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal.",
+            evidencia: "• Sou referência construtiva nos grupos.<br>• Respeito e me faço respeitar.<br>• Construo meu Projeto de Vida (estudos, trabalho, pessoal).<br>• Reconheço potenciais e pontos a melhorar."
         },
         {
             titulo: "2 - SER RESPONSÁVEL E COMPROMETIDO",
-            desc: "Comprometer-se com suas atividades, ser pontual, cumprir o exigido e respeitar regras, responsabilizando-se pelos acontecimentos e desempenho.",
-            evidencia: "EVIDÊNCIAS: Cumpro prazos; Sou pontual/assíduo; Cuido da higiene pessoal; Cumpro as regras do contrato de convivência.",
+            desc: "Comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido, respeitar regras e normas de convivência. É esforçar-se para obter bons resultados e melhorar seu desempenho continuamente.",
+            evidencia: "• Cumpro tarefas e prazos com desempenho.<br>• Sou pontual e justifico faltas/atrasos.<br>• Reconheço a importância do trabalho para meu desenvolvimento.<br>• Cuido da minha apresentação e higiene.<br>• Cumpro as normas do contrato."
         },
         {
             titulo: "3 - CONSCIÊNCIA AMBIENTAL",
-            desc: "Agir de forma sustentável, cuidando dos recursos naturais e do ambiente onde vive e trabalha.",
-            evidencia: "EVIDÊNCIAS: Evito desperdícios; Mantenho o ambiente limpo; Pratico a reciclagem quando possível.",
+            desc: "Compreender a interdependência entre o ser humano e o meio ambiente. Adotar hábitos de consumo consciente, preservação de recursos naturais e descarte correto de resíduos no dia a dia.",
+            evidencia: "• Economizo água e energia.<br>• Pratico o descarte correto de lixo.<br>• Zelo pela limpeza dos espaços comuns."
         },
         {
             titulo: "4 - CONVIVÊNCIA SOCIAL",
-            desc: "Relacionar-se de forma ética e harmoniosa com diferentes pessoas e culturas.",
-            evidencia: "EVIDÊNCIAS: Sou empático; Sei ouvir opiniões diferentes; Evito e mediando conflitos.",
+            desc: "Capacidade de interagir com o próximo de forma ética, respeitando a diversidade e as diferenças individuais. Promover um ambiente de harmonia e respeito mútuo.",
+            evidencia: "• Sou cordial com todos.<br>• Respeito opiniões contrárias às minhas.<br>• Não pratico nem aceito discriminação."
         },
         {
             titulo: "5 - SAÚDE E HIGIENE",
-            desc: "Zelar pelo bem-estar físico e mental, mantendo hábitos saudáveis.",
-            evidencia: "EVIDÊNCIAS: Cuido da alimentação; Mantenho asseio pessoal; Durmo o suficiente para render bem.",
+            desc: "Manter hábitos que promovam o bem-estar físico e mental. Entender que o cuidado com o corpo e a mente é fundamental para a produtividade e qualidade de vida.",
+            evidencia: "• Mantenho boa aparência e asseio corporal.<br>• Busco equilíbrio emocional nas tarefas.<br>• Respeito meus limites físicos."
         },
         {
             titulo: "6 - TRABALHO EM EQUIPE",
-            desc: "Colaborar com o grupo para atingir objetivos comuns, compartilhando conhecimentos.",
-            evidencia: "EVIDÊNCIAS: Ajudo colegas; Aceito feedbacks; Coloco o objetivo do grupo acima do individual.",
+            desc: "Atuar de forma colaborativa para alcançar objetivos comuns. Compartilhar responsabilidades, informações e apoiar os colegas para o crescimento do grupo.",
+            evidencia: "• Colaboro com o aprendizado dos colegas.<br>• Aceito críticas construtivas.<br>• Priorizo o sucesso do grupo."
         },
         {
             titulo: "7 - DESEJO DE APRENDER",
-            desc: "Busca constante por novos conhecimentos e evolução profissional/pessoal.",
-            evidencia: "EVIDÊNCIAS: Sou curioso; Faço cursos extras; Peço orientação quando não sei algo.",
+            desc: "Demonstrar curiosidade, interesse e proatividade na busca por novos conhecimentos e habilidades que contribuam para o crescimento pessoal e profissional.",
+            evidencia: "• Sou curioso e faço perguntas relevantes.<br>• Busco aprender além do que é pedido.<br>• Aplico novos conhecimentos na prática."
         }
     ];
 
     const blocosDISC = [];
     for(let i=1; i<=28; i++) {
         blocosDISC.push({
-            q: "Grupo " + i + ": Como você agiria nesta situação?",
-            o: [{t:"Focado em resultados e metas",v:"D"}, {t:"Entusiasmado e comunicativo",v:"I"}, {t:"Calmo, paciente e leal",v:"S"}, {t:"Preciso, lógico e atento a detalhes",v:"C"}]
+            q: "Blobo Situacional " + i,
+            o: [
+                {t:"Atuo com foco em resultados rápidos",v:"D"},
+                {t:"Prefiro influenciar pessoas pelo entusiasmo",v:"I"},
+                {t:"Trabalho melhor em processos estáveis",v:"S"},
+                {t:"Busco a perfeição e exatidão técnica",v:"C"}
+            ]
         });
     }
 
-    function renderizar() {
+    function render() {
         const sapDiv = document.getElementById('sap-container');
         listaSAP.forEach((s, i) => {
             sapDiv.innerHTML += `
                 <div class="item-sap">
                     <span class="titulo-sap">${s.titulo}</span>
                     <div class="descricao-sap">${s.desc}</div>
-                    <div class="evidencias-sap">${s.evidencia}</div>
+                    <div class="evidencias-sap"><strong>EVIDÊNCIAS NORTEADORAS:</strong><br>${s.evidencia}</div>
                     <div class="opcoes-sap">
                         ${[1,2,3,4,5].map(v => `<label><input type="radio" name="sap${i}" value="${v}"><br>${v}</label>`).join('')}
                     </div>
@@ -131,12 +135,12 @@
 
     function enviar() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Jorge, o nome é obrigatório!");
+        if(!nome) return alert("Jorge, o nome do aluno é obrigatório!");
 
         let sapRes = [];
         for(let i=0; i<7; i++) {
             let r = document.querySelector(`input[name="sap${i}"]:checked`);
-            if(!r) return alert("Por favor, dê uma nota para todas as 7 competências SAP!");
+            if(!r) return alert("Responda todas as 7 competências SAP antes de enviar.");
             sapRes.push(parseInt(r.value));
         }
 
@@ -144,16 +148,17 @@
         for(let j=0; j<28; j++) {
             let m = document.querySelector(`input[name="m${j}"]:checked`);
             let l = document.querySelector(`input[name="l${j}"]:checked`);
-            if(!m || !l) return alert("Responda o bloco DISC número " + (j+1));
-            if(m.value === l.value) return alert("No bloco "+(j+1)+", o MAIS e MENOS devem ser diferentes.");
+            if(!m || !l) return alert("Falta responder o bloco DISC " + (j+1));
+            if(m.value === l.value) return alert("No bloco "+(j+1)+", o MAIS e o MENOS não podem ser a mesma opção.");
+            
             if(m.value==='D') d++; if(m.value==='I') i++; if(m.value==='S') s++; if(m.value==='C') c++;
             if(l.value==='D') d--; if(l.value==='I') i--; if(l.value==='S') s--; if(l.value==='C') c--;
         }
 
         db.ref('resultados_testes').push({ aluno: nome, sap: sapRes, disc: {D:d, I:i, S:s, C:c}, data: new Date().toLocaleString() })
-        .then(() => { alert("Finalizado com sucesso, Jorge!"); location.reload(); });
+        .then(() => { alert("Finalizado com sucesso, Jorge! O perfil foi gerado."); location.reload(); });
     }
-    renderizar();
+    render();
 </script>
 </body>
 </html>
