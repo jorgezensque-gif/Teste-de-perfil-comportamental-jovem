@@ -4,7 +4,6 @@
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
     <script>
-        // Bloqueador de alertas de tradução
         const _alert = window.alert;
         window.alert = function(msg) {
             if (typeof msg === 'string' && (msg.toLowerCase().includes('traduç') || msg.toLowerCase().includes('translat'))) return;
@@ -33,7 +32,7 @@
         <div class="card full">
             <h2>SELECIONAR ALUNO</h2>
             <select id="selectAluno" onchange="atualizarPainel()"><option value="">Carregando...</option></select>
-            <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE E PDI COM IA</button>
+            <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE COM GEMINI 2.0</button>
             <div id="resultadoIA"></div>
         </div>
         <div class="card"><h2>AUTOAVALIAÇÃO SAP (RADAR)</h2><div class="chart-container"><canvas id="chartRadar"></canvas></div></div>
@@ -47,8 +46,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // ATENÇÃO: COLOQUE SUA NOVA CHAVE AQUI
-    const GEMINI_API_KEY = "AIzaSyB1plyDc23Y8GpnYfVPZ6uXAwsJ_-ASyEA"; 
+    const GEMINI_API_KEY = "SUA_NOVA_CHAVE_AQUI"; 
 
     let dadosGerais = {};
     let charts = {};
@@ -90,6 +88,7 @@
         criarGrafico('chartDisc', 'bar', ['D','I','S','C'], [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }]);
         criarGrafico('chartSap', 'bar', ["P", "R", "C", "E", "S", "Eq", "A"], [{ data: notasSap, backgroundColor: '#ff5c3a' }]);
         
+        // CÁLCULO PARA DUNNING-KRUGER BASEADO NA MÉDIA SAP
         const media = notasSap.reduce((a,b)=>a+b,0)/7;
         criarGrafico('chartDunning', 'line', ['Início', 'Pico', 'Vale', 'Subida', 'Mestria'], [{ data: [0.5, 5, 1, 2.5, media], borderColor: '#8e44ad', tension: 0.4, fill: false }]);
     }
@@ -98,14 +97,14 @@
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
-        box.innerHTML = "🤖 Mentor IA analisando dados de " + aluno.aluno + "...";
+        box.innerHTML = "🤖 Mentor IA (2.0 Flash) analisando dados...";
         box.style.display = 'block';
 
-        const prompt = "Aja como um mentor de carreira. Analise o aluno " + aluno.aluno + " com base em suas notas SAP e perfil DISC. Sugira um PDI curto.";
+        const prompt = "Aja como um mentor. Analise as notas SAP e perfil DISC do aluno " + aluno.aluno + ". Forneça um PDI curto.";
 
         try {
-            // AJUSTE DE ROTA: Usando a versão estável v1 para evitar o erro 'not found'
-            const resp = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
+            // URL ATUALIZADA PARA GEMINI-2.0-FLASH
+            const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -113,12 +112,10 @@
             const data = await resp.json();
             
             if (data.candidates && data.candidates[0].content) {
-                const textoFinal = data.candidates[0].content.parts[0].text;
-                box.innerHTML = "<strong>🎯 ANÁLISE DO MENTOR:</strong><br><br>" + textoFinal.replace(/\n/g, '<br>');
-            } else if (data.error) {
-                throw new Error(data.error.message);
+                const texto = data.candidates[0].content.parts[0].text;
+                box.innerHTML = "<strong>🎯 ANÁLISE GEMINI 2.0:</strong><br><br>" + texto.replace(/\n/g, '<br>');
             } else {
-                throw new Error("O Google não conseguiu gerar a resposta. Tente novamente.");
+                throw new Error(data.error ? data.error.message : "Resposta vazia");
             }
         } catch (e) {
             box.innerHTML = "❌ Erro: " + e.message;
