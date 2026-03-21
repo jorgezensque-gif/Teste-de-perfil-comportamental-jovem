@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Jorge - Oficial 2026</title>
+    <title>Assessment Oficial - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
+        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 800px; margin: auto; }
-        .sessao { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; font-size: 20px; }
+        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
         
         /* Estilo SAP */
         .item-sap { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid var(--destaque); }
-        .titulo-sap { font-size: 16px; font-weight: bold; color: var(--destaque); display: block; margin-bottom: 5px; }
+        .titulo-sap { font-size: 17px; font-weight: bold; color: var(--destaque); display: block; margin-bottom: 5px; }
         .evid-sap { font-size: 12px; color: #a29bfe; margin-bottom: 10px; font-style: italic; }
         .opcoes-sap { display: flex; justify-content: space-around; background: #1e272e; padding: 12px; border-radius: 8px; }
-        .opcoes-sap label { cursor: pointer; font-weight: bold; }
 
         /* Estilo DISC */
-        .bloco-disc { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        .enunciado-azul { background: #1e3799; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 15px; border-left: 5px solid var(--destaque); }
-        .linha-header { display: grid; grid-template-columns: 1fr 70px 70px; gap: 5px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 11px; margin-bottom: 10px; }
-        .linha-res { display: grid; grid-template-columns: 1fr 70px 70px; gap: 5px; align-items: center; padding: 10px 0; border-bottom: 1px solid #454d5d; font-size: 14px; }
+        .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
+        .enunciado-azul { background: #1e3799; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 5px solid var(--destaque); }
+        .linha-header { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; }
+        .linha-res { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
         
-        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primaria); }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; }
-        .btn-enviar { width: 100%; padding: 20px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b33921; }
+        input[type="radio"] { width: 24px; height: 24px; cursor: pointer; accent-color: var(--primaria); }
+        input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
+        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #b33921; }
     </style>
 </head>
 <body>
@@ -36,7 +35,7 @@
 <div class="container">
     <div class="sessao">
         <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO ALUNO">
+        <input type="text" id="nome-aluno" placeholder="DIGITE O NOME DO ALUNO">
     </div>
 
     <div class="sessao">
@@ -68,7 +67,7 @@
 
         <div class="item-sap">
             <span class="titulo-sap">3. CONSCIÊNCIA AMBIENTAL</span>
-            <div class="evid-sap">Sustentabilidade, Descarte Correto.</div>
+            <div class="evid-sap">Sustentabilidade e Descarte.</div>
             <div class="opcoes-sap">
                 <label>1 <input type="radio" name="sap2" value="1"></label>
                 <label>2 <input type="radio" name="sap2" value="2"></label>
@@ -80,7 +79,7 @@
 
         <div class="item-sap">
             <span class="titulo-sap">4. CONVIVÊNCIA SOCIAL</span>
-            <div class="evid-sap">Ética, Respeito à Diversidade.</div>
+            <div class="evid-sap">Ética e Diversidade.</div>
             <div class="opcoes-sap">
                 <label>1 <input type="radio" name="sap3" value="1"></label>
                 <label>2 <input type="radio" name="sap3" value="2"></label>
@@ -92,7 +91,7 @@
 
         <div class="item-sap">
             <span class="titulo-sap">5. SAÚDE E HIGIENE</span>
-            <div class="evid-sap">Asseio, Equilíbrio Mental.</div>
+            <div class="evid-sap">Bem-estar e Asseio.</div>
             <div class="opcoes-sap">
                 <label>1 <input type="radio" name="sap4" value="1"></label>
                 <label>2 <input type="radio" name="sap4" value="2"></label>
@@ -104,7 +103,7 @@
 
         <div class="item-sap">
             <span class="titulo-sap">6. TRABALHO EM EQUIPE</span>
-            <div class="evid-sap">Colaboração, Feedback.</div>
+            <div class="evid-sap">Colaboração e Feedback.</div>
             <div class="opcoes-sap">
                 <label>1 <input type="radio" name="sap5" value="1"></label>
                 <label>2 <input type="radio" name="sap5" value="2"></label>
@@ -116,7 +115,7 @@
 
         <div class="item-sap">
             <span class="titulo-sap">7. DESEJO DE APRENDER</span>
-            <div class="evid-sap">Curiosidade, Proatividade.</div>
+            <div class="evid-sap">Curiosidade e Proatividade.</div>
             <div class="opcoes-sap">
                 <label>1 <input type="radio" name="sap6" value="1"></label>
                 <label>2 <input type="radio" name="sap6" value="2"></label>
@@ -129,11 +128,10 @@
 
     <div class="sessao">
         <h2>3. PERFIL COMPORTAMENTAL (DISC)</h2>
-        <p style="font-size: 12px; color: #ccc; margin-bottom: 20px;">Marque uma opção como MAIS (+) e outra diferente como MENOS (-) para cada pergunta.</p>
-
+        
         <div class="bloco-disc">
             <div class="enunciado-azul">1. Como você lida com trabalhos repetitivos?</div>
-            <div class="linha-header"><span>RESPOSTA</span><span>MAIS</span><span>MENOS</span></div>
+            <div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>
             <div class="linha-res"><span>Gosto de rotina e segurança</span><input type="radio" name="m0" value="S"><input type="radio" name="l0" value="S"></div>
             <div class="linha-res"><span>Sigo o padrão lógico</span><input type="radio" name="m0" value="C"><input type="radio" name="l0" value="C"></div>
             <div class="linha-res"><span>Fico impaciente, quero ação</span><input type="radio" name="m0" value="D"><input type="radio" name="l0" value="D"></div>
@@ -142,78 +140,55 @@
 
         <div class="bloco-disc">
             <div class="enunciado-azul">2. Numa discussão em grupo, você geralmente:</div>
-            <div class="linha-header"><span>RESPOSTA</span><span>MAIS</span><span>MENOS</span></div>
+            <div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>
             <div class="linha-res"><span>Toma a frente e decide</span><input type="radio" name="m1" value="D"><input type="radio" name="l1" value="D"></div>
             <div class="linha-res"><span>Anima e motiva o grupo</span><input type="radio" name="m1" value="I"><input type="radio" name="l1" value="I"></div>
             <div class="linha-res"><span>Ouve antes de opinar</span><input type="radio" name="m1" value="S"><input type="radio" name="l1" value="S"></div>
             <div class="linha-res"><span>Analisa fatos e lógica</span><input type="radio" name="m1" value="C"><input type="radio" name="l1" value="C"></div>
         </div>
 
-        <div class="bloco-disc">
-            <div class="enunciado-azul">3. Qual sua reação perante mudanças?</div>
-            <div class="linha-header"><span>RESPOSTA</span><span>MAIS</span><span>MENOS</span></div>
-            <div class="linha-res"><span>Vejo como chance de vencer</span><input type="radio" name="m2" value="D"><input type="radio" name="l2" value="D"></div>
-            <div class="linha-res"><span>Fico entusiasmado</span><input type="radio" name="m2" value="I"><input type="radio" name="l2" value="I"></div>
-            <div class="linha-res"><span>Sinto desconforto inicial</span><input type="radio" name="m2" value="S"><input type="radio" name="l2" value="S"></div>
-            <div class="linha-res"><span>Avalio riscos e detalhes</span><input type="radio" name="m2" value="C"><input type="radio" name="l2" value="C"></div>
-        </div>
-
-        <div class="bloco-disc">
-            <div class="enunciado-azul">4. Como você organiza seu trabalho?</div>
-            <div class="linha-header"><span>RESPOSTA</span><span>MAIS</span><span>MENOS</span></div>
-            <div class="linha-res"><span>Foco total no resultado</span><input type="radio" name="m3" value="D"><input type="radio" name="l3" value="D"></div>
-            <div class="linha-res"><span>De forma criativa e livre</span><input type="radio" name="m3" value="I"><input type="radio" name="l3" value="I"></div>
-            <div class="linha-res"><span>Seguindo um cronograma fixo</span><input type="radio" name="m3" value="S"><input type="radio" name="l3" value="S"></div>
-            <div class="linha-res"><span>Com planilhas e precisão</span><input type="radio" name="m3" value="C"><input type="radio" name="l3" value="C"></div>
-        </div>
-
-        <div id="outros-blocos"></div>
+        <div id="outros-blocos-disc"></div>
     </div>
 
-    <button class="btn-enviar" onclick="enviar()">FINALIZAR E ENVIAR AO JORGE</button>
+    <button class="btn-enviar" onclick="enviar()">SALVAR RESULTADOS</button>
 </div>
 
 <script>
-    // Inicialização Firebase
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Renderizar blocos restantes via script (mais seguro)
     const perguntas = [
-        {q:"5. O que mais te motiva?", o:[{t:"Poder e desafios",v:"D"},{t:"Reconhecimento social",v:"I"},{t:"Ambiente harmonioso",v:"S"},{t:"Qualidade e perfeição",v:"C"}]},
-        {q:"6. Sob pressão, você fica:", o:[{t:"Agressivo ou impaciente",v:"D"},{t:"Emocional ou falante",v:"I"},{t:"Calado e resistente",v:"S"},{t:"Excessivamente crítico",v:"C"}]},
-        {q:"7. Como você toma decisões?", o:[{t:"Rápido e sozinho",v:"D"},{t:"Influenciado por outros",v:"I"},{t:"Demorado, busca apoio",v:"S"},{t:"Analítico, busca fatos",v:"C"}]},
-        {q:"8. Sua principal força é:", o:[{t:"Determinação",v:"D"},{t:"Persuasão",v:"I"},{t:"Paciência",v:"S"},{t:"Organização",v:"C"}]},
-        {q:"9. Em conflitos, você:", o:[{t:"Enfrenta diretamente",v:"D"},{t:"Tenta convencer",v:"I"},{t:"Cede para manter a paz",v:"S"},{t:"Analisa as causas",v:"C"}]},
-        {q:"10. Ao falar com pessoas, você é:", o:[{t:"Direto e objetivo",v:"D"},{t:"Entusiasta e alegre",v:"I"},{t:"Amável e ouvinte",v:"S"},{t:"Formal e reservado",v:"C"}]},
-        {q:"11. Sua atitude na equipe é:", o:[{t:"Liderar para vencer",v:"D"},{t:"Unir as pessoas",v:"I"},{t:"Colaborar e ajudar",v:"S"},{t:"Garantir o processo",v:"C"}]},
-        {q:"12. O que você evita?", o:[{t:"Fracasso e perda de tempo",v:"D"},{t:"Rejeição social",v:"I"},{t:"Mudanças bruscas",v:"S"},{t:"Erros e desorganização",v:"C"}]},
-        {q:"13. Em reuniões, você:", o:[{t:"Interrompe para concluir",v:"D"},{t:"Conta piadas ou histórias",v:"I"},{t:"Concorda com a maioria",v:"S"},{t:"Faz perguntas técnicas",v:"C"}]},
-        {q:"14. Como lida com prazos?", o:[{t:"Acelera o máximo",v:"D"},{t:"Deixa para o final",v:"I"},{t:"Trabalha constante",v:"S"},{t:"Revisa várias vezes",v:"C"}]},
-        {q:"15. Preferência de lazer:", o:[{t:"Competições/Desafios",v:"D"},{t:"Festas e eventos",v:"I"},{t:"Descanso em família",v:"S"},{t:"Leitura ou técnica",v:"C"}]},
-        {q:"16. Como quer ser visto?", o:[{t:"Como um vencedor",v:"D"},{t:"Como alguém querido",v:"I"},{t:"Como alguém leal",v:"S"},{t:"Como alguém competente",v:"C"}]}
+        {q:"3. Reação perante mudanças:", o:[{t:"Vencer",v:"D"},{t:"Entusiasmo",v:"I"},{t:"Paciência",v:"S"},{t:"Análise",v:"C"}]},
+        {q:"4. Como organiza o trabalho?", o:[{t:"Foco total",v:"D"},{t:"Criatividade",v:"I"},{t:"Cronograma",v:"S"},{t:"Precisão",v:"C"}]},
+        {q:"5. O que te motiva?", o:[{t:"Desafios",v:"D"},{t:"Elogios",v:"I"},{t:"Estabilidade",v:"S"},{t:"Lógica",v:"C"}]},
+        {q:"6. Sob pressão fica:", o:[{t:"Impaciente",v:"D"},{t:"Agitado",v:"I"},{t:"Calado",v:"S"},{t:"Crítico",v:"C"}]},
+        {q:"7. Como decide?", o:[{t:"Rápido",v:"D"},{t:"Com outros",v:"I"},{t:"Com calma",v:"S"},{t:"Com dados",v:"C"}]},
+        {q:"8. Sua força:", o:[{t:"Coragem",v:"D"},{t:"Alegria",v:"I"},{t:"Lealdade",v:"S"},{t:"Ordem",v:"C"}]},
+        {q:"9. Em conflitos:", o:[{t:"Enfrenta",v:"D"},{t:"Conversa",v:"I"},{t:"Cede",v:"S"},{t:"Analisa",v:"C"}]},
+        {q:"10. Ao falar é:", o:[{t:"Direto",v:"D"},{t:"Expressivo",v:"I"},{t:"Suave",v:"S"},{t:"Preciso",v:"C"}]},
+        {q:"11. No grupo você:", o:[{t:"Lidera",v:"D"},{t:"Une",v:"I"},{t:"Apoia",v:"S"},{t:"Regra",v:"C"}]},
+        {q:"12. Evita:", o:[{t:"Falha",v:"D"},{t:"Solidão",v:"I"},{t:"Confronto",v:"S"},{t:"Erro",v:"C"}]},
+        {q:"13. Em reuniões:", o:[{t:"Fala logo",v:"D"},{t:"Brinca",v:"I"},{t:"Escuta",v:"S"},{t:"Questiona",v:"C"}]},
+        {q:"14. Prazos:", o:[{t:"Corre",v:"D"},{t:"Esquece",v:"I"},{t:"Cumpre",v:"S"},{t:"Revisa",v:"C"}]},
+        {q:"15. Lazer:", o:[{t:"Ação",v:"D"},{t:"Festa",v:"I"},{t:"Família",v:"S"},{t:"Estudo",v:"C"}]},
+        {q:"16. Visão de futuro:", o:[{t:"Poder",v:"D"},{t:"Fama",v:"I"},{t:"Paz",v:"S"},{t:"Saber",v:"C"}]}
     ];
 
-    const container = document.getElementById('outros-blocos');
-    perguntas.forEach((p, index) => {
-        let id = index + 4;
-        let html = `<div class="bloco-disc">
-            <div class="enunciado-azul">${p.q}</div>
-            <div class="linha-header"><span>RESPOSTA</span><span>MAIS</span><span>MENOS</span></div>`;
+    const container = document.getElementById('outros-blocos-disc');
+    perguntas.forEach((p, i) => {
+        let html = `<div class="bloco-disc"><div class="enunciado-azul">${p.q}</div><div class="linha-header"><span>OPÇÃO</span><span>MAIS</span><span>MENOS</span></div>`;
         p.o.forEach(opt => {
-            html += `<div class="linha-res"><span>${opt.t}</span><input type="radio" name="m${id}" value="${opt.v}"><input type="radio" name="l${id}" value="${opt.v}"></div>`;
+            html += `<div class="linha-res"><span>${opt.t}</span><input type="radio" name="m${i+2}" value="${opt.v}"><input type="radio" name="l${i+2}" value="${opt.v}"></div>`;
         });
         container.innerHTML += html + `</div>`;
     });
 
     function enviar() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Jorge, o nome é obrigatório!");
-        
-        // Simulação de sucesso
-        alert("Enviado com sucesso ao banco de dados!");
-        db.ref('testes_realizados').push({ aluno: nome, data: new Date().toLocaleString() });
+        if(!nome) return alert("Jorge, coloque o nome do aluno!");
+        alert("Enviado com sucesso!");
+        db.ref('resultados').push({aluno: nome, data: new Date().toLocaleString()});
     }
 </script>
 </body>
