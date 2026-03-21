@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR" class="notranslate" translate="no">
 <head>
-    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
     <title>Painel Jorge - Gestão com IA</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,7 +18,7 @@
         #loading { display: none; text-align: center; color: var(--ia); font-weight: bold; margin: 15px 0; }
     </style>
 </head>
-<body class="notranslate" translate="no">
+<body>
     <div class="grid">
         <div class="card">
             <h2>SELECIONAR ALUNO</h2>
@@ -45,8 +44,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // CHAVE ATUALIZADA DO JORGE
-    const GEMINI_API_KEY = "AIzaSyBp05qJ_-K6Z0Bsrw5p4860bg9wxyIAzbE"; 
+    // CHAVE DO JORGE
+    const GEMINI_API_KEY = "AIzaSyBEw-HIPZUDCTXqrVhbXeUA9Md_KLo7y0E"; 
 
     const nomesSAP = [
         "1. SER PROTAGONISTA", "2. SER RESPONSÁVEL E COMPROMETIDO",
