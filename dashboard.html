@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Jorge - Análise de Turma</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; }
+        body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
+        .grid-paineis { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #2d3436; padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
+        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); }
+        select { width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 16px; }
+        canvas { max-height: 400px; }
+    </style>
+</head>
+<body>
+
+    <h1>Painel de Controle - Jorge</h1>
+
+    <div class="grid-paineis">
+        <div class="card">
+            <h2>MÉDIA DA TURMA (COLETIVO)</h2>
+            <p>Visão geral do desempenho socioemocional do grupo.</p>
+            <canvas id="chartColetivo"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>ANÁLISE POR ALUNO</h2>
+            <select id="selectAluno" onchange="atualizarGraficoIndividual()">
+                <option value="">Selecione um aluno...</option>
+            </select>
+            <canvas id="chartIndividual"></canvas>
+        </div>
+    </div>
+
+<script>
+    // Configuração Firebase do Jorge
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let dadosAlunos = {};
+
+    // Puxar dados do Firebase
+    db.ref('resultados').on('value', (snapshot) => {
+        dadosAlunos = snapshot.val();
+        popularSelect();
+        gerarGraficoColetivo();
+    });
+
+    function popularSelect() {
+        const select = document.getElementById('selectAluno');
+        select.innerHTML = '<option value="">Selecione um aluno...</option>';
+        for (let id in dadosAlunos) {
+            let option = document.createElement('option');
+            option.value = id;
+            option.text = dadosAlunos[id].aluno;
+            select.add(option);
+        }
+    }
+
+    function gerarGraficoColetivo() {
+        // Lógica para somar todas as notas SAP e dividir pela quantidade de alunos
+        // Renderiza no canvas 'chartColetivo'
+    }
+
+    function atualizarGraficoIndividual() {
+        const id = document.getElementById('selectAluno').value;
+        const dados = dadosAlunos[id];
+        // Renderiza o radar DISC e as barras SAP do aluno selecionado
+    }
+</script>
+</body>
+</html>
