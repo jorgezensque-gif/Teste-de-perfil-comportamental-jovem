@@ -19,15 +19,14 @@
     
     <style>
         :root { --primaria: #ff5c3a; --grafite: #000000; --ia: #8e44ad; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; max-width: 1200px; margin: auto; }
-        .card { background: #1e272e; padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .card { background: #1e272e; padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
         .full { grid-column: 1 / -1; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; font-size: 16px; text-transform: uppercase; }
-        select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; border: 1px solid var(--destaque); font-size: 16px; cursor: pointer; }
-        .btn-ia { width: 100%; padding: 18px; background: var(--ia); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        .btn-ia:hover { background: #a29bfe; }
-        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 10px; border-left: 6px solid var(--ia); display: none; margin-top: 15px; line-height: 1.6; }
+        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; font-size: 16px; }
+        select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; border: 1px solid var(--destaque); font-size: 16px; }
+        .btn-ia { width: 100%; padding: 18px; background: var(--ia); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 10px; border-left: 6px solid var(--ia); display: none; margin-top: 15px; }
         .chart-container { position: relative; height: 300px; width: 100%; }
     </style>
 </head>
@@ -36,51 +35,30 @@
     <div class="grid">
         <div class="card full">
             <h2>SELECIONAR ALUNO</h2>
-            <select id="selectAluno" onchange="atualizarPainel()">
-                <option value="">Carregando lista de alunos...</option>
-            </select>
+            <select id="selectAluno" onchange="atualizarPainel()"><option value="">Carregando lista...</option></select>
             <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE E PDI COM IA</button>
             <div id="resultadoIA"></div>
         </div>
 
-        <div class="card">
-            <h2>AUTOAVALIAÇÃO SAP (RADAR)</h2>
-            <div class="chart-container"><canvas id="chartRadar"></canvas></div>
-        </div>
-
-        <div class="card">
-            <h2>PERFIL COMPORTAMENTAL (DISC)</h2>
-            <div class="chart-container"><canvas id="chartDisc"></canvas></div>
-        </div>
-
-        <div class="card">
-            <h2>COMPETÊNCIAS SAP (BARRAS)</h2>
-            <div class="chart-container"><canvas id="chartSap"></canvas></div>
-        </div>
-
-        <div class="card">
-            <h2>JORNADA DE APRENDIZADO (DUNNING-KRUGER)</h2>
-            <div class="chart-container"><canvas id="chartDunning"></canvas></div>
-        </div>
+        <div class="card"><h2>AUTOAVALIAÇÃO SAP (RADAR)</h2><div class="chart-container"><canvas id="chartRadar"></canvas></div></div>
+        <div class="card"><h2>PERFIL COMPORTAMENTAL (DISC)</h2><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
+        <div class="card"><h2>COMPETÊNCIAS SAP (BARRAS)</h2><div class="chart-container"><canvas id="chartSap"></canvas></div></div>
+        <div class="card"><h2>JORNADA (DUNNING-KRUGER)</h2><div class="chart-container"><canvas id="chartDunning"></canvas></div></div>
     </div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    // CONFIGURAÇÃO GEMINI (CHAVE DO JORGE)
     const GEMINI_API_KEY = "AIzaSyBEw-HIPZUDCTXqrVhbXeUA9Md_KLo7y0E"; 
 
     let dadosGerais = {};
     let charts = {};
 
-    // BUSCA DADOS NO FIREBASE
     db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const sel = document.getElementById('selectAluno');
-        sel.innerHTML = '<option value="">Escolha um aluno para analisar...</option>';
+        sel.innerHTML = '<option value="">Escolha um aluno...</option>';
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
             opt.value = id; opt.text = dadosGerais[id].aluno;
@@ -88,85 +66,52 @@
         }
     });
 
-    function criarGrafico(id, type, labels, data, datasetsConfig) {
+    function criarGrafico(id, type, labels, datasetsConfig) {
         if(charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
-        
-        let config = {
+        charts[id] = new Chart(ctx, {
             type: type,
             data: { labels: labels, datasets: datasetsConfig },
-            options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { display: type === 'radar' ? false : false } },
-                scales: type === 'radar' ? {
-                    r: { angleLines: { color: '#4b4b4b' }, grid: { color: '#4b4b4b' }, pointLabels: { color: '#fff' }, ticks: { display: false } }
-                } : {
-                    x: { ticks: { color: '#fff' }, grid: { display: false } },
-                    y: { ticks: { color: '#fff' }, grid: { color: '#4b4b4b' }, beginAtZero: true }
-                }
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+                scales: type === 'radar' ? {} : { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff' }, beginAtZero: true } }
             }
-        };
-        charts[id] = new Chart(ctx, config);
+        });
     }
 
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
         if(!id) return;
-
         document.getElementById('btnGerarIA').style.display = 'block';
-        document.getElementById('resultadoIA').style.display = 'none';
-
         const aluno = dadosGerais[id];
-        const notasSap = [];
-        for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
+        const notasSap = Object.values(aluno.sap || [0,0,0,0,0,0,0]);
         const d = aluno.disc || {D:0, I:0, S:0, C:0};
 
-        // 1. Radar SAP
-        criarGrafico('chartRadar', 'radar', ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"], null, [{
-            data: notasSap, backgroundColor: 'rgba(0, 210, 211, 0.3)', borderColor: '#00d2d3', pointBackgroundColor: '#00d2d3'
-        }]);
-        
-        // 2. DISC (Restaurado)
-        criarGrafico('chartDisc', 'bar', ['D','I','S','C'], null, [{
-            data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db']
-        }]);
-        
-        // 3. SAP Barras
-        criarGrafico('chartSap', 'bar', ["P", "R", "C", "E", "S", "Eq", "A"], null, [{
-            data: notasSap, backgroundColor: '#ff5c3a'
-        }]);
-
-        // 4. Dunning-Kruger (Simulado)
-        const mediaSap = notasSap.reduce((a,b)=>a+b,0)/7;
-        criarGrafico('chartDunning', 'line', ['Início', 'Pico de Confiança', 'Vale', 'Subida', 'Mestria'], null, [{
-            data: [0, 5, 0.5, 2.5, mediaSap], borderColor: '#8e44ad', tension: 0.4, fill: false, pointRadius: 5
-        }]);
+        criarGrafico('chartRadar', 'radar', ["P", "R", "C", "E", "S", "Eq", "A"], [{ data: notasSap, backgroundColor: 'rgba(0, 210, 211, 0.3)', borderColor: '#00d2d3' }]);
+        criarGrafico('chartDisc', 'bar', ['D','I','S','C'], [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }]);
+        criarGrafico('chartSap', 'bar', ["P", "R", "C", "E", "S", "Eq", "A"], [{ data: notasSap, backgroundColor: '#ff5c3a' }]);
+        criarGrafico('chartDunning', 'line', ['Início', 'Pico', 'Vale', 'Subida', 'Mestria'], [{ data: [0, 5, 0.5, 2.5, 4], borderColor: '#8e44ad', tension: 0.4 }]);
     }
 
     async function analisarComIA() {
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
-        
-        box.innerHTML = "🤖 <span style='color:#8e44ad'>O Mentor IA está analisando os gráficos e gerando o PDI...</span>";
+        box.innerHTML = "🤖 Analisando...";
         box.style.display = 'block';
 
-        const prompt = `Aja como um mentor de carreira. Analise o aluno ${aluno.aluno}. 
-        Notas SAP (0-5): ${JSON.stringify(aluno.sap)}. 
-        Perfil DISC: ${JSON.stringify(aluno.disc)}. 
-        Crie um perfil comportamental e 3 ações práticas de PDI. Seja direto.`;
-
         try {
-            const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                body: JSON.stringify({ contents: [{ parts: [{ text: "Analise o aluno " + aluno.aluno }] }] })
             });
             const data = await resp.json();
-            const texto = data.candidates[0].content.parts[0].text;
-            box.innerHTML = "<h3 style='color: #8e44ad; margin-top:0;'>📝 ANÁLISE E PDI:</h3>" + texto.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            box.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+            
+        // AQUI ESTÁ A LINHA QUE VOCÊ PEDIU:
         } catch (e) {
-            box.innerHTML = "❌ Erro ao conectar com a IA. Verifique se o tradutor do Chrome está ativo.";
+            box.innerHTML = "❌ Erro real detectado: " + e.message;
+            console.error("Detalhes do erro para o Jorge:", e);
         }
     }
 </script>
