@@ -1,95 +1,60 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="notranslate" translate="no">
 <head>
+    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Jorge - SAP & DISC</title>
+    <title>Avaliação Jorge - SAP</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; }
-        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; }
-        
-        .item-sap { background: #1e272e; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--destaque); }
-        .titulo-sap { font-weight: bold; color: var(--destaque); display: block; }
-        .opcoes-sap { display: flex; justify-content: space-around; margin-top: 15px; }
-        .radio-sap { cursor: pointer; text-align: center; }
-        .radio-sap input { display: none; }
-        .checkmark { width: 40px; height: 40px; border: 2px solid #4b4b4b; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .radio-sap input:checked + .checkmark { background: var(--primaria); border-color: var(--primaria); transform: scale(1.1); }
-        
-        .btn-enviar { width: 100%; padding: 20px; background: var(--primaria); color: white; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        body { background: var(--grafite); color: var(--texto); font-family: sans-serif; padding: 20px; }
+        .sessao { background: var(--card); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #444; }
+        input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #666; background: #000; color: #fff; }
+        .item-sap { background: #1e272e; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .opcoes { display: flex; justify-content: space-around; margin-top: 10px; }
+        .btn { width: 100%; padding: 15px; background: var(--primaria); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="sessao">
-        <h2>IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO ALUNO">
+    <div style="max-width:600px; margin:auto;">
+        <div class="sessao">
+            <h2>NOME DO ALUNO</h2>
+            <input type="text" id="nome-aluno" placeholder="Digite aqui...">
+        </div>
+        <div class="sessao">
+            <h2>COMPETÊNCIAS SAP</h2>
+            <div id="lista-sap"></div>
+        </div>
+        <button class="btn" onclick="enviar()">ENVIAR PARA O JORGE</button>
     </div>
 
-    <div class="sessao">
-        <h2>COMPETÊNCIAS SAP</h2>
-        <div id="lista-sap"></div>
-    </div>
+    <script>
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    <button class="btn-enviar" onclick="enviar()">ENVIAR AO JORGE</button>
-</div>
-
-<script>
-    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const saps = [
-        { t: "1 - SER PROTAGONISTA", d: "O jovem atuante e construtor do seu destino." },
-        { t: "2 - SER RESPONSÁVEL", d: "Compromisso, pontualidade e regras." },
-        { t: "3 - CONSCIÊNCIA AMBIENTAL", d: "Agir de forma sustentável." },
-        { t: "4 - CONVIVÊNCIA SOCIAL", d: "Relacionar-se de forma ética e respeitosa." },
-        { t: "5 - SAÚDE E HIGIENE", d: "Zelar pelo bem-estar físico e mental." },
-        { t: "6 - TRABALHO EM EQUIPE", d: "Colaborar com o grupo." },
-        { t: "7 - DESEJO DE APRENDER", d: "Curiosidade e busca por conhecimentos." }
-    ];
-
-    const container = document.getElementById('lista-sap');
-    saps.forEach((s, i) => {
-        container.innerHTML += `
-            <div class="item-sap">
-                <span class="titulo-sap">${s.t}</span>
-                <p style="font-size:13px; margin:5px 0;">${s.d}</p>
-                <div class="opcoes-sap">
-                    ${[1,2,3,4,5].map(n => `
-                        <label class="radio-sap">
-                            <input type="radio" name="sap${i}" value="${n}">
-                            <div class="checkmark">${n}</div>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>`;
-    });
-
-    function enviar() {
-        const nome = document.getElementById('nome-aluno').value;
-        if (!nome) return alert("Digite o nome!");
-
-        let dados = { aluno: nome, data: new Date().toLocaleString(), sap: {} };
-
-        for (let i = 0; i < 7; i++) {
-            const sel = document.querySelector(`input[name="sap${i}"]:checked`);
-            if (!sel) return alert("Responda todas as competências!");
-            dados.sap[`item${i}`] = parseInt(sel.value);
-        }
-
-        db.ref('resultados_testes').push(dados).then(() => {
-            alert("Sucesso, Jorge! Dados enviados.");
-            location.reload();
+        const saps = ["Protagonismo", "Responsabilidade", "Ambiental", "Social", "Saúde", "Equipe", "Aprender"];
+        const cont = document.getElementById('lista-sap');
+        
+        saps.forEach((s, i) => {
+            cont.innerHTML += `<div class="item-sap"><strong>${s}</strong><div class="opcoes">
+                ${[1,2,3,4,5].map(n => `<label><input type="radio" name="sap${i}" value="${n}"> ${n}</label>`).join('')}
+            </div></div>`;
         });
-    }
-</script>
+
+        function enviar() {
+            const nome = document.getElementById('nome-aluno').value;
+            if(!nome) return alert("Nome vazio!");
+            let notas = {};
+            for(let i=0; i<7; i++) {
+                const r = document.querySelector(`input[name="sap${i}"]:checked`);
+                if(!r) return alert("Responda tudo!");
+                notas[`item${i}`] = parseInt(r.value);
+            }
+            db.ref('resultados_testes').push({ aluno: nome, sap: notas, data: new Date().toLocaleString() })
+              .then(() => { alert("Enviado!"); location.reload(); });
+        }
+    </script>
 </body>
 </html>
