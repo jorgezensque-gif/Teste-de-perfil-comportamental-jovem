@@ -4,6 +4,7 @@
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
     <script>
+        // Bloqueia avisos de tradução que travam o Firebase
         const _alert = window.alert;
         window.alert = function(msg) {
             if (typeof msg === 'string' && (msg.toLowerCase().includes('traduç') || msg.toLowerCase().includes('translat'))) return;
@@ -45,7 +46,9 @@
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const GEMINI_API_KEY = "AIzaSyASnnaCuxgPBzqSo5anG0I6gDkB3JZazFU"; 
+    
+    // COLOQUE SUA NOVA CHAVE AQUI
+    const GEMINI_API_KEY = "SUA_NOVA_CHAVE_AQUI"; 
 
     let dadosGerais = {};
     let charts = {};
@@ -98,7 +101,8 @@
         box.innerHTML = "🤖 Mentor IA analisando dados de " + aluno.aluno + "...";
         box.style.display = 'block';
 
-        const prompt = "Analise o aluno " + aluno.aluno + " com notas SAP " + JSON.stringify(aluno.sap) + " e DISC " + JSON.stringify(aluno.disc) + ". Crie um PDI prático e curto.";
+        // Prompt reforçado para evitar respostas vazias
+        const prompt = "Aja como um mentor. Analise as notas SAP (Protagonismo, Responsabilidade, Comunicação, Ética, Problemas, Equipe, Aprender): " + JSON.stringify(aluno.sap) + " e Perfil DISC: " + JSON.stringify(aluno.disc) + " para o aluno " + aluno.aluno + ". Forneça um PDI de 3 pontos.";
 
         try {
             const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
@@ -108,12 +112,13 @@
             });
             const data = await resp.json();
             
-            // CORREÇÃO AQUI: Lendo a resposta de forma segura
-            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+            if (data.candidates && data.candidates[0].content) {
                 const textoFinal = data.candidates[0].content.parts[0].text;
                 box.innerHTML = "<strong>🎯 ANÁLISE DO MENTOR:</strong><br><br>" + textoFinal.replace(/\n/g, '<br>');
+            } else if (data.error) {
+                throw new Error(data.error.message);
             } else {
-                throw new Error("O Google enviou uma resposta vazia. Tente novamente.");
+                throw new Error("O Google não conseguiu gerar a análise. Tente novamente.");
             }
             
         } catch (e) {
