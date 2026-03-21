@@ -25,21 +25,18 @@
         .chart-container { position: relative; height: 280px; width: 100%; }
     </style>
 </head>
-<body class="notranslate">
+<body>
     <div class="grid">
         <div class="card full">
             <h2>GESTÃO DE ALUNOS - RESPONSÁVEL: JORGE</h2>
             <select id="selectAluno" onchange="atualizarPainel()"><option value="">Carregando...</option></select>
-            
             <div class="btn-group">
                 <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE COM GEMINI 2.0</button>
                 <button class="btn-excel" onclick="exportarExcel()">📊 EXPORTAR EXCEL</button>
                 <button class="btn-clear" onclick="limparSistema()">🗑️ ZERAR SISTEMA</button>
             </div>
-            
             <div id="resultadoIA"></div>
         </div>
-
         <div class="card"><h2>AUTOAVALIAÇÃO SAP (RADAR)</h2><div class="chart-container"><canvas id="chartRadar"></canvas></div></div>
         <div class="card"><h2>PERFIL COMPORTAMENTAL (DISC)</h2><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
         <div class="card"><h2>COMPETÊNCIAS SAP (BARRAS)</h2><div class="chart-container"><canvas id="chartSap"></canvas></div></div>
@@ -47,18 +44,17 @@
     </div>
 
 <script>
-    // Configuração Firebase
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // IMPORTANTE: COLE SUA CHAVE VÁLIDA AQUI
-    const GOOGLE_API_KEY = "AIzaSyBqUn-1mi_yCCmVbvsg8KBk5hplzRSyfTo"; 
+    // --- ÁREA DA CHAVE ---
+    const MINHA_CHAVE_BRUTA = "COLE_SUA_CHAVE_AQUI"; 
+    const GOOGLE_API_KEY = MINHA_CHAVE_BRUTA.trim(); 
 
     let dadosGerais = {};
     let charts = {};
 
-    // Carregar alunos do Firebase
     db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const sel = document.getElementById('selectAluno');
@@ -70,7 +66,6 @@
         }
     });
 
-    // Função genérica para criar gráficos
     function criarGrafico(id, type, labels, datasetsConfig) {
         if(charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
@@ -84,26 +79,21 @@
         });
     }
 
-    // Atualiza os 4 gráficos ao selecionar aluno
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
         if(!id) return;
         document.getElementById('btnGerarIA').style.display = 'block';
         const aluno = dadosGerais[id];
-        
         const notasSap = [];
         for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
         const d = aluno.disc || {D:0, I:0, S:0, C:0};
-
         criarGrafico('chartRadar', 'radar', ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"], [{ data: notasSap, backgroundColor: 'rgba(0, 210, 211, 0.3)', borderColor: '#00d2d3' }]);
         criarGrafico('chartDisc', 'bar', ['D','I','S','C'], [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }]);
         criarGrafico('chartSap', 'bar', ["P", "R", "C", "E", "S", "Eq", "A"], [{ data: notasSap, backgroundColor: '#ff5c3a' }]);
-        
         const media = (notasSap.reduce((a,b)=>a+b,0)/7).toFixed(1);
         criarGrafico('chartDunning', 'line', ['Início', 'Pico', 'Vale', 'Subida', 'Atual'], [{ data: [0.5, 5, 1, 2.5, media], borderColor: '#8e44ad', tension: 0.4, fill: false }]);
     }
 
-    // Função: Exportar Excel [Plano Solicitado]
     function exportarExcel() {
         const dataParaExcel = Object.values(dadosGerais).map(a => ({
             Aluno: a.aluno,
@@ -116,25 +106,21 @@
         XLSX.utils.writeFile(wb, "Relatorio_Alunos_Jorge.xlsx");
     }
 
-    // Função: Limpar Alunos (Zerar Firebase) [Plano Solicitado]
     function limparSistema() {
-        if(confirm("Jorge, você tem certeza que deseja APAGAR TODOS os alunos registrados?")) {
+        if(confirm("Jorge, deseja APAGAR TUDO do banco de dados?")) {
             db.ref('resultados_testes').remove();
-            alert("Banco de dados zerado!");
+            alert("Sistema zerado!");
             location.reload();
         }
     }
 
-    // Função: IA com Gemini 2.0 Flash (v1beta) [Plano Corrigido]
     async function analisarComIA() {
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
         box.innerHTML = "🤖 Mentor IA analisando dados de " + aluno.aluno + "...";
         box.style.display = 'block';
-
-        const prompt = `Aja como um mentor de carreira. Analise as notas SAP e o perfil comportamental DISC (D:${aluno.disc.D}, I:${aluno.disc.I}, S:${aluno.disc.S}, C:${aluno.disc.C}) do aluno ${aluno.aluno}. Gere um PDI com 3 ações práticas.`;
-
+        const prompt = `Aja como um mentor de carreira. Analise as notas SAP e perfil DISC (D:${aluno.disc.D}, I:${aluno.disc.I}, S:${aluno.disc.S}, C:${aluno.disc.C}) do aluno ${aluno.aluno}. Gere um PDI com 3 ações práticas.`;
         try {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_API_KEY}`;
             const resp = await fetch(url, {
