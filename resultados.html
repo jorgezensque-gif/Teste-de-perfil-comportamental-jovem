@@ -8,9 +8,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #000000; --destaque: #00d2d3; --card: #1e272e; --ia: #8e44ad; }
+        :root { --primaria: #ff5c3a; --grafite: #000000; --ia: #8e44ad; }
         body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; margin-bottom: 20px; }
+        .card { background: #1e272e; padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; margin-bottom: 20px; }
         h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; font-size: 18px; }
         select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; font-size: 16px; margin-bottom: 20px; }
         .btn-ia { width: 100%; padding: 18px; background: var(--ia); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
@@ -27,16 +27,14 @@
             <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE COM IA</button>
             <div id="resultadoIA"></div>
         </div>
-        <div class="card"><h2>SAP</h2><canvas id="chartIndividual"></canvas></div>
+        <div class="card"><h2>RESULTADO SAP</h2><canvas id="chartIndividual"></canvas></div>
     </div>
 
 <script>
-    // Configurações do Banco de Dados
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // CHAVE DO JORGE
     const GEMINI_API_KEY = "AIzaSyBEw-HIPZUDCTXqrVhbXeUA9Md_KLo7y0E"; 
 
     let dadosGerais = {};
@@ -45,7 +43,7 @@
     db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const sel = document.getElementById('selectAluno');
-        sel.innerHTML = '<option value="">Escolha um aluno...</option>';
+        sel.innerHTML = '<option value="">Escolha o aluno...</option>';
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
             opt.value = id; opt.text = dadosGerais[id].aluno;
@@ -63,8 +61,10 @@
         if(gInd) gInd.destroy();
         gInd = new Chart(document.getElementById('chartIndividual'), {
             type: 'bar',
-            data: { labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
-            datasets: [{ data: notas, backgroundColor: '#00d2d3' }] },
+            data: { 
+                labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                datasets: [{ data: notas, backgroundColor: '#00d2d3' }] 
+            },
             options: { indexAxis: 'y', scales: { x: {min:0, max:5, ticks:{color:'#FFF'}}, y: {ticks:{color:'#FFF'}} } }
         });
     }
@@ -73,21 +73,21 @@
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
-        box.innerHTML = "🤖 Mentor analisando...";
+        box.innerHTML = "🤖 Analisando...";
         box.style.display = 'block';
 
-        const prompt = "Analise as notas SAP de " + aluno.aluno + ": " + JSON.stringify(aluno.sap) + ". Crie um PDI curto.";
+        const prompt = "Analise o aluno " + aluno.aluno + " com notas SAP: " + JSON.stringify(aluno.sap) + ". Crie um PDI curto.";
 
         try {
-            const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
+            const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            const d = await r.json();
-            box.innerHTML = d.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+            const data = await resp.json();
+            box.innerHTML = "<strong>Relatório:</strong><br>" + data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
         } catch (e) {
-            alert("Erro de conexão. Certifique-se de que a página NÃO está traduzida.");
+            alert("Erro! Desative a tradução.");
         }
     }
 </script>
