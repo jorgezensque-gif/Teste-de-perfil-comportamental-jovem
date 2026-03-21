@@ -4,6 +4,7 @@
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
     <script>
+        // Bloqueador de alertas de tradução
         const _alert = window.alert;
         window.alert = function(msg) {
             if (typeof msg === 'string' && (msg.toLowerCase().includes('traduç') || msg.toLowerCase().includes('translat'))) return;
@@ -46,8 +47,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // COLOQUE SUA NOVA CHAVE AQUI
-    const GEMINI_API_KEY = "AIzaSyANSPDVszSYl3L5BefFqJ2yqKBd_Gh72T4"; 
+    // ATENÇÃO: COLOQUE SUA NOVA CHAVE AQUI
+    const GEMINI_API_KEY = "SUA_API_KEY_AQUI"; 
 
     let dadosGerais = {};
     let charts = {};
@@ -97,14 +98,14 @@
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
-        box.innerHTML = "🤖 Analisando dados...";
+        box.innerHTML = "🤖 Mentor IA analisando dados de " + aluno.aluno + "...";
         box.style.display = 'block';
 
-        const prompt = "Aja como um mentor. Analise as notas SAP e DISC para o aluno " + aluno.aluno + ". Forneça um PDI curto.";
+        const prompt = "Aja como um mentor de carreira. Analise o aluno " + aluno.aluno + " com base em suas notas SAP e perfil DISC. Sugira um PDI curto.";
 
         try {
-            // LINK ATUALIZADO PARA v1beta (Ajuste do erro 'not found')
-            const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + GEMINI_API_KEY, {
+            // AJUSTE DE ROTA: Usando a versão estável v1 para evitar o erro 'not found'
+            const resp = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -112,10 +113,12 @@
             const data = await resp.json();
             
             if (data.candidates && data.candidates[0].content) {
-                const texto = data.candidates[0].content.parts[0].text;
-                box.innerHTML = "<strong>🎯 ANÁLISE:</strong><br><br>" + texto.replace(/\n/g, '<br>');
+                const textoFinal = data.candidates[0].content.parts[0].text;
+                box.innerHTML = "<strong>🎯 ANÁLISE DO MENTOR:</strong><br><br>" + textoFinal.replace(/\n/g, '<br>');
+            } else if (data.error) {
+                throw new Error(data.error.message);
             } else {
-                throw new Error(data.error ? data.error.message : "Resposta vazia");
+                throw new Error("O Google não conseguiu gerar a resposta. Tente novamente.");
             }
         } catch (e) {
             box.innerHTML = "❌ Erro: " + e.message;
