@@ -2,75 +2,118 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel do Jorge - Análise de Turma</title>
+    <title>Painel do Jorge - Resultados da Turma</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
-        .grid-paineis { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: #2d3436; padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); }
-        select { width: 100%; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 16px; }
-        canvas { max-height: 400px; }
+        body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card { background: #2d3436; padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        h1, h2 { color: var(--primaria); text-transform: uppercase; letter-spacing: 1px; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #1e272e; color: white; border: 1px solid var(--destaque); font-size: 16px; cursor: pointer; }
+        .info-turma { background: var(--destaque); color: var(--grafite); padding: 10px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; display: inline-block; }
     </style>
 </head>
 <body>
-
-    <h1>Painel de Controle - Jorge</h1>
-
-    <div class="grid-paineis">
+    <h1>📊 Gestão de Turma - Jorge</h1>
+    
+    <div class="grid">
         <div class="card">
-            <h2>MÉDIA DA TURMA (COLETIVO)</h2>
-            <p>Visão geral do desempenho socioemocional do grupo.</p>
+            <h2>Média Geral da Turma (SAP)</h2>
+            <div id="contagem" class="info-turma">Aguardando dados...</div>
             <canvas id="chartColetivo"></canvas>
         </div>
 
         <div class="card">
-            <h2>ANÁLISE POR ALUNO</h2>
-            <select id="selectAluno" onchange="atualizarGraficoIndividual()">
-                <option value="">Selecione um aluno...</option>
+            <h2>Análise por Aluno</h2>
+            <select id="selectAluno" onchange="mostrarAluno()">
+                <option value="">Escolha um aluno na lista...</option>
             </select>
             <canvas id="chartIndividual"></canvas>
         </div>
     </div>
 
 <script>
-    // Configuração Firebase do Jorge
+    // Configuração do seu Firebase
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let dadosAlunos = {};
+    let todosOsDados = {};
+    let graficoCol, graficoInd;
 
-    // Puxar dados do Firebase
-    db.ref('resultados').on('value', (snapshot) => {
-        dadosAlunos = snapshot.val();
-        popularSelect();
-        gerarGraficoColetivo();
+    // Puxar dados em tempo real
+    db.ref('avaliacoes').on('value', snapshot => {
+        todosOsDados = snapshot.val() || {};
+        const lista = Object.values(todosOsDados);
+        
+        document.getElementById('contagem').innerText = `Total de Alunos Avaliados: ${lista.length}`;
+        
+        atualizarListaSuspensa();
+        desenharGraficoColetivo(lista);
     });
 
-    function popularSelect() {
+    function atualizarListaSuspensa() {
         const select = document.getElementById('selectAluno');
-        select.innerHTML = '<option value="">Selecione um aluno...</option>';
-        for (let id in dadosAlunos) {
-            let option = document.createElement('option');
-            option.value = id;
-            option.text = dadosAlunos[id].aluno;
-            select.add(option);
+        select.innerHTML = '<option value="">Escolha um aluno na lista...</option>';
+        for (let id in todosOsDados) {
+            let opt = document.createElement('option');
+            opt.value = id;
+            opt.text = todosOsDados[id].aluno;
+            select.add(opt);
         }
     }
 
-    function gerarGraficoColetivo() {
-        // Lógica para somar todas as notas SAP e dividir pela quantidade de alunos
-        // Renderiza no canvas 'chartColetivo'
+    function desenharGraficoColetivo(lista) {
+        if (lista.length === 0) return;
+
+        // Cálculo das médias SAP (7 competências)
+        let somas = [0,0,0,0,0,0,0];
+        lista.forEach(aluno => {
+            for(let i=0; i<7; i++) somas[i] += aluno.sap[`item${i}`];
+        });
+        const medias = somas.map(s => (s / lista.length).toFixed(1));
+
+        if(graficoCol) graficoCol.destroy();
+        graficoCol = new Chart(document.getElementById('chartColetivo'), {
+            type: 'bar',
+            data: {
+                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
+                datasets: [{
+                    label: 'Média da Turma',
+                    data: medias,
+                    backgroundColor: 'rgba(0, 210, 211, 0.6)',
+                    borderColor: '#00d2d3',
+                    borderWidth: 2
+                }]
+            },
+            options: { scales: { y: { min: 0, max: 5 } } }
+        });
     }
 
-    function atualizarGraficoIndividual() {
+    function mostrarAluno() {
         const id = document.getElementById('selectAluno').value;
-        const dados = dadosAlunos[id];
-        // Renderiza o radar DISC e as barras SAP do aluno selecionado
+        if (!id) return;
+        const aluno = todosOsDados[id];
+        const notas = Object.values(aluno.sap);
+
+        if(graficoInd) graficoInd.destroy();
+        graficoInd = new Chart(document.getElementById('chartIndividual'), {
+            type: 'radar',
+            data: {
+                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
+                datasets: [{
+                    label: aluno.aluno,
+                    data: notas,
+                    backgroundColor: 'rgba(255, 92, 58, 0.3)',
+                    borderColor: '#ff5c3a',
+                    pointBackgroundColor: '#fff'
+                }]
+            },
+            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
+        });
     }
 </script>
 </body>
