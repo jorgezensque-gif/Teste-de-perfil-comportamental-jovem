@@ -1,147 +1,31 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Assessment Completo - Jorge</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 850px; margin: auto; }
-        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
-        
-        /* SAP */
-        .item-sap { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid var(--destaque); }
-        .titulo-sap { font-size: 18px; font-weight: bold; color: var(--destaque); margin-bottom: 10px; display: block; }
-        .descricao-sap { font-size: 14px; color: #ced4da; line-height: 1.5; margin-bottom: 12px; }
-        .evidencias-sap { font-size: 13px; color: #a29bfe; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px dashed #4b4b4b; }
-        .opcoes-sap { display: flex; justify-content: space-around; background: #1e272e; padding: 15px; border-radius: 8px; }
-
-        /* DISC */
-        .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 35px; border: 1px solid #4b4b4b; }
-        .enunciado-situacional { background: #1e3799; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 5px solid var(--destaque); }
-        .linha-header { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; }
-        .linha-res { display: grid; grid-template-columns: 1fr 100px 100px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
-        
-        input[type="radio"] { width: 24px; height: 24px; accent-color: var(--primaria); cursor: pointer; }
-        input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
-        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 6px 0 #b33921; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="sessao">
-        <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="DIGITE O NOME COMPLETO DO ALUNO">
-    </div>
-
-    <div class="sessao">
-        <h2>2. COMPETÊNCIAS SOCIOEMOCIONAIS (SAP)</h2>
-        
-        <div class="item-sap">
-            <span class="titulo-sap">1 - SER PROTAGONISTA</span>
-            <p class="descricao-sap">Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário e construtor do seu destino.</p>
-            <div class="evidencias-sap">EVIDÊNCIAS: Sou referência nos grupos; Respeito e sou respeitado; Construo meu Projeto de Vida.</div>
-            <div class="opcoes-sap">
-                <label><input type="radio" name="sap0" value="1"><br>1</label>
-                <label><input type="radio" name="sap0" value="2"><br>2</label>
-                <label><input type="radio" name="sap0" value="3"><br>3</label>
-                <label><input type="radio" name="sap0" value="4"><br>4</label>
-                <label><input type="radio" name="sap0" value="5"><br>5</label>
-            </div>
-        </div>
-
-        <div class="item-sap">
-            <span class="titulo-sap">2 - SER RESPONSÁVEL E COMPROMETIDO</span>
-            <p class="descricao-sap">Comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido e respeitar regras.</p>
-            <div class="evidencias-sap">EVIDÊNCIAS: Cumpro tarefas e prazos; Sou pontual; Cuido da minha apresentação e higiene.</div>
-            <div class="opcoes-sap">
-                <label><input type="radio" name="sap1" value="1"><br>1</label>
-                <label><input type="radio" name="sap1" value="2"><br>2</label>
-                <label><input type="radio" name="sap1" value="3"><br>3</label>
-                <label><input type="radio" name="sap1" value="4"><br>4</label>
-                <label><input type="radio" name="sap1" value="5"><br>5</label>
-            </div>
-        </div>
-
-        <div id="sap-lista-restante"></div>
-    </div>
-
-    <div class="sessao">
-        <h2>3. PERFIL COMPORTAMENTAL (DISC)</h2>
-        <div id="disc-container">
-            <div class="bloco-disc">
-                <div class="enunciado-situacional">1. Como você se sente com trabalhos repetitivos?</div>
-                <div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>
-                <div class="linha-res"><span>Gosto, pois me trazem segurança</span><input type="radio" name="m0" value="S"><input type="radio" name="l0" value="S"></div>
-                <div class="linha-res"><span>Aceito se houver um padrão lógico</span><input type="radio" name="m0" value="C"><input type="radio" name="l0" value="C"></div>
-                <div class="linha-res"><span>Fico impaciente, prefiro ação</span><input type="radio" name="m0" value="D"><input type="radio" name="l0" value="D"></div>
-                <div class="linha-res"><span>Me cansam, prefiro pessoas</span><input type="radio" name="m0" value="I"><input type="radio" name="l0" value="I"></div>
-            </div>
-            
-            <div id="disc-lista-restante"></div>
-        </div>
-    </div>
-
-    <button class="btn-enviar" onclick="enviar()">ENVIAR AVALIAÇÃO</button>
-</div>
-
 <script>
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Injeção automática das perguntas restantes para garantir que o HTML não fique pesado
-    const sapResto = [
-        {t:"3 - CONSCIÊNCIA AMBIENTAL", d:"Agir de forma sustentável e cuidar do meio ambiente.", e:"Evito desperdícios; Mantenho o ambiente limpo."},
-        {t:"4 - CONVIVÊNCIA SOCIAL", d:"Relacionar-se de forma ética e respeitar a diversidade.", e:"Cordialidade; Respeito a opiniões contrárias."},
-        {t:"5 - SAÚDE E HIGIENE", d:"Zelar pelo bem-estar físico e mental.", e:"Higiene pessoal; Equilíbrio emocional."},
-        {t:"6 - TRABALHO EM EQUIPE", d:"Colaborar para atingir objetivos comuns.", e:"Apoio aos colegas; Aceito feedbacks."},
-        {t:"7 - DESEJO DE APRENDER", d:"Curiosidade e busca por novos conhecimentos.", e:"Sou curioso; Busco aprender além do básico."}
-    ];
-
-    const discResto = [
-        {q:"2. Numa discussão em grupo, você geralmente:", o:[{t:"Toma a frente",v:"D"},{t:"Anima o grupo",v:"I"},{t:"Ouve a todos",v:"S"},{t:"Analisa fatos",v:"C"}]},
-        {q:"3. Atitude perante mudanças inesperadas:", o:[{t:"Vencer",v:"D"},{t:"Entusiasmo",v:"I"},{t:"Desconforto",v:"S"},{t:"Avaliar riscos",v:"C"}]},
-        {q:"4. Quando recebe uma tarefa urgente:", o:[{t:"Faz rápido",v:"D"},{t:"Pede ajuda",v:"I"},{t:"Mantém o ritmo",v:"S"},{t:"Foca na precisão",v:"C"}]},
-        {q:"5. Como você toma decisões?", o:[{t:"Rápida",v:"D"},{t:"Otimista",v:"I"},{t:"Consensual",v:"S"},{t:"Baseada em dados",v:"C"}]},
-        {q:"6. Sob pressão você costuma ficar:", o:[{t:"Impaciente",v:"D"},{t:"Agitado",v:"I"},{t:"Calado",v:"S"},{t:"Crítico",v:"C"}]},
-        {q:"7. O que mais te motiva?", o:[{t:"Resultados",v:"D"},{t:"Reconhecimento",v:"I"},{t:"Estabilidade",v:"S"},{t:"Conhecimento",v:"C"}]},
-        {q:"8. Como organiza seu trabalho?", o:[{t:"Por prioridade",v:"D"},{t:"Pelo prazer",v:"I"},{t:"Pela rotina",v:"S"},{t:"Por processos",v:"C"}]},
-        {q:"9. Sua maior força é:", o:[{t:"Determinação",v:"D"},{t:"Comunicação",v:"I"},{t:"Paciência",v:"S"},{t:"Organização",v:"C"}]},
-        {q:"10. Ao falar com alguém, você é:", o:[{t:"Direto",v:"D"},{t:"Persuasivo",v:"I"},{t:"Amigável",v:"S"},{t:"Formal",v:"C"}]},
-        {q:"11. Como lida com conflitos?", o:[{t:"Enfrento",v:"D"},{t:"Negocio",v:"I"},{t:"Evito",v:"S"},{t:"Analiso",v:"C"}]},
-        {q:"12. Prefere trabalhar:", o:[{t:"Sozinho com metas",v:"D"},{t:"Em equipe alegre",v:"I"},{t:"Em ambiente calmo",v:"S"},{t:"Com regras claras",v:"C"}]},
-        {q:"13. Como reage a regras?", o:[{t:"Questiono",v:"D"},{t:"Adapto",v:"I"},{t:"Sigo",v:"S"},{t:"Exijo",v:"C"}]},
-        {q:"14. Sua postura é mais:", o:[{t:"Dominante",v:"D"},{t:"Extrovertida",v:"I"},{t:"Serena",v:"S"},{t:"Analítica",v:"C"}]},
-        {q:"15. Em novos projetos, você:", o:[{t:"Assume o risco",v:"D"},{t:"Promove a ideia",v:"I"},{t:"Dá suporte",v:"S"},{t:"Planeja tudo",v:"C"}]},
-        {q:"16. O que busca no futuro?", o:[{t:"Sucesso",v:"D"},{t:"Felicidade",v:"I"},{t:"Paz",v:"S"},{t:"Excelência",v:"C"}]}
-    ];
-
-    function preencher() {
-        const s = document.getElementById('sap-lista-restante');
-        sapResto.forEach((item, i) => {
-            s.innerHTML += `<div class="item-sap"><span class="titulo-sap">${item.t}</span><p class="descricao-sap">${item.d}</p><div class="evidencias-sap">${item.e}</div><div class="opcoes-sap">${[1,2,3,4,5].map(v => `<label><input type="radio" name="sap${i+2}" value="${v}"><br>${v}</label>`).join('')}</div></div>`;
-        });
-
-        const d = document.getElementById('disc-lista-restante');
-        discResto.forEach((item, i) => {
-            let h = `<div class="bloco-disc"><div class="enunciado-situacional">${item.q}</div><div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>`;
-            item.o.forEach(op => { h += `<div class="linha-res"><span>${op.t}</span><input type="radio" name="m${i+1}" value="${op.v}"><input type="radio" name="l${i+1}" value="${op.v}"></div>`; });
-            d.innerHTML += h + `</div>`;
-        });
-    }
-
     function enviar() {
         const nome = document.getElementById('nome-aluno').value;
-        if(!nome) return alert("Jorge, falta o nome!");
-        // Envio Firebase...
-        alert("Enviado com sucesso!");
+        if (!nome) return alert("Jorge, o nome do aluno é obrigatório!");
+
+        let dados = {
+            aluno: nome,
+            data: new Date().toLocaleString('pt-BR'),
+            sap: {}
+        };
+
+        // Coleta as 7 notas SAP (item0 até item6)
+        for (let i = 0; i < 7; i++) {
+            const sel = document.querySelector(`input[name="sap${i}"]:checked`);
+            if (!sel) return alert(`Por favor, responda a competência SAP ${i + 1}`);
+            dados.sap[`item${i}`] = parseInt(sel.value);
+        }
+
+        // ENVIAR PARA A PASTA CORRETA: resultados_testes
+        db.ref('resultados_testes').push(dados)
+            .then(() => {
+                alert("Sucesso! Dados enviados para o painel do Jorge.");
+                location.reload(); 
+            })
+            .catch(err => alert("Erro ao enviar: " + err));
     }
-    preencher();
 </script>
-</body>
-</html>
