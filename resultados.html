@@ -3,38 +3,43 @@
 <head>
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <script>
-        const _alert = window.alert;
-        window.alert = function(msg) {
-            if (typeof msg === 'string' && (msg.toLowerCase().includes('traduç') || msg.toLowerCase().includes('translat'))) return;
-            _alert(msg);
-        };
-    </script>
     <title>Painel Jorge - Gestão com IA</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #000000; --ia: #8e44ad; --destaque: #00d2d3; }
+        :root { --primaria: #ff5c3a; --grafite: #000000; --ia: #8e44ad; --destaque: #00d2d3; --danger: #e74c3c; --success: #2ecc71; }
         body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; max-width: 1200px; margin: auto; }
         .card { background: #1e272e; padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
         .full { grid-column: 1 / -1; }
         h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; font-size: 16px; }
-        select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; border: 1px solid var(--destaque); font-size: 16px; }
-        .btn-ia { width: 100%; padding: 18px; background: var(--ia); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 10px; border-left: 6px solid var(--ia); display: none; margin-top: 15px; color: #FFF; line-height: 1.5; }
+        select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; border: 1px solid var(--destaque); font-size: 16px; margin-bottom: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; min-width: 150px; }
+        .btn-ia { background: var(--ia); }
+        .btn-excel { background: var(--success); }
+        .btn-clear { background: var(--danger); }
+        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 10px; border-left: 6px solid var(--ia); display: none; margin-top: 15px; line-height: 1.5; }
         .chart-container { position: relative; height: 280px; width: 100%; }
     </style>
 </head>
-<body class="notranslate">
+<body>
     <div class="grid">
         <div class="card full">
-            <h2>SELECIONAR ALUNO</h2>
+            <h2>GESTÃO DE ALUNOS</h2>
             <select id="selectAluno" onchange="atualizarPainel()"><option value="">Carregando...</option></select>
-            <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE COM GEMINI 2.0</button>
+            
+            <div class="btn-group">
+                <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR ANÁLISE IA</button>
+                <button class="btn-excel" onclick="exportarExcel()">📊 EXPORTAR EXCEL</button>
+                <button class="btn-clear" onclick="limparSistema()">🗑️ ZERAR SISTEMA</button>
+            </div>
+            
             <div id="resultadoIA"></div>
         </div>
+
         <div class="card"><h2>AUTOAVALIAÇÃO SAP (RADAR)</h2><div class="chart-container"><canvas id="chartRadar"></canvas></div></div>
         <div class="card"><h2>PERFIL COMPORTAMENTAL (DISC)</h2><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
         <div class="card"><h2>COMPETÊNCIAS SAP (BARRAS)</h2><div class="chart-container"><canvas id="chartSap"></canvas></div></div>
@@ -46,8 +51,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // COLE SUA NOVA CHAVE DO GOOGLE AI STUDIO AQUI
-    const GOOGLE_API_KEY = "AIzaSyBqUn-1mi_yCCmVbvsg8KBk5hplzRSyfTo"; 
+    // INSIRA SUA CHAVE AIZA... AQUI
+    const GOOGLE_API_KEY = "SUA_CHAVE_AQUI"; 
 
     let dadosGerais = {};
     let charts = {};
@@ -70,7 +75,7 @@
             type: type,
             data: { labels: labels, datasets: datasetsConfig },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-                scales: type === 'radar' ? { r: { grid: {color: '#444'}, angleLines: {color: '#444'}, pointLabels: {color: '#fff'}, ticks: {display: false} } } : 
+                scales: type === 'radar' ? { r: { grid: {color: '#444'}, pointLabels: {color: '#fff'}, ticks: {display: false} } } : 
                 { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff' }, beginAtZero: true, max: 5 } }
             }
         });
@@ -93,36 +98,52 @@
         criarGrafico('chartDunning', 'line', ['Início', 'Pico', 'Vale', 'Subida', 'Atual'], [{ data: [0.5, 5, 1, 2.5, media], borderColor: '#8e44ad', tension: 0.4, fill: false }]);
     }
 
+    // NOVA FUNÇÃO: EXPORTAR EXCEL
+    function exportarExcel() {
+        const dataParaExcel = Object.values(dadosGerais).map(a => ({
+            Aluno: a.aluno,
+            D: a.disc.D, I: a.disc.I, S: a.disc.S, C: a.disc.C,
+            Media_SAP: (Object.values(a.sap).reduce((a,b)=>a+b,0)/7).toFixed(2)
+        }));
+        const ws = XLSX.utils.json_to_sheet(dataParaExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
+        XLSX.utils.writeFile(wb, "Relatorio_Jorge.xlsx");
+    }
+
+    // NOVA FUNÇÃO: LIMPAR TUDO
+    function limparSistema() {
+        if(confirm("Jorge, você tem certeza que deseja APAGAR TODOS os alunos do banco de dados?")) {
+            db.ref('resultados_testes').remove();
+            alert("Sistema zerado com sucesso!");
+            location.reload();
+        }
+    }
+
     async function analisarComIA() {
         const id = document.getElementById('selectAluno').value;
         const aluno = dadosGerais[id];
         const box = document.getElementById('resultadoIA');
-        box.innerHTML = "🤖 Mentor IA (Google) analisando dados de " + aluno.aluno + "...";
+        box.innerHTML = "🤖 Analisando...";
         box.style.display = 'block';
 
-        const prompt = "Aja como um mentor de carreira. Analise as notas SAP e perfil DISC do aluno " + aluno.aluno + ". Forneça um PDI de 3 pontos práticos.";
+        const prompt = `Analise o aluno ${aluno.aluno} com DISC D:${aluno.disc.D} I:${aluno.disc.I} e SAP médio. Sugira um PDI.`;
 
         try {
-            // ROTA DIRETA GOOGLE GEMINI 2.0 FLASH
-            const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GOOGLE_API_KEY, {
+            // URL CORRIGIDA PARA VERSÃO ESTÁVEL v1
+            const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GOOGLE_API_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
-            
             const data = await resp.json();
-
-            if (data.candidates && data.candidates[0].content) {
-                const textoFinal = data.candidates[0].content.parts[0].text;
-                box.innerHTML = "<strong>🎯 ANÁLISE DIRETA GOOGLE:</strong><br><br>" + textoFinal.replace(/\n/g, '<br>');
-            } else if (data.error) {
-                throw new Error(data.error.message);
+            if (data.candidates) {
+                box.innerHTML = "<strong>🎯 ANÁLISE:</strong><br><br>" + data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
             } else {
-                throw new Error("Resposta vazia do Google. Tente outra chave.");
+                throw new Error(data.error.message);
             }
         } catch (e) {
             box.innerHTML = "❌ Erro: " + e.message;
-            console.error(e);
         }
     }
 </script>
