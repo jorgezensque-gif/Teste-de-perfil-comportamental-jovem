@@ -3,36 +3,26 @@
 <head>
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <title>Painel Jorge - Gestão Total</title>
+    <title>Painel Jorge - Final</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; --erro: #eb4d4b; }
-        body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; margin-bottom: 20px; }
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; }
-        h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
-        .btn-zero { background: var(--erro); color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; }
+        body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: auto; }
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; min-height: 400px; }
+        h2 { color: var(--primaria); border-bottom: 1px solid #444; padding-bottom: 10px; text-transform: uppercase; font-size: 16px; }
+        select { width: 100%; padding: 15px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); font-size: 16px; margin-bottom: 20px; }
     </style>
 </head>
 <body class="notranslate" translate="no">
 
-    <div style="text-align: center; margin-bottom: 20px;">
-        <button class="btn-zero" onclick="zerarBanco()">🗑️ ZERAR BASE DE DADOS</button>
-    </div>
-
     <div class="grid">
-        <div class="card">
-            <h2>MÉDIA DA TURMA (SAP)</h2>
-            <canvas id="chartColetivo"></canvas>
-        </div>
-
         <div class="card">
             <h2>SELECIONAR ALUNO</h2>
             <select id="selectAluno" onchange="atualizarIndividual()">
-                <option value="">Carregando...</option>
+                <option value="">Carregando lista...</option>
             </select>
         </div>
 
@@ -52,8 +42,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ESTES SÃO OS NOMES EXATOS QUE VOCÊ PEDIU (TRAVADOS CONTRA TRADUÇÃO)
-    const labelsSAP = [
+    // LISTA EXATA DO SEU PDF
+    const nomesSAP = [
         "SER PROTAGONISTA",
         "SER RESPONSÁVEL E COMPROMETIDO",
         "COMPREENDER CONTEXTOS E COMUNICAR-SE",
@@ -64,83 +54,61 @@
     ];
 
     let dadosGerais = {};
-    let gCol, gInd, gDisc;
+    let gInd, gDisc;
 
     db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
-        const lista = Object.values(dadosGerais);
         const sel = document.getElementById('selectAluno');
-        sel.innerHTML = '<option value="">Escolha um aluno...</option>';
-        
+        sel.innerHTML = '<option value="">Escolha o aluno aqui...</option>';
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
             opt.value = id; opt.text = dadosGerais[id].aluno;
             sel.add(opt);
         }
-
-        if (lista.length > 0) {
-            let medias = [0,0,0,0,0,0,0];
-            lista.forEach(d => { if(d.sap) for(let i=0; i<7; i++) medias[i] += (d.sap[`item${i}`] || 0); });
-            medias = medias.map(m => (m / lista.length).toFixed(1));
-            
-            if(gCol) gCol.destroy();
-            gCol = new Chart(document.getElementById('chartColetivo'), {
-                type: 'bar',
-                data: {
-                    labels: labelsSAP,
-                    datasets: [{ label: 'Média da Turma', data: medias, backgroundColor: '#00d2d3' }]
-                },
-                options: { 
-                    indexAxis: 'y', // Mudei para horizontal para caber os nomes grandes
-                    scales: { x: { min: 0, max: 5 } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
     });
 
     function atualizarIndividual() {
         const id = document.getElementById('selectAluno').value;
-        if(!id || !dadosGerais[id]) return;
+        if(!id) return;
         const aluno = dadosGerais[id];
 
+        // GRÁFICO SAP - AGORA COM BARRA LATERAL PARA CABER O TEXTO
         const notasSap = [];
         for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
+        
         if(gInd) gInd.destroy();
         gInd = new Chart(document.getElementById('chartIndividual'), {
-            type: 'radar',
+            type: 'bar',
             data: {
-                labels: labelsSAP,
-                datasets: [{ label: aluno.aluno, data: notasSap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)', borderWidth: 3 }]
+                labels: nomesSAP,
+                datasets: [{ label: 'Nota', data: notasSap, backgroundColor: '#00d2d3' }]
             },
-            options: { 
-                scales: { r: { min: 0, max: 5, ticks: { display: false }, pointLabels: { font: { size: 10 } } } } 
+            options: {
+                indexAxis: 'y', // Texto na esquerda
+                scales: { 
+                    x: { min: 0, max: 5 },
+                    y: { ticks: { color: 'white', font: { size: 11 } } } 
+                },
+                plugins: { legend: { display: false } },
+                layout: { padding: { left: 20 } }
             }
         });
 
+        // GRÁFICO DISC
         const d = aluno.disc || {D:0, I:0, S:0, C:0};
         if(gDisc) gDisc.destroy();
         gDisc = new Chart(document.getElementById('chartDisc'), {
             type: 'bar',
             data: {
-                labels: ['D - Dominância', 'I - Influência', 'S - Estabilidade', 'C - Conformidade'],
-                datasets: [{
-                    data: [d.D, d.I, d.S, d.C],
-                    backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db']
-                }]
+                labels: ['D - DOMINÂNCIA', 'I - INFLUÊNCIA', 'S - ESTABILIDADE', 'C - CONFORMIDADE'],
+                datasets: [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'] }]
             },
             options: { 
                 indexAxis: 'y', 
-                plugins: { legend: { display: false } },
-                scales: { x: { min: 0, max: 16 } }
+                scales: { x: { min: 0, max: 16 } },
+                plugins: { legend: { display: false } }
             }
         });
-    }
-
-    function zerarBanco() {
-        if (confirm("Jorge, deseja apagar todos os dados?")) {
-            db.ref('resultados_testes').remove().then(() => location.reload());
-        }
     }
 </script>
 </body>
