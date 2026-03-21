@@ -10,7 +10,7 @@
     <style>
         :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; }
         body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 950px; margin: auto; }
         .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; }
         h2 { color: var(--primaria); border-bottom: 1px solid #444; padding-bottom: 10px; text-transform: uppercase; font-size: 16px; }
         select { width: 100%; padding: 15px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); font-size: 16px; margin-bottom: 20px; }
@@ -28,7 +28,8 @@
 
         <div class="card">
             <h2>AUTOAVALIAÇÃO SAP (INDIVIDUAL)</h2>
-            <div style="height: 500px;"> <canvas id="chartIndividual"></canvas>
+            <div style="height: 550px; position: relative;">
+                <canvas id="chartIndividual"></canvas>
             </div>
         </div>
 
@@ -43,15 +44,15 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // NOMES EXATOS DO PDF COM QUEBRA DE LINHA PARA CABER NO GRÁFICO
-    const nomesSAP = [
-        ["1. SER", "PROTAGONISTA"],
-        ["2. SER RESPONSÁVEL", "E COMPROMETIDO"],
-        ["3. COMPREENDER CONTEXTOS", "E COMUNICAR-SE"],
-        ["4. SER DEMOCRÁTICO,", "ÉTICO E CIDADÃO"],
-        ["5. RESOLVER", "SITUAÇÕES-PROBLEMA"],
-        ["6. TRABALHAR E", "PRODUZIR EM EQUIPE"],
-        ["7. APRENDER", "A APRENDER"]
+    // ESTA LISTA SUBSTITUI DEFINITIVAMENTE OS NOMES ANTIGOS
+    const nomesSAP_Oficiais = [
+        "1. SER PROTAGONISTA",
+        "2. SER RESPONSÁVEL E COMPROMETIDO",
+        "3. COMPREENDER CONTEXTOS E COMUNICAR-SE",
+        "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO",
+        "5. RESOLVER SITUAÇÕES-PROBLEMA",
+        "6. TRABALHAR E PRODUZIR EM EQUIPE",
+        "7. APRENDER A APRENDER"
     ];
 
     let dadosGerais = {};
@@ -74,25 +75,32 @@
         const aluno = dadosGerais[id];
 
         const notasSap = [];
-        for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
+        for(let i=0; i<7; i++) {
+            // Garante que pegamos os dados na ordem certa, ignorando nomes antigos do banco
+            notasSap.push(aluno.sap[`item${i}`] || 0);
+        }
         
         if(gInd) gInd.destroy();
         gInd = new Chart(document.getElementById('chartIndividual'), {
             type: 'bar',
             data: {
-                labels: nomesSAP,
-                datasets: [{ label: 'Nota', data: notasSap, backgroundColor: '#00d2d3' }]
+                labels: nomesSAP_Oficiais, // USA A LISTA NOVA AQUI
+                datasets: [{ 
+                    label: 'Nota Individual', 
+                    data: notasSap, 
+                    backgroundColor: '#00d2d3',
+                    borderRadius: 5
+                }]
             },
             options: {
                 indexAxis: 'y',
                 maintainAspectRatio: false,
                 scales: { 
-                    x: { min: 0, max: 5 },
+                    x: { min: 0, max: 5, grid: { color: '#444' } },
                     y: { 
                         ticks: { 
                             color: 'white', 
-                            font: { size: 11, weight: 'bold' },
-                            autoSkip: false
+                            font: { size: 12, weight: 'bold' }
                         } 
                     } 
                 },
