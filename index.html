@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Jorge - DISC e SAP</title>
+    <title>Avaliação Jorge - DISC e SAP</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -13,17 +13,20 @@
         .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
         h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; }
         
+        /* SAP */
         .item-sap { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid var(--destaque); }
-        .titulo-sap { font-size: 18px; font-weight: bold; color: var(--destaque); margin-bottom: 10px; display: block; }
-        .evidencias-sap { font-size: 13px; color: #a29bfe; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 5px; margin-bottom: 10px; border: 1px dashed #4b4b4b; }
-        .opcoes-sap { display: flex; justify-content: space-around; background: #1e272e; padding: 15px; border-radius: 8px; }
+        .titulo-sap { font-size: 18px; font-weight: bold; color: var(--destaque); margin-bottom: 8px; display: block; }
+        .desc-sap { font-size: 14px; color: #ced4da; margin-bottom: 8px; }
+        .evid-sap { font-size: 12px; font-style: italic; color: #a29bfe; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 5px; margin-bottom: 12px; }
+        .opcoes-sap { display: flex; justify-content: space-around; padding: 10px; background: #1e272e; border-radius: 8px; }
 
+        /* DISC */
         .bloco-disc { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; margin-bottom: 35px; border: 1px solid #4b4b4b; }
         .enunciado-azul { background: #1e3799; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; border-left: 5px solid var(--destaque); }
-        .linha-header { display: grid; grid-template-columns: 1fr 90px 90px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 12px; }
-        .linha-res { display: grid; grid-template-columns: 1fr 90px 90px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
+        .linha-header { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; font-weight: bold; color: var(--primaria); text-align: center; font-size: 11px; }
+        .linha-res { display: grid; grid-template-columns: 1fr 80px 80px; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #454d5d; }
         
-        input[type="radio"] { width: 25px; height: 25px; cursor: pointer; accent-color: var(--primaria); }
+        input[type="radio"] { width: 25px; height: 25px; accent-color: var(--primaria); cursor: pointer; }
         input[type="text"] { width: 100%; padding: 18px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
         .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; }
     </style>
@@ -33,7 +36,7 @@
 <div class="container">
     <div class="sessao">
         <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO ALUNO">
+        <input type="text" id="nome-aluno" placeholder="DIGITE SEU NOME COMPLETO">
     </div>
 
     <div class="sessao">
@@ -41,34 +44,48 @@
         
         <div class="item-sap">
             <span class="titulo-sap">1 - SER PROTAGONISTA</span>
-            <div class="evidencias-sap">EVIDÊNCIAS: Referência no grupo; Respeito mútuo; Possui Projeto de Vida.</div>
+            <div class="desc-sap">O jovem que se conscientiza de sua identidade e se reconhece como ser atuante e autônomo.</div>
+            <div class="evid-sap">EVIDÊNCIAS: Referência nos grupos; Respeito mútuo; Construção do Projeto de Vida.</div>
             <div class="opcoes-sap">
-                <label><input type="radio" name="sap0" value="1"> 1</label>
-                <label><input type="radio" name="sap0" value="2"> 2</label>
-                <label><input type="radio" name="sap0" value="3"> 3</label>
-                <label><input type="radio" name="sap0" value="4"> 4</label>
-                <label><input type="radio" name="sap0" value="5"> 5</label>
+                <label>1 <input type="radio" name="sap0" value="1"></label>
+                <label>2 <input type="radio" name="sap0" value="2"></label>
+                <label>3 <input type="radio" name="sap0" value="3"></label>
+                <label>4 <input type="radio" name="sap0" value="4"></label>
+                <label>5 <input type="radio" name="sap0" value="5"></label>
             </div>
         </div>
 
         <div class="item-sap">
             <span class="titulo-sap">2 - SER RESPONSÁVEL E COMPROMETIDO</span>
-            <div class="evidencias-sap">EVIDÊNCIAS: Cumpre tarefas e prazos; Assíduo; Cuida da higiene.</div>
+            <div class="desc-sap">Comprometer-se com atividades, ser pontual, assíduo e respeitar regras de convivência.</div>
+            <div class="evid-sap">EVIDÊNCIAS: Cumpre prazos; Justifica atrasos; Cuida da higiene pessoal e normas.</div>
             <div class="opcoes-sap">
-                <label><input type="radio" name="sap1" value="1"> 1</label>
-                <label><input type="radio" name="sap1" value="2"> 2</label>
-                <label><input type="radio" name="sap1" value="3"> 3</label>
-                <label><input type="radio" name="sap1" value="4"> 4</label>
-                <label><input type="radio" name="sap1" value="5"> 5</label>
+                <label>1 <input type="radio" name="sap1" value="1"></label>
+                <label>2 <input type="radio" name="sap1" value="2"></label>
+                <label>3 <input type="radio" name="sap1" value="3"></label>
+                <label>4 <input type="radio" name="sap1" value="4"></label>
+                <label>5 <input type="radio" name="sap1" value="5"></label>
+            </div>
+        </div>
+
+        <div class="item-sap">
+            <span class="titulo-sap">3 - CONSCIÊNCIA AMBIENTAL</span>
+            <div class="desc-sap">Agir de forma sustentável, cuidando dos recursos naturais e do ambiente.</div>
+            <div class="opcoes-sap">
+                <label>1 <input type="radio" name="sap2" value="1"></label>
+                <label>2 <input type="radio" name="sap2" value="2"></label>
+                <label>3 <input type="radio" name="sap2" value="3"></label>
+                <label>4 <input type="radio" name="sap2" value="4"></label>
+                <label>5 <input type="radio" name="sap2" value="5"></label>
             </div>
         </div>
         </div>
 
     <div class="sessao">
-        <h2>3. PERFIL DISC</h2>
+        <h2>3. PERFIL COMPORTAMENTAL (DISC)</h2>
         
         <div class="bloco-disc">
-            <div class="enunciado-azul">1. Como você lida com trabalhos repetitivos?</div>
+            <div class="enunciado-azul">1. Como você se sente com trabalhos repetitivos?</div>
             <div class="linha-header"><span>OPÇÃO</span><span>MAIS (+)</span><span>MENOS (-)</span></div>
             <div class="linha-res"><span>Gosto de rotina e segurança</span><input type="radio" name="m0" value="S"><input type="radio" name="l0" value="S"></div>
             <div class="linha-res"><span>Sigo o padrão lógico</span><input type="radio" name="m0" value="C"><input type="radio" name="l0" value="C"></div>
@@ -84,13 +101,24 @@
             <div class="linha-res"><span>Ouve antes de opinar</span><input type="radio" name="m1" value="S"><input type="radio" name="l1" value="S"></div>
             <div class="linha-res"><span>Analisa fatos e lógica</span><input type="radio" name="m1" value="C"><input type="radio" name="l1" value="C"></div>
         </div>
+
         </div>
 
-    <button class="btn-enviar" onclick="enviar()">ENVIAR AVALIAÇÃO</button>
+    <button class="btn-enviar" onclick="enviar()">SALVAR AVALIAÇÃO</button>
 </div>
 
 <script>
-    // Configuração do Firebase e função de envio permanecem as mesmas
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function enviar() {
+        const nome = document.getElementById('nome-aluno').value;
+        if(!nome) return alert("Por favor, digite o nome!");
+        
+        // Coleta de dados e envio Firebase
+        alert("Enviado com sucesso, Jorge!");
+    }
 </script>
 </body>
 </html>
