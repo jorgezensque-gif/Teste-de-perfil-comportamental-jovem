@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="notranslate" translate="no">
 <head>
+    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
     <title>Painel Jorge - Gestão Total</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -9,22 +10,17 @@
     <style>
         :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; --erro: #eb4d4b; }
         body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .controles-topo { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
-        .btn-print { background: #0984e3; }
-        .btn-zero { background: var(--erro); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; margin-bottom: 20px; }
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; outline: none; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; }
         h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 0; }
-        @media print { .controles-topo, select { display: none; } .card { border: none; box-shadow: none; } }
+        .btn-zero { background: var(--erro); color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
-<body>
+<body class="notranslate" translate="no">
 
-    <div class="controles-topo">
-        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR RELATÓRIOS</button>
-        <button class="btn btn-zero" onclick="zerarBanco()">🗑️ ZERAR BASE DE DADOS</button>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button class="btn-zero" onclick="zerarBanco()">🗑️ ZERAR BASE DE DADOS</button>
     </div>
 
     <div class="grid">
@@ -38,7 +34,6 @@
             <select id="selectAluno" onchange="atualizarIndividual()">
                 <option value="">Carregando...</option>
             </select>
-            <p style="font-size: 12px; color: #aaa; text-align: center;">Os gráficos individual e DISC aparecerão abaixo.</p>
         </div>
 
         <div class="card">
@@ -57,15 +52,15 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // NOMES COMPLETOS PARA OS GRÁFICOS
+    // NOMES CORRIGIDOS CONFORME O SEU PDF (TRAVADOS CONTRA TRADUÇÃO)
     const labelsSAP = [
-        "1. Ser Protagonista",
-        "2. Ser Responsável",
-        "3. Comunicar-se",
-        "4. Ser Ético/Cidadão",
-        "5. Resolver Problemas",
-        "6. Trabalho em Equipe",
-        "7. Aprender a Aprender"
+        "1. SER PROTAGONISTA",
+        "2. SER RESPONSÁVEL",
+        "3. COMUNICAR-SE",
+        "4. ÉTICO E CIDADÃO",
+        "5. RESOLVER PROBLEMAS",
+        "6. TRABALHO EM EQUIPE",
+        "7. APRENDER A APRENDER"
     ];
 
     let dadosGerais = {};
@@ -95,7 +90,10 @@
                     labels: labelsSAP,
                     datasets: [{ label: 'Média da Turma', data: medias, backgroundColor: '#00d2d3' }]
                 },
-                options: { scales: { y: { min: 0, max: 5 } } }
+                options: { 
+                    scales: { y: { min: 0, max: 5 } },
+                    plugins: { legend: { display: false } }
+                }
             });
         }
     });
