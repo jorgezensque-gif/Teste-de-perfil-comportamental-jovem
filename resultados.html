@@ -3,18 +3,23 @@
 <head>
     <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <title>Painel Jorge - Visibilidade Alta</title>
+    <title>Painel Jorge - Inteligência Artificial</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #000000; --destaque: #00d2d3; --card: #1e272e; }
+        :root { --primaria: #ff5c3a; --grafite: #000000; --destaque: #00d2d3; --card: #1e272e; --ia: #8e44ad; }
         body { background: var(--grafite); color: white; font-family: sans-serif; padding: 20px; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 1000px; margin: auto; }
         .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; }
         h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; text-transform: uppercase; font-size: 18px; }
         select { width: 100%; padding: 15px; border-radius: 8px; background: #2d3436; color: #fff; border: 1px solid var(--destaque); font-size: 16px; font-weight: bold; margin-bottom: 20px; }
-        canvas { max-height: 500px; }
+        
+        /* Estilo da IA */
+        .btn-ia { width: 100%; padding: 15px; background: var(--ia); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-ia:hover { background: #a29bfe; }
+        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid var(--ia); display: none; white-space: pre-wrap; line-height: 1.6; }
+        .loading { display: none; color: var(--ia); font-weight: bold; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body class="notranslate" translate="no">
@@ -23,47 +28,41 @@
         <div class="card">
             <h2>SELECIONAR ALUNO</h2>
             <select id="selectAluno" onchange="atualizarIndividual()">
-                <option value="">Clique aqui para escolher...</option>
+                <option value="">Escolha um aluno...</option>
             </select>
+            <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR PDI COM INTELIGÊNCIA ARTIFICIAL</button>
+            <div id="loading" class="loading">🤖 Gemini está analisando os dados... aguarde...</div>
+            <div id="resultadoIA"></div>
         </div>
 
         <div class="card">
-            <h2>AUTOAVALIAÇÃO SAP (COMPETÊNCIAS)</h2>
-            <div style="height: 450px;">
-                <canvas id="chartIndividual"></canvas>
-            </div>
+            <h2>AUTOAVALIAÇÃO SAP</h2>
+            <div style="height: 400px;"><canvas id="chartIndividual"></canvas></div>
         </div>
 
         <div class="card">
-            <h2>PERFIL COMPORTAMENTAL (DISC)</h2>
-            <div style="height: 300px;">
-                <canvas id="chartDisc"></canvas>
-            </div>
+            <h2>PERFIL DISC</h2>
+            <div style="height: 250px;"><canvas id="chartDisc"></canvas></div>
         </div>
     </div>
 
 <script>
+    // 1. CONFIGURAÇÕES (Firebase e Gemini)
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const nomesSAP_Oficiais = [
-        "1. SER PROTAGONISTA",
-        "2. SER RESPONSÁVEL E COMPROMETIDO",
-        "3. COMPREENDER CONTEXTOS E COMUNICAR-SE",
-        "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO",
-        "5. RESOLVER SITUAÇÕES-PROBLEMA",
-        "6. TRABALHAR E PRODUZIR EM EQUIPE",
-        "7. APRENDER A APRENDER"
-    ];
+    // SUBSTITUA ABAIXO PELA SUA CHAVE DO GEMINI
+    const GEMINI_API_KEY = "SUA_CHAVE_AQUI"; 
 
+    const nomesSAP = ["Protagonista", "Responsável", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
     let dadosGerais = {};
     let gInd, gDisc;
 
     db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const sel = document.getElementById('selectAluno');
-        sel.innerHTML = '<option value="">Escolha um aluno na lista...</option>';
+        sel.innerHTML = '<option value="">Escolha um aluno...</option>';
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
             opt.value = id; opt.text = dadosGerais[id].aluno;
@@ -74,52 +73,72 @@
     function atualizarIndividual() {
         const id = document.getElementById('selectAluno').value;
         if(!id) return;
+        
+        document.getElementById('btnGerarIA').style.display = 'block';
+        document.getElementById('resultadoIA').style.display = 'none';
+        
         const aluno = dadosGerais[id];
         const notasSap = [];
         for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
         
-        // CONFIGURAÇÃO DOS TEXTOS DOS GRÁFICOS
-        const configTexto = {
-            color: '#FFFFFF', // BRANCO PURO
-            font: { size: 13, weight: 'bold' }
-        };
+        const configTexto = { color: '#FFFFFF', font: { size: 12, weight: 'bold' } };
 
         if(gInd) gInd.destroy();
         gInd = new Chart(document.getElementById('chartIndividual'), {
             type: 'bar',
-            data: {
-                labels: nomesSAP_Oficiais,
-                datasets: [{ data: notasSap, backgroundColor: '#00d2d3', borderRadius: 5 }]
-            },
-            options: {
-                indexAxis: 'y',
-                maintainAspectRatio: false,
-                scales: { 
-                    x: { min: 0, max: 5, ticks: configTexto, grid: { color: '#444' } },
-                    y: { ticks: configTexto } 
-                },
-                plugins: { legend: { display: false } }
-            }
+            data: { labels: nomesSAP, datasets: [{ data: notasSap, backgroundColor: '#00d2d3' }] },
+            options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min:0, max:5, ticks: configTexto }, y: { ticks: configTexto } }, plugins: { legend: { display: false } } }
         });
 
         const d = aluno.disc || {D:0, I:0, S:0, C:0};
         if(gDisc) gDisc.destroy();
         gDisc = new Chart(document.getElementById('chartDisc'), {
             type: 'bar',
-            data: {
-                labels: ['D - DOMINÂNCIA', 'I - INFLUÊNCIA', 'S - ESTABILIDADE', 'C - CONFORMIDADE'],
-                datasets: [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'] }]
-            },
-            options: { 
-                indexAxis: 'y',
-                maintainAspectRatio: false,
-                scales: { 
-                    x: { min: 0, max: 16, ticks: configTexto, grid: { color: '#444' } },
-                    y: { ticks: configTexto }
-                },
-                plugins: { legend: { display: false } }
-            }
+            data: { labels: ['D','I','S','C'], datasets: [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }] },
+            options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { min:0, max:16, ticks: configTexto }, y: { ticks: configTexto } }, plugins: { legend: { display: false } } }
         });
+    }
+
+    async function analisarComIA() {
+        const id = document.getElementById('selectAluno').value;
+        const aluno = dadosGerais[id];
+        const btn = document.getElementById('btnGerarIA');
+        const loading = document.getElementById('loading');
+        const boxIA = document.getElementById('resultadoIA');
+
+        btn.style.display = 'none';
+        loading.style.display = 'block';
+
+        // Montando o texto para a IA
+        const prompt = `Analise o perfil deste jovem do Projeto Pescar:
+        Nome: ${aluno.aluno}
+        Notas SAP (escala 1-5): Protagonismo:${aluno.sap.item0}, Responsabilidade:${aluno.sap.item1}, Comunicação:${aluno.sap.item2}, Ética:${aluno.sap.item3}, Problemas:${aluno.sap.item4}, Equipe:${aluno.sap.item5}, Aprender:${aluno.sap.item6}.
+        Perfil DISC (pontos): D:${aluno.disc.D}, I:${aluno.disc.I}, S:${aluno.disc.S}, C:${aluno.disc.C}.
+        
+        Por favor, gere:
+        1. Um resumo do perfil comportamental dele.
+        2. Pontos fortes baseados nas maiores notas.
+        3. Um PDI (Plano de Desenvolvimento Individual) com 3 ações práticas para melhorar as menores notas.
+        Seja motivador e profissional.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            const data = await response.json();
+            const textoFinal = data.candidates[0].content.parts[0].text;
+            
+            boxIA.innerHTML = "<h3>🤖 ANÁLISE DO GEMINI:</h3>" + textoFinal;
+            boxIA.style.display = 'block';
+        } catch (error) {
+            alert("Erro ao conectar com a IA. Verifique sua API KEY.");
+        } finally {
+            loading.style.display = 'none';
+            btn.style.display = 'block';
+        }
     }
 </script>
 </body>
