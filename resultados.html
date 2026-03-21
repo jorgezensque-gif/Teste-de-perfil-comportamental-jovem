@@ -15,15 +15,15 @@
         .btn-zero { background: var(--erro); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; outline: none; }
         h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        @media print { .controles-topo, select { display: none; } .card { border: none; shadow: none; } }
+        @media print { .controles-topo, select { display: none; } .card { border: none; box-shadow: none; } }
     </style>
 </head>
 <body>
 
     <div class="controles-topo">
-        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR LAUDOS COMPLETOS</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR RELATÓRIOS</button>
         <button class="btn btn-zero" onclick="zerarBanco()">🗑️ ZERAR BASE DE DADOS</button>
     </div>
 
@@ -34,15 +34,16 @@
         </div>
 
         <div class="card">
-            <h2>ANÁLISE INDIVIDUAL</h2>
+            <h2>ANÁLISE INDIVIDUAL (RADAR)</h2>
             <select id="selectAluno" onchange="atualizarIndividual()">
-                <option value="">Selecione o Aluno...</option>
+                <option value="">Carregando alunos...</option>
             </select>
             <canvas id="chartIndividual"></canvas>
         </div>
     </div>
 
 <script>
+    // Configuração oficial do Jorge
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -50,23 +51,30 @@
     let dadosGerais = {};
     let gCol, gInd;
 
-    db.ref('avaliacoes').on('value', snapshot => {
+    // AQUI ESTÁ A CORREÇÃO: Apontando para 'resultados_testes'
+    db.ref('resultados_testes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const lista = Object.values(dadosGerais);
         
-        // Atualiza Select
         const sel = document.getElementById('selectAluno');
+        const valorAntigo = sel.value;
         sel.innerHTML = '<option value="">Selecione o Aluno...</option>';
+        
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
-            opt.value = id; opt.text = dadosGerais[id].aluno;
+            opt.value = id;
+            opt.text = dadosGerais[id].aluno || "Aluno sem nome";
             sel.add(opt);
         }
+        sel.value = valorAntigo;
 
-        // Gráfico Coletivo
         if (lista.length > 0) {
             let medias = [0,0,0,0,0,0,0];
-            lista.forEach(d => { for(let i=0; i<7; i++) medias[i] += (d.sap[`item${i}`] || 0); });
+            lista.forEach(d => { 
+                if(d.sap) {
+                    for(let i=0; i<7; i++) medias[i] += (d.sap[`item${i}`] || 0);
+                }
+            });
             medias = medias.map(m => (m / lista.length).toFixed(1));
             
             if(gCol) gCol.destroy();
@@ -83,22 +91,33 @@
 
     function atualizarIndividual() {
         const id = document.getElementById('selectAluno').value;
-        if(!id) return;
-        const notas = Object.values(dadosGerais[id].sap);
+        if(!id || !dadosGerais[id]) return;
+        
+        const aluno = dadosGerais[id];
+        // Extrai as notas SAP (item0 até item6)
+        const notas = [];
+        for(let i=0; i<7; i++) notas.push(aluno.sap[`item${i}`] || 0);
+
         if(gInd) gInd.destroy();
         gInd = new Chart(document.getElementById('chartIndividual'), {
             type: 'radar',
             data: {
                 labels: ['Protag.', 'Resp.', 'Amb.', 'Soc.', 'Saúde', 'Equipe', 'Aprender'],
-                datasets: [{ label: dadosGerais[id].aluno, data: notas, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)' }]
+                datasets: [{ 
+                    label: aluno.aluno, 
+                    data: notas, 
+                    borderColor: '#ff5c3a', 
+                    backgroundColor: 'rgba(255,92,58,0.2)',
+                    borderWidth: 3
+                }]
             },
             options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
         });
     }
 
     function zerarBanco() {
-        if (confirm("Jorge, tem certeza? Isso apagará TODOS os resultados da turma permanentemente!")) {
-            db.ref('avaliacoes').remove().then(() => alert("Base zerada com sucesso!"));
+        if (confirm("Jorge, atenção! Isso apagará todos os dados em 'resultados_testes'. Prosseguir?")) {
+            db.ref('resultados_testes').remove().then(() => alert("Base limpa!"));
         }
     }
 </script>
