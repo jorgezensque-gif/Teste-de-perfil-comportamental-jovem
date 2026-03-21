@@ -1,146 +1,105 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Resultados - Jorge</title>
+    <title>Painel Jorge - Gestão Total</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; }
-        body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: var(--destaque); margin-top: 0; font-size: 1.2rem; text-transform: uppercase; }
-        select { width: 100%; padding: 15px; border-radius: 8px; background: #1e272e; color: white; border: 1px solid var(--destaque); font-size: 16px; margin-bottom: 20px; outline: none; }
-        .contador { background: var(--primaria); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-        canvas { max-width: 100%; height: 350px !important; }
-        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; --erro: #eb4d4b; }
+        body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .controles-topo { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
+        .btn-print { background: #0984e3; }
+        .btn-zero { background: var(--erro); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; }
+        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; }
+        h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        @media print { .controles-topo, select { display: none; } .card { border: none; shadow: none; } }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>GESTÃO DE TURMA</h1>
-        <div class="contador" id="totalAlunos">Alunos: 0</div>
+    <div class="controles-topo">
+        <button class="btn btn-print" onclick="window.print()">🖨️ IMPRIMIR LAUDOS COMPLETOS</button>
+        <button class="btn btn-zero" onclick="zerarBanco()">🗑️ ZERAR BASE DE DADOS</button>
     </div>
 
     <div class="grid">
         <div class="card">
-            <h2>Média da Turma (Competências SAP)</h2>
+            <h2>MÉDIA DA TURMA (SAP)</h2>
             <canvas id="chartColetivo"></canvas>
         </div>
 
         <div class="card">
-            <h2>Análise Individual</h2>
+            <h2>ANÁLISE INDIVIDUAL</h2>
             <select id="selectAluno" onchange="atualizarIndividual()">
-                <option value="">Selecione um aluno para analisar...</option>
+                <option value="">Selecione o Aluno...</option>
             </select>
             <canvas id="chartIndividual"></canvas>
         </div>
     </div>
 
 <script>
-    // Configuração do Firebase (A mesma que você usou no index.html)
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     let dadosGerais = {};
-    let gColetivo, gIndividual;
+    let gCol, gInd;
 
-    // Escutar o Banco de Dados em Tempo Real
     db.ref('avaliacoes').on('value', snapshot => {
         dadosGerais = snapshot.val() || {};
         const lista = Object.values(dadosGerais);
         
-        document.getElementById('totalAlunos').innerText = `Total: ${lista.length} Alunos`;
-        
-        preencherSelect();
-        renderColetivo(lista);
-    });
-
-    function preencherSelect() {
-        const select = document.getElementById('selectAluno');
-        const valorAtual = select.value;
-        select.innerHTML = '<option value="">Selecione um aluno para analisar...</option>';
-        
+        // Atualiza Select
+        const sel = document.getElementById('selectAluno');
+        sel.innerHTML = '<option value="">Selecione o Aluno...</option>';
         for (let id in dadosGerais) {
             let opt = document.createElement('option');
-            opt.value = id;
-            opt.text = dadosGerais[id].aluno;
-            select.add(opt);
+            opt.value = id; opt.text = dadosGerais[id].aluno;
+            sel.add(opt);
         }
-        select.value = valorAtual;
-    }
 
-    function renderColetivo(lista) {
-        if (lista.length === 0) return;
-
-        // Calcula a média das 7 competências SAP
-        let medias = [0,0,0,0,0,0,0];
-        lista.forEach(item => {
-            for(let i=0; i<7; i++) {
-                medias[i] += (item.sap[`item${i}`] || 0);
-            }
-        });
-        medias = medias.map(m => (m / lista.length).toFixed(1));
-
-        if(gColetivo) gColetivo.destroy();
-        gColetivo = new Chart(document.getElementById('chartColetivo'), {
-            type: 'bar',
-            data: {
-                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
-                datasets: [{
-                    label: 'Média da Turma',
-                    data: medias,
-                    backgroundColor: 'rgba(0, 210, 211, 0.7)',
-                    borderColor: '#00d2d3',
-                    borderWidth: 2
-                }]
-            },
-            options: { 
-                scales: { y: { min: 0, max: 5, grid: { color: '#444' } }, x: { grid: { display: false } } },
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
+        // Gráfico Coletivo
+        if (lista.length > 0) {
+            let medias = [0,0,0,0,0,0,0];
+            lista.forEach(d => { for(let i=0; i<7; i++) medias[i] += (d.sap[`item${i}`] || 0); });
+            medias = medias.map(m => (m / lista.length).toFixed(1));
+            
+            if(gCol) gCol.destroy();
+            gCol = new Chart(document.getElementById('chartColetivo'), {
+                type: 'bar',
+                data: {
+                    labels: ['Protag.', 'Resp.', 'Amb.', 'Soc.', 'Saúde', 'Equipe', 'Aprender'],
+                    datasets: [{ label: 'Média', data: medias, backgroundColor: '#00d2d3' }]
+                },
+                options: { scales: { y: { min: 0, max: 5 } } }
+            });
+        }
+    });
 
     function atualizarIndividual() {
         const id = document.getElementById('selectAluno').value;
-        if (!id) return;
-
-        const aluno = dadosGerais[id];
-        const notasSap = Object.values(aluno.sap);
-
-        if(gIndividual) gIndividual.destroy();
-        gIndividual = new Chart(document.getElementById('chartIndividual'), {
+        if(!id) return;
+        const notas = Object.values(dadosGerais[id].sap);
+        if(gInd) gInd.destroy();
+        gInd = new Chart(document.getElementById('chartIndividual'), {
             type: 'radar',
             data: {
-                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
-                datasets: [{
-                    label: aluno.aluno,
-                    data: notasSap,
-                    backgroundColor: 'rgba(255, 92, 58, 0.4)',
-                    borderColor: '#ff5c3a',
-                    pointBackgroundColor: '#fff',
-                    borderWidth: 3
-                }]
+                labels: ['Protag.', 'Resp.', 'Amb.', 'Soc.', 'Saúde', 'Equipe', 'Aprender'],
+                datasets: [{ label: dadosGerais[id].aluno, data: notas, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)' }]
             },
-            options: {
-                scales: {
-                    r: {
-                        min: 0, max: 5,
-                        grid: { color: '#444' },
-                        angleLines: { color: '#444' },
-                        pointLabels: { color: '#fff', font: { size: 12 } },
-                        ticks: { display: false }
-                    }
-                }
-            }
+            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
         });
+    }
+
+    function zerarBanco() {
+        if (confirm("Jorge, tem certeza? Isso apagará TODOS os resultados da turma permanentemente!")) {
+            db.ref('avaliacoes').remove().then(() => alert("Base zerada com sucesso!"));
+        }
     }
 </script>
 </body>
