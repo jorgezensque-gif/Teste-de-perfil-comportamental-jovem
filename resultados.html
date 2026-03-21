@@ -1,73 +1,147 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Resultados - Instrutor Jorge</title>
+    <title>Painel de Resultados - Jorge</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0a0c10; color: white; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        h1 { color: #ff5c3a; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: #181c24; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #252a35; }
-        th { background: #252a35; color: #ff5c3a; }
-        tr:hover { background: #1f242d; }
-        .tag { padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
-        .e { background: #e63946; } /* Executor */
-        .c { background: #ffb703; } /* Comunicador */
-        .p { background: #2a9d8f; } /* Planejador */
-        .a { background: #457b9d; } /* Analista */
+        :root { --primaria: #ff5c3a; --grafite: #1e272e; --destaque: #00d2d3; --card: #2d3436; }
+        body { background: var(--grafite); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #4b4b4b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: var(--destaque); margin-top: 0; font-size: 1.2rem; text-transform: uppercase; }
+        select { width: 100%; padding: 15px; border-radius: 8px; background: #1e272e; color: white; border: 1px solid var(--destaque); font-size: 16px; margin-bottom: 20px; outline: none; }
+        .contador { background: var(--primaria); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        canvas { max-width: 100%; height: 350px !important; }
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 Relatório de Perfis - Projeto Pescar</h1>
-        <table id="tabela-resultados">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Aluno</th>
-                    <th>E</th>
-                    <th>C</th>
-                    <th>P</th>
-                    <th>A</th>
-                    <th>Pontos SAP</th>
-                </tr>
-            </thead>
-            <tbody id="corpo-tabela">
-                </tbody>
-        </table>
+
+    <div class="header">
+        <h1>GESTÃO DE TURMA</h1>
+        <div class="contador" id="totalAlunos">Alunos: 0</div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com",
-            projectId: "perfil-jovem--disc"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div class="grid">
+        <div class="card">
+            <h2>Média da Turma (Competências SAP)</h2>
+            <canvas id="chartColetivo"></canvas>
+        </div>
 
-        db.ref('resultados_testes').on('value', (snapshot) => {
-            const corpo = document.getElementById('corpo-tabela');
-            corpo.innerHTML = "";
-            
-            snapshot.forEach((childSnapshot) => {
-                const dado = childSnapshot.val();
-                const p = dado.pontos;
-                
-                const linha = `<tr>
-                    <td>${dado.data || '-'}</td>
-                    <td><strong>${dado.aluno || 'Anônimo'}</strong></td>
-                    <td><span class="tag e">${p.E}</span></td>
-                    <td><span class="tag c">${p.C}</span></td>
-                    <td><span class="tag p">${p.P}</span></td>
-                    <td><span class="tag a">${p.A}</span></td>
-                    <td>${p.SAP} / 3</td>
-                </tr>`;
-                corpo.innerHTML += linha;
-            });
+        <div class="card">
+            <h2>Análise Individual</h2>
+            <select id="selectAluno" onchange="atualizarIndividual()">
+                <option value="">Selecione um aluno para analisar...</option>
+            </select>
+            <canvas id="chartIndividual"></canvas>
+        </div>
+    </div>
+
+<script>
+    // Configuração do Firebase (A mesma que você usou no index.html)
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let dadosGerais = {};
+    let gColetivo, gIndividual;
+
+    // Escutar o Banco de Dados em Tempo Real
+    db.ref('avaliacoes').on('value', snapshot => {
+        dadosGerais = snapshot.val() || {};
+        const lista = Object.values(dadosGerais);
+        
+        document.getElementById('totalAlunos').innerText = `Total: ${lista.length} Alunos`;
+        
+        preencherSelect();
+        renderColetivo(lista);
+    });
+
+    function preencherSelect() {
+        const select = document.getElementById('selectAluno');
+        const valorAtual = select.value;
+        select.innerHTML = '<option value="">Selecione um aluno para analisar...</option>';
+        
+        for (let id in dadosGerais) {
+            let opt = document.createElement('option');
+            opt.value = id;
+            opt.text = dadosGerais[id].aluno;
+            select.add(opt);
+        }
+        select.value = valorAtual;
+    }
+
+    function renderColetivo(lista) {
+        if (lista.length === 0) return;
+
+        // Calcula a média das 7 competências SAP
+        let medias = [0,0,0,0,0,0,0];
+        lista.forEach(item => {
+            for(let i=0; i<7; i++) {
+                medias[i] += (item.sap[`item${i}`] || 0);
+            }
         });
-    </script>
+        medias = medias.map(m => (m / lista.length).toFixed(1));
+
+        if(gColetivo) gColetivo.destroy();
+        gColetivo = new Chart(document.getElementById('chartColetivo'), {
+            type: 'bar',
+            data: {
+                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
+                datasets: [{
+                    label: 'Média da Turma',
+                    data: medias,
+                    backgroundColor: 'rgba(0, 210, 211, 0.7)',
+                    borderColor: '#00d2d3',
+                    borderWidth: 2
+                }]
+            },
+            options: { 
+                scales: { y: { min: 0, max: 5, grid: { color: '#444' } }, x: { grid: { display: false } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function atualizarIndividual() {
+        const id = document.getElementById('selectAluno').value;
+        if (!id) return;
+
+        const aluno = dadosGerais[id];
+        const notasSap = Object.values(aluno.sap);
+
+        if(gIndividual) gIndividual.destroy();
+        gIndividual = new Chart(document.getElementById('chartIndividual'), {
+            type: 'radar',
+            data: {
+                labels: ['Protagonista', 'Responsável', 'Ambiental', 'Social', 'Saúde', 'Equipe', 'Aprender'],
+                datasets: [{
+                    label: aluno.aluno,
+                    data: notasSap,
+                    backgroundColor: 'rgba(255, 92, 58, 0.4)',
+                    borderColor: '#ff5c3a',
+                    pointBackgroundColor: '#fff',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        min: 0, max: 5,
+                        grid: { color: '#444' },
+                        angleLines: { color: '#444' },
+                        pointLabels: { color: '#fff', font: { size: 12 } },
+                        ticks: { display: false }
+                    }
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
