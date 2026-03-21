@@ -13,7 +13,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #4b4b4b; margin-bottom: 20px; }
         select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--destaque); margin-bottom: 15px; }
-        h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 0; }
+        h2 { color: var(--primaria); font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
         .btn-zero { background: var(--erro); color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
@@ -52,15 +52,15 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // NOMES CORRIGIDOS CONFORME O SEU PDF (TRAVADOS CONTRA TRADUÇÃO)
+    // ESTES SÃO OS NOMES EXATOS QUE VOCÊ PEDIU (TRAVADOS CONTRA TRADUÇÃO)
     const labelsSAP = [
-        "1. SER PROTAGONISTA",
-        "2. SER RESPONSÁVEL",
-        "3. COMUNICAR-SE",
-        "4. ÉTICO E CIDADÃO",
-        "5. RESOLVER PROBLEMAS",
-        "6. TRABALHO EM EQUIPE",
-        "7. APRENDER A APRENDER"
+        "SER PROTAGONISTA",
+        "SER RESPONSÁVEL E COMPROMETIDO",
+        "COMPREENDER CONTEXTOS E COMUNICAR-SE",
+        "SER DEMOCRÁTICO, ÉTICO E CIDADÃO",
+        "RESOLVER SITUAÇÕES-PROBLEMA",
+        "TRABALHAR E PRODUZIR EM EQUIPE",
+        "APRENDER A APRENDER"
     ];
 
     let dadosGerais = {};
@@ -91,7 +91,8 @@
                     datasets: [{ label: 'Média da Turma', data: medias, backgroundColor: '#00d2d3' }]
                 },
                 options: { 
-                    scales: { y: { min: 0, max: 5 } },
+                    indexAxis: 'y', // Mudei para horizontal para caber os nomes grandes
+                    scales: { x: { min: 0, max: 5 } },
                     plugins: { legend: { display: false } }
                 }
             });
@@ -103,7 +104,6 @@
         if(!id || !dadosGerais[id]) return;
         const aluno = dadosGerais[id];
 
-        // RADAR SAP
         const notasSap = [];
         for(let i=0; i<7; i++) notasSap.push(aluno.sap[`item${i}`] || 0);
         if(gInd) gInd.destroy();
@@ -113,10 +113,11 @@
                 labels: labelsSAP,
                 datasets: [{ label: aluno.aluno, data: notasSap, borderColor: '#ff5c3a', backgroundColor: 'rgba(255,92,58,0.2)', borderWidth: 3 }]
             },
-            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
+            options: { 
+                scales: { r: { min: 0, max: 5, ticks: { display: false }, pointLabels: { font: { size: 10 } } } } 
+            }
         });
 
-        // BARRAS DISC
         const d = aluno.disc || {D:0, I:0, S:0, C:0};
         if(gDisc) gDisc.destroy();
         gDisc = new Chart(document.getElementById('chartDisc'), {
