@@ -9,23 +9,26 @@
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
         body { background: var(--dark); color: white; font-family: sans-serif; padding: 15px; margin: 0; }
-        .container { max-width: 600px; margin: auto; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .container { max-width: 650px; margin: auto; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .step { display: none; }
         .active { display: block; }
-        h3 { color: var(--accent); text-align: center; font-size: 1.2em; margin-bottom: 20px; }
-        .question-card { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--blue); }
-        .label-title { font-weight: bold; display: block; margin-bottom: 5px; color: #fff; font-size: 1em; }
-        .evidencias { font-size: 0.85em; color: var(--blue); background: #0f172a; padding: 10px; border-radius: 5px; margin-bottom: 15px; line-height: 1.4; }
+        h3 { color: var(--accent); text-align: center; font-size: 1.2em; margin-bottom: 20px; text-transform: uppercase; }
+        .question-card { background: #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--blue); }
+        .label-title { font-weight: bold; display: block; margin-bottom: 10px; color: #fff; font-size: 1.1em; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+        .evidencias-box { font-size: 0.85em; color: var(--blue); background: #0f172a; padding: 12px; border-radius: 5px; margin-bottom: 15px; line-height: 1.5; }
+        .evidencias-box b { color: var(--accent); display: block; margin-bottom: 5px; }
         
-        /* Layout dos Botões 1-5 */
-        .rating-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; background: #2d3748; border-radius: 8px; }
+        /* Layout de Botões de Rádio 1-5 */
+        .rating-group { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; background: #2d3748; border-radius: 8px; margin-top: 10px; }
         .rating-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1; }
-        .rating-item input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--blue); margin-bottom: 5px; }
+        .rating-item input { width: 22px; height: 22px; cursor: pointer; accent-color: var(--blue); margin-bottom: 8px; }
         .rating-item span { font-size: 0.9em; font-weight: bold; color: #cbd5e1; }
 
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #0f172a; color: white; box-sizing: border-box; font-size: 1em; }
-        .disc-opt { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; font-size: 0.95em; }
-        .btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 10px; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #0f172a; color: white; box-sizing: border-box; font-size: 1.1em; margin-bottom: 15px; }
+        .disc-opt { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; transition: 0.3s; }
+        .disc-opt:hover { border-color: var(--blue); background: #1e293b; }
+        .btn { width: 100%; padding: 20px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1em; transition: 0.3s; }
+        .btn:hover { background: #0ea5e9; transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -33,6 +36,7 @@
 <div class="container">
     <div id="step0" class="step active">
         <h3>Diagnóstico Socioemocional 2026</h3>
+        <p style="text-align:center; color:#94a3b8; font-size:0.9em;">Preencha a avaliação de forma sincera e espontânea.</p>
         <input type="text" id="nomeAluno" placeholder="Nome Completo do Aluno">
         <button class="btn" onclick="next(1)">INICIAR 1ª ETAPA: SAP</button>
     </div>
@@ -46,7 +50,7 @@
     <div id="step2" class="step">
         <h3>2. Perfil Comportamental (DISC)</h3>
         <div id="disc-area"></div>
-        <button class="btn" style="background:#22c55e;" onclick="enviar()">FINALIZAR E ENVIAR</button>
+        <button class="btn" style="background:#22c55e;" onclick="enviar()">FINALIZAR E ENVIAR RESULTADOS</button>
     </div>
 </div>
 
@@ -55,14 +59,36 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Dados baseados no documento oficial [cite: 9, 27, 46, 65, 82, 98, 117]
     const sapData = [
-        { t: "PROTAGONISMO", e: "Iniciativa; Busca de soluções; Proatividade." },
-        { t: "RESPONSABILIDADE", e: "Cumprimento de prazos; Assumir erros; Organização." },
-        { t: "COMUNICAÇÃO", e: "Clareza ao falar; Saber ouvir; Expressão de ideias." },
-        { t: "ÉTICA", e: "Respeito às regras; Honestidade; Valores morais." },
-        { t: "RESOLUÇÃO DE PROBLEMAS", e: "Pensamento rápido; Criatividade; Resiliência." },
-        { t: "TRABALHO EM EQUIPE", e: "Colaboração; Coletividade; Aceitar críticas." },
-        { t: "APRENDER A APRENDER", e: "Curiosidade; Autoestudo; Lições aprendidas." }
+        { 
+            t: "SER PROTAGONISTA", 
+            e: "• Sou referência construtiva no grupo; • Respeito e me faço respeitar; • Construo meu Projeto de Vida; • Reconheço potenciais e pontos a melhorar; • Ofereço ajuda nos ambientes que frequento." // [cite: 13, 14, 15, 16, 17]
+        },
+        { 
+            t: "SER RESPONSÁVEL E COMPROMETIDO", 
+            e: "• Cumpro tarefas e prazos; • Sou pontual e assíduo (justifico faltas); • Reconheço a importância do trabalho; • Cuido da apresentação pessoal; • Cumpro regras do contrato de convivência." // [cite: 32, 33, 34, 35]
+        },
+        { 
+            t: "COMPREENDER CONTEXTOS E COMUNICAR-SE", 
+            e: "• Postura coerente com os ambientes; • Respeito o estado de humor do outro; • Faço críticas construtivas e elogios; • Expresso pensamentos de forma ordenada; • Sei ouvir e esperar minha vez de falar." // [cite: 51, 52, 53, 55]
+        },
+        { 
+            t: "SER DEMOCRÁTICO, ÉTICO E CIDADÃO", 
+            e: "• Sou honesto e ético nas relações; • Assumo meus erros; • Respeito opiniões diferentes e mudo meu ponto de vista se necessário; • Atitude coerente com o discurso; • Conheço meus direitos e deveres." // [cite: 69, 70, 71, 72, 73]
+        },
+        { 
+            t: "RESOLVER SITUAÇÕES-PROBLEMA", 
+            e: "• Resolvo conflitos diretamente sem fofocas; • Penso antes de agir e assumo escolhas; • Não tenho vergonha de pedir ajuda; • Enfrento desafios e incertezas; • Reconheço e lido com meus sentimentos." // [cite: 86, 87, 88, 89, 90]
+        },
+        { 
+            t: "TRABALHAR E PRODUZIR EM EQUIPE", 
+            e: "• Penso no bem-estar do grupo; • Busco o consenso nas atividades coletivas; • Aceito o desafio de trabalhar em grupo; • Recebo críticas e sugestões sobre meu comportamento; • Transmito informações com fidelidade." // [cite: 103, 104, 105, 106, 107]
+        },
+        { 
+            t: "APRENDER A APRENDER", 
+            e: "• Aprofundo conhecimentos dos conteúdos; • Comprometimento com a vida escolar; • Tiro lições de situações boas ou ruins; • Sou curioso, questiono e argumento; • Utilizo os conteúdos aprendidos no dia a dia." // [cite: 121, 122, 123, 124, 125]
+        }
     ];
 
     const sapArea = document.getElementById('sap-area');
@@ -78,7 +104,7 @@
         sapArea.innerHTML += `
             <div class="question-card">
                 <span class="label-title">${i+1}. ${item.t}</span>
-                <div class="evidencias"><b>Evidências:</b> ${item.e}</div>
+                <div class="evidencias-box"><b>Evidências Norteadoras:</b>${item.e}</div>
                 <div class="rating-group">${ratings}</div>
             </div>`;
     });
@@ -88,15 +114,15 @@
         discArea.innerHTML += `
             <div class="question-card">
                 <span class="label-title">Questão ${i}</span>
-                <label class="disc-opt"><input type="radio" name="d${i}" value="D"> Sou decidido e focado em resultados.</label>
-                <label class="disc-opt"><input type="radio" name="d${i}" value="I"> Sou entusiasmado e comunicativo.</label>
-                <label class="disc-opt"><input type="radio" name="d${i}" value="S"> Sou paciente e bom ouvinte.</label>
-                <label class="disc-opt"><input type="radio" name="d${i}" value="C"> Sou detalhista e organizado.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="D"> Prefiro liderar, decidir e focar em resultados.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="I"> Prefiro animar, interagir e influenciar pessoas.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="S"> Prefiro ouvir, apoiar e manter a estabilidade.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="C"> Prefiro analisar, organizar e seguir processos.</label>
             </div>`;
     }
 
     function next(s) {
-        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Jorge, peça para o aluno digitar o nome!");
+        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Por favor, digite seu nome completo para iniciar.");
         document.querySelectorAll('.step').forEach(d => d.classList.remove('active'));
         document.getElementById('step'+s).classList.add('active');
         window.scrollTo(0,0);
@@ -119,7 +145,7 @@
         db.ref('resultados_testes').push({
             aluno: nome, sap: sapRes, disc: discRes, data: new Date().toLocaleDateString()
         }).then(() => {
-            alert("Dados enviados com sucesso!");
+            alert("Diagnóstico concluído! Os dados foram enviados para o Gestor Jorge.");
             location.reload();
         });
     }
