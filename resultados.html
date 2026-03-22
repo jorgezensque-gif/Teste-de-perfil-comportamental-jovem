@@ -8,54 +8,53 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #22c55e; --red: #ef4444; --purple: #a855f7; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #22c55e; --red: #ef4444; }
         body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; margin: 0; }
         .container { max-width: 1300px; margin: auto; }
-        .header-gestor { background: var(--card); padding: 20px; border-radius: 12px; border-top: 4px solid var(--red); margin-bottom: 20px; }
+        .box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .header-gestor { border-top: 4px solid var(--red); }
         .top-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        select { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; flex-grow: 1; cursor: pointer; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        input, select { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; }
+        input { flex-grow: 1; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-link { background: var(--blue); }
         .btn-excel { background: var(--green); }
         .btn-zerar { background: var(--red); }
         .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; }
-        h2, h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
+        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; min-height: 400px; }
+        h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
         canvas { width: 100% !important; height: 320px !important; }
+        #resultadoLink { margin-top: 10px; color: var(--blue); font-family: monospace; font-size: 0.9em; word-break: break-all; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-gestor">
-        <h2 style="color: var(--red); text-align: left;">GESTOR RESPONSÁVEL: JORGE | PAINEL ESTRATÉGICO 2026</h2>
-        
-        <select id="selectAluno" onchange="atualizarPainel()">
-            <option value="geral">📊 VISÃO GERAL DA TURMA</option>
-        </select>
+    <div class="box">
+        <h3>🔗 Gerador de Acessos Individuais (WhatsApp)</h3>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="nomeLink" placeholder="Nome Completo do Aluno">
+            <button class="btn btn-link" onclick="gerarLink()">GERAR E DISPARAR LINK</button>
+        </div>
+        <div id="resultadoLink"></div>
+    </div>
 
+    <div class="box header-gestor">
+        <h2 style="color: var(--red); margin:0;">GESTOR RESPONSÁVEL: JORGE | PAINEL 2026</h2>
         <div class="top-bar">
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXPORTAR EXCEL COMPLETO</button>
-            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA (NOVA RODADA)</button>
+            <select id="selectAluno" onchange="atualizarPainel()" style="flex-grow: 1;">
+                <option value="geral">📊 VISÃO GERAL DA TURMA</option>
+            </select>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
+            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA</button>
         </div>
     </div>
 
     <div class="grid-graficos">
-        <div class="card-grafico">
-            <h3>1. Autoavaliação SAP (Radar)</h3>
-            <canvas id="chartRadarSAP"></canvas>
-        </div>
-        <div class="card-grafico">
-            <h3>2. Perfil DISC (Dominante)</h3>
-            <canvas id="chartBarDISC"></canvas>
-        </div>
-        <div class="card-grafico">
-            <h3>3. Competências SAP (Barras)</h3>
-            <canvas id="chartBarSAP"></canvas>
-        </div>
-        <div class="card-grafico">
-            <h3>4. Equilíbrio: DISC vs Média SAP</h3>
-            <canvas id="chartCorrelacao"></canvas>
-        </div>
+        <div class="card-grafico"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="chartRadarSAP"></canvas></div>
+        <div class="card-grafico"><h3>2. Perfil DISC (Dominante)</h3><canvas id="chartBarDISC"></canvas></div>
+        <div class="card-grafico"><h3>3. Competências SAP (Barras)</h3><canvas id="chartBarSAP"></canvas></div>
+        <div class="card-grafico"><h3>4. Equilíbrio: DISC vs Média SAP</h3><canvas id="chartCorrelacao"></canvas></div>
     </div>
 </div>
 
@@ -66,44 +65,33 @@
 
     let todosResultados = [];
     let charts = {};
+    const MEU_WHATSAPP = "5563984011065";
+
+    // FUNÇÃO GERAR LINK (SEU TELEFONE ESTÁ AQUI)
+    function gerarLink() {
+        const nome = document.getElementById('nomeLink').value;
+        if(!nome) return alert("Jorge, digite o nome!");
+        const id = nome.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
+        const link = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${id}`;
+        document.getElementById('resultadoLink').innerText = "LINK: " + link;
+        
+        const msg = encodeURIComponent(`Olá, Jorge aqui! Segue seu link individual para o Diagnóstico Socioemocional 2026: ${link}`);
+        window.open(`https://wa.me/${MEU_WHATSAPP}?text=${msg}`, '_blank');
+    }
 
     function initCharts() {
-        // RADAR SAP
-        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), {
-            type: 'radar',
-            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
-            options: { scales: { r: { min: 0, max: 5 } } }
-        });
-
-        // BARRAS DISC
-        charts.discBar = new Chart(document.getElementById('chartBarDISC'), {
-            type: 'bar',
-            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Pontuação', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] }
-        });
-
-        // BARRAS SAP
-        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), {
-            type: 'bar',
-            data: { labels: ['P', 'R', 'C', 'E', 'S', 'Eq', 'A'], datasets: [{ label: 'Score', data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] },
-            options: { scales: { y: { min: 0, max: 5 } } }
-        });
-
-        // CORRELAÇÃO (Substituindo Dunning-Kruger)
-        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), {
-            type: 'bar',
-            data: { labels: ['Dominante (D)', 'Influente (I)', 'Estável (S)', 'Cauteloso (C)'], datasets: [{ label: 'Média SAP por Perfil', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
-            options: { scales: { y: { min: 0, max: 5 } } }
-        });
+        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), { type: 'radar', data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: { scales: { r: { min: 0, max: 5 } } } });
+        charts.discBar = new Chart(document.getElementById('chartBarDISC'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Pontuação', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] } });
+        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), { type: 'bar', data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ label: 'Score', data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] }, options: { scales: { y: { min: 0, max: 5 } } } });
+        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Média SAP por Perfil', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] }, options: { scales: { y: { min: 0, max: 5 } } } });
     }
 
     db.ref('resultados_testes').on('value', snap => {
         todosResultados = [];
         const select = document.getElementById('selectAluno');
         select.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
-        
         snap.forEach(child => {
-            const data = child.val();
-            data.key = child.key;
+            const data = child.val(); data.key = child.key;
             todosResultados.push(data);
             select.innerHTML += `<option value="${data.key}">${data.aluno}</option>`;
         });
@@ -112,8 +100,7 @@
 
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
-        let sapData = [0,0,0,0,0,0,0];
-        let discData = [0,0,0,0];
+        let sapData = [0,0,0,0,0,0,0], discData = [0,0,0,0];
         
         if (id === 'geral') {
             todosResultados.forEach(r => {
@@ -121,48 +108,4 @@
                 discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
             });
             const t = todosResultados.length || 1;
-            sapData = sapData.map(v => v / t);
-            
-            // Lógica de correlação (Média SAP de quem é D, de quem é I, etc)
-            let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
-            todosResultados.forEach(r => {
-                const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
-                let m = 0; for(let i=0; i<7; i++) m += parseInt(r.sap['q'+i] || 0);
-                somasCorr[dom] += (m/7); contCorr[dom]++;
-            });
-            charts.correlacao.data.datasets[0].data = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
-        } else {
-            const r = todosResultados.find(x => x.key === id);
-            for(let i=0; i<7; i++) sapData[i] = parseInt(r.sap['q'+i]);
-            discData = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
-            charts.correlacao.data.datasets[0].data = [0,0,0,0]; // Desativa correlação na visão individual
-        }
-
-        charts.sapRadar.data.datasets[0].data = sapData;
-        charts.sapBar.data.datasets[0].data = sapData;
-        charts.discBar.data.datasets[0].data = discData;
-        charts.sapRadar.update(); charts.sapBar.update(); charts.discBar.update(); charts.correlacao.update();
-    }
-
-    function exportarExcel() {
-        const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({
-            Aluno: r.aluno, Data: r.data, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C,
-            P: r.sap.q0, R: r.sap.q1, C: r.sap.q2, E: r.sap.q3, Pr: r.sap.q4, Eq: r.sap.q5, A: r.sap.q6
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados");
-        XLSX.writeFile(wb, "Relatorio_Jorge_Completo.xlsx");
-    }
-
-    function zerarSistema() {
-        if(confirm("JORGE: Apagar tudo para nova rodada?")) {
-            db.ref('resultados_testes').remove();
-            db.ref('links_usados').remove();
-            alert("Sistema limpo!");
-        }
-    }
-
-    initCharts();
-</script>
-</body>
-</html>
+            sap
