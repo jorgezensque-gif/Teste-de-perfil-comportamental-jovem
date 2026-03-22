@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Coletivo - Jorge Zensque</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body { background: #1e272e; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: #2d3436; padding: 25px; border-radius: 12px; border: 1px solid #444; max-width: 1100px; margin: auto; }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #f39c12; margin-bottom: 25px; padding-bottom: 15px; }
+        .logo-img { height: 70px; }
+        h2 { color: #f39c12; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .stats { background: #2980b9; padding: 12px; border-radius: 6px; text-align: center; font-size: 18px; margin-bottom: 25px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .chart-box { background: #ffffff; color: #333; padding: 20px; border-radius: 10px; height: 450px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        h4 { text-align: center; margin-top: 0; color: #2d3436; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <img src="https://raw.githubusercontent.com/jorgezensque-gif/Teste-de-perfil-comportamental-jovem/main/Logo%20marca%20jorge%20Copilot_20260321_225242.jpg" class="logo-img">
+            <h2>Mapeamento Coletivo de Turma</h2>
+        </div>
+
+        <div id="contador" class="stats">📊 ANALISANDO DADOS DO GRUPO...</div>
+
+        <div class="grid">
+            <div class="chart-box">
+                <h4>PERFIL COMPORTAMENTAL MÉDIO (DISC)</h4>
+                <canvas id="geralDisc"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h4>EQUILÍBRIO SOCIOEMOCIONAL (RADAR SAP)</h4>
+                <canvas id="geralRadar"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        
+        firebase.database().ref('resultados_testes').on('value', snap => {
+            const dados = snap.val();
+            if(!dados) return;
+
+            let total = 0;
+            let somaDisc = { D:0, I:0, S:0, C:0 };
+            let somaSap = [0,0,0,0,0,0,0];
+
+            for(let id in dados) {
+                total++;
+                somaDisc.D += dados[id].disc.D;
+                somaDisc.I += dados[id].disc.I;
+                somaDisc.S += dados[id].disc.S;
+                somaDisc.C += dados[id].disc.C;
+                
+                const sapValues = Object.values(dados[id].sap);
+                sapValues.forEach((val, i) => somaSap[i] += val);
+            }
+
+            document.getElementById('contador').innerText = `TOTAL DE AVALIADOS NO BANCO DE DADOS: ${total} JOVENS`;
+
+            // 1. DISC COLETIVO (BARRAS COM NOMES)
+            new Chart(document.getElementById('geralDisc'), {
+                type: 'bar',
+                data: {
+                    labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'],
+                    datasets: [{
+                        data: [somaDisc.D/total, somaDisc.I/total, somaDisc.S/total, somaDisc.C/total],
+                        backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 7 } }, plugins: { legend: { display: false } } }
+            });
+
+            // 2. RADAR SAP COLETIVO
+            new Chart(document.getElementById('geralRadar'), {
+                type: 'radar',
+                data: {
+                    labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                    datasets: [{
+                        label: 'Média do Grupo',
+                        data: somaSap.map(v => v/total),
+                        backgroundColor: 'rgba(41, 128, 185, 0.3)',
+                        borderColor: '#2980b9',
+                        pointBackgroundColor: '#2980b9',
+                        borderWidth: 3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
+            });
+        });
+    </script>
+</body>
+</html>
