@@ -8,53 +8,58 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #25d366; }
-        body { background: var(--dark); color: white; font-family: sans-serif; padding: 15px; margin: 0; }
-        .container { max-width: 650px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { background: var(--dark); color: white; font-family: sans-serif; padding: 0; margin: 0; }
+        .header-fixo { position: sticky; top: 0; background: var(--dark); z-index: 1000; padding: 15px; border-bottom: 2px solid var(--blue); text-align: center; }
+        .container { max-width: 650px; margin: 20px auto; padding: 0 15px 100px 15px; }
         .step { display: none; }
         .active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        h3 { color: var(--accent); text-align: center; text-transform: uppercase; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        .question-card { background: #334155; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--blue); }
+        h3 { color: var(--accent); margin: 10px 0; text-transform: uppercase; }
+        .instrucao { color: #94a3b8; font-size: 0.9em; margin-bottom: 5px; }
+        .question-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--blue); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .evidencias { font-size: 0.85em; color: #cbd5e1; background: #1a2232; padding: 12px; border-radius: 8px; margin-bottom: 15px; white-space: pre-line; }
         .rating-row { display: flex; justify-content: space-between; background: #0f172a; padding: 15px; border-radius: 10px; }
         .rating-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1; }
-        .rating-item input { width: 24px; height: 24px; cursor: pointer; accent-color: var(--blue); margin-bottom: 5px; }
-        .disc-opt { display: block; background: #0f172a; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #475569; cursor: pointer; }
+        .rating-item input { width: 24px; height: 24px; cursor: pointer; accent-color: var(--blue); }
+        .disc-opt { display: block; background: #0f172a; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #475569; cursor: pointer; transition: 0.3s; }
+        .disc-opt:hover { border-color: var(--blue); }
         .btn { width: 100%; padding: 20px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
         #msg-bloqueio { display: none; text-align: center; padding: 50px; }
-        .wa-btn { position: fixed; bottom: 20px; right: 20px; background: var(--green); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-decoration: none; z-index: 9999; }
+        .wa-btn { position: fixed; bottom: 20px; right: 20px; background: var(--green); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
 <div id="msg-bloqueio">
     <h1 style="color:var(--accent);">⚠️ LINK EXPIRADO</h1>
-    <p>Jorge informa: Este link individual já foi utilizado. Caso precise refazer, solicite um novo link.</p>
+    <p>Jorge informa: Este link individual já foi utilizado.</p>
 </div>
 
-<div id="conteudo-teste" class="container">
-    <div id="step0" class="step active">
-        <h3>Diagnóstico 2026</h3>
-        <input type="text" id="nomeAluno" style="width:100%; padding:18px; margin-bottom:20px; border-radius:10px; border:none; background:#0f172a; color:white; font-size:1.1em;" placeholder="Digite seu Nome Completo">
-        <button class="btn" onclick="proximo(1)">INICIAR 1ª ETAPA: SAP</button>
+<div id="conteudo-teste">
+    <div class="header-fixo">
+        <h3 id="titulo-etapa">Diagnóstico 2026</h3>
+        <p class="instrucao" id="texto-instrucao">Identifique-se para começar</p>
     </div>
 
-    <div id="step1" class="step">
-        <h3>1. Competências (SAP)</h3>
-        <div id="sap-area"></div>
-        <button class="btn" onclick="proximo(2)">PRÓXIMA ETAPA: DISC</button>
-    </div>
+    <div class="container">
+        <div id="step0" class="step active">
+            <input type="text" id="nomeAluno" style="width:100%; padding:18px; border-radius:10px; border:none; background:#1a2232; color:white; font-size:1.1em; box-sizing:border-box;" placeholder="Seu Nome Completo">
+            <button class="btn" style="margin-top:20px;" onclick="proximo(1)">INICIAR SAP</button>
+        </div>
 
-    <div id="step2" class="step">
-        <h3>2. Perfil Comportamental (DISC)</h3>
-        <p style="text-align:center; color:#94a3b8; margin-bottom:20px;">Escolha a opção que melhor descreve você:</p>
-        <div id="disc-area"></div>
-        <button class="btn" style="background:#22c55e;" onclick="enviar()">FINALIZAR E ENVIAR</button>
+        <div id="step1" class="step">
+            <div id="sap-area"></div>
+            <button class="btn" onclick="proximo(2)">IR PARA O DISC</button>
+        </div>
+
+        <div id="step2" class="step">
+            <div id="disc-area"></div>
+            <button class="btn" style="background:var(--green);" onclick="enviar()">FINALIZAR E ENVIAR</button>
+        </div>
     </div>
 </div>
 
-<a id="linkZap" href="https://wa.me/5563984011065?text=Jorge, estou com dúvida no teste." class="wa-btn" target="_blank">
-    <svg width="35" height="35" fill="white" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+<a href="https://wa.me/5563984011065" class="wa-btn" target="_blank">
+    <svg width="30" height="30" fill="white" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
 </a>
 
 <script>
@@ -65,6 +70,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
 
+    // Bloqueio por Link
     if (linkID) {
         db.ref('links_usados/' + linkID).once('value', snap => {
             if (snap.exists()) {
@@ -72,50 +78,49 @@
                 document.getElementById('msg-bloqueio').style.display = 'block';
             }
         });
-    } else {
-        alert("Link inválido! Solicite o link correto ao Jorge.");
-        document.getElementById('conteudo-teste').style.display = 'none';
     }
 
     const sapData = [
-        { t: "SER PROTAGONISTA", e: "• Referência construtiva no grupo\n• Respeito mútuo\n• Projeto de Vida\n• Reconhece potenciais\n• Oferece ajuda" },
-        { t: "SER RESPONSÁVEL E COMPROMETIDO", e: "• Cumpre tarefas e prazos\n• Pontual e assíduo\n• Apresentação pessoal\n• Cumpre regras e normas" },
-        { t: "COMPREENDER CONTEXTOS E COMUNICAR-SE", e: "• Postura coerente\n• Críticas construtivas\n• Pensamentos ordenados\n• Sei ouvir e esperar a vez" },
-        { t: "SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e: "• Honesto e ético\n• Assumo meus erros\n• Respeito opiniões diferentes\n• Conheço direitos e deveres" },
-        { t: "RESOLVER SITUAÇÕES-PROBLEMA", e: "• Conflitos sem fofoca\n• Pensar antes de agir\n• Pedir ajuda se precisar\n• Lido com sentimentos" },
-        { t: "TRABALHAR E PRODUZIR EM EQUIPE", e: "• Bem-estar do grupo\n• Busca consenso\n• Aceitar trabalhar em grupo\n• Recebe críticas e sugestões" },
-        { t: "APRENDER A APRENDER", e: "• Aprofunda conhecimentos\n• Comprometimento escolar\n• Lições de situações\n• Curioso e questionador" }
+        { t: "1. SER PROTAGONISTA", e: "• Referência no grupo\n• Respeito mútuo\n• Projeto de Vida\n• Reconhece potenciais\n• Oferece ajuda" },
+        { t: "2. SER RESPONSÁVEL", e: "• Prazos e tarefas\n• Pontualidade\n• Higiene pessoal\n• Cumpre regras" },
+        { t: "3. COMUNICAR-SE", e: "• Postura coerente\n• Críticas construtivas\n• Pensamento ordenado\n• Sabe ouvir" },
+        { t: "4. ÉTICA E CIDADANIA", e: "• Honestidade\n• Assume erros\n• Respeita opiniões\n• Direitos e deveres" },
+        { t: "5. RESOLVER PROBLEMAS", e: "• Sem fofocas\n• Pensa antes de agir\n• Pede ajuda\n• Lida com sentimentos" },
+        { t: "6. TRABALHO EM EQUIPE", e: "• Bem comum\n• Busca consenso\n• Aceita desafios\n• Recebe críticas" },
+        { t: "7. APRENDER A APRENDER", e: "• Busca conhecimento\n• Vida escolar\n• Tira lições\n• Curioso" }
     ];
 
     const discData = [
         { d:"Decidido e Dominante", i:"Animado e Influente", s:"Amigável e Estável", c:"Preciso e Detalhista" },
-        { d:"Foco em Resultados", i:"Foco em Pessoas", s:"Foco em Colaboração", c:"Foco em Processos" },
-        { d:"Gosta de Liderar", i:"Gosta de Interagir", s:"Gosta de Rotinas", c:"Gosta de Organização" },
-        { d:"Assertivo", i:"Persuasivo", s:"Bom Ouvinte", c:"Analítico" },
-        { d:"Rápido", i:"Expressivo", s:"Cuidadoso", c:"Lógico" },
+        { d:"Foco em Resultados", i:"Foco em Entusiasmo", s:"Foco em Cooperação", c:"Foco em Organização" },
+        { d:"Gosta de Liderar", i:"Gosta de Persuadir", s:"Gosta de Ajudar", c:"Gosta de Analisar" },
+        { d:"Assertivo e Direto", i:"Comunicativo e Alegre", s:"Paciente e Calmo", c:"Cuidadoso e Lógico" },
         { d:"Independente", i:"Sociável", s:"Leal", c:"Perfeccionista" },
-        { d:"Competitivo", i:"Espontâneo", s:"Apoia os outros", c:"Exigente" },
-        { d:"Determinado", i:"Comunicativo", s:"Paciente", c:"Prudente" },
-        { d:"Direto ao ponto", i:"Gosta de conversar", s:"Evita conflitos", c:"Segue regras" },
-        { d:"Energético", i:"Criativo", s:"Gentil", c:"Sistemático" },
-        { d:"Corajoso", i:"Inspirador", s:"Calmo", c:"Racional" },
-        { d:"Auto-confiante", i:"Otimista", s:"Previsível", c:"Técnico" },
-        { d:"Comandante", i:"Popular", s:"Moderado", c:"Discreto" },
-        { d:"Firme", i:"Encantador", s:"Seguro", c:"Criterioso" },
-        { d:"Ousado", i:"Alegre", s:"Metódico", c:"Disciplinado" },
-        { d:"Objetivo", i:"Entusiasmado", s:"Solidário", c:"Cauteloso" }
+        { d:"Competitivo", i:"Espontâneo", s:"Bom ouvinte", c:"Metódico" },
+        { d:"Ousado", i:"Otimista", s:"Conciliador", c:"Disciplinado" },
+        { d:"Determinado", i:"Criativo", s:"Gentil", c:"Sistemático" },
+        { d:"Rápido", i:"Expressivo", s:"Previsível", c:"Analítico" },
+        { d:"Corajoso", i:"Popular", s:"Moderado", c:"Discreto" },
+        { d:"Firme", i:"Brincalhão", s:"Seguro", c:"Criterioso" },
+        { d:"Objetivo", i:"Encantador", s:"Solidário", c:"Cauteloso" },
+        { d:"Auto-confiante", i:"Inspirador", s:"Tranquilo", c:"Racional" },
+        { d:"Comandante", i:"Amigável", s:"Estável", c:"Organizado" },
+        { d:"Assume riscos", i:"Gosta de elogios", s:"Gosta de rotina", c:"Gosta de regras" },
+        { d:"Energético", i:"Persuasivo", s:"Apoia o grupo", c:"Busca perfeição" }
     ];
 
+    // Gerar SAP
     const sapArea = document.getElementById('sap-area');
     sapData.forEach((item, i) => {
         let rs = '';
-        for(let v=1; v<=5; v++) rs += `<label class="rating-item"><input type="radio" name="sap${i}" value="${v}"><span>${v}</span></label>`;
+        for(let v=1; v<=5; v++) rs += `<label class="rating-item"><input type="radio" name="sap${i}" value="${v}"><span style="margin-top:5px">${v}</span></label>`;
         sapArea.innerHTML += `<div class="question-card"><b>${item.t}</b><div class="evidencias">${item.e}</div><div class="rating-row">${rs}</div></div>`;
     });
 
+    // Gerar DISC
     const discArea = document.getElementById('disc-area');
     discData.forEach((q, i) => {
-        discArea.innerHTML += `<div class="question-card"><b>Questão ${i+1}</b>
+        discArea.innerHTML += `<div class="question-card"><b>Questão ${i+1} de 16</b>
             <label class="disc-opt"><input type="radio" name="d${i}" value="D"> ${q.d}</label>
             <label class="disc-opt"><input type="radio" name="d${i}" value="I"> ${q.i}</label>
             <label class="disc-opt"><input type="radio" name="d${i}" value="S"> ${q.s}</label>
@@ -127,6 +132,8 @@
         document.querySelectorAll('.step').forEach(d => d.classList.remove('active'));
         document.getElementById('step'+s).classList.add('active');
         window.scrollTo(0,0);
+        if(s===1) { document.getElementById('titulo-etapa').innerText = "1. Competências (SAP)"; document.getElementById('texto-instrucao').innerText = "Avalie-se de 1 a 5 em cada item"; }
+        if(s===2) { document.getElementById('titulo-etapa').innerText = "2. Perfil DISC"; document.getElementById('texto-instrucao').innerText = "Escolha a frase que MELHOR descreve você"; }
     }
 
     function enviar() {
@@ -143,10 +150,7 @@
         }
         db.ref('resultados_testes').push({ aluno: nome, sap: sapRes, disc: dRes, link_id: linkID, data: new Date().toLocaleString() })
         .then(() => db.ref('links_usados/' + linkID).set(true))
-        .then(() => {
-            alert("Sucesso! Diagnóstico concluído.");
-            location.reload(); 
-        });
+        .then(() => { alert("Enviado com sucesso!"); location.reload(); });
     }
 </script>
 </body>
