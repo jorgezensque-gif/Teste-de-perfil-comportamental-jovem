@@ -1,85 +1,115 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação de Perfil - Sistema Jorge</title>
+    <title>Diagnóstico Socioemocional - Jorge Zensque</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0b0d10; color: white; font-family: sans-serif; padding: 20px; }
-        .box { max-width: 500px; margin: auto; background: #1e272e; padding: 25px; border-radius: 15px; border: 1px solid #ff5c3a; }
-        h2 { color: #ff5c3a; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
-        button { background: #2ecc71; color: white; font-weight: bold; cursor: pointer; }
-        label { display: block; margin-top: 15px; color: #00d2d3; font-weight: bold; }
-        .footer { text-align: center; font-size: 12px; margin-top: 20px; color: #888; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
+        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 700px; margin: auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .step { display: none; }
+        .active { display: block; }
+        .section-card { background: #334155; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        h3 { color: var(--accent); text-align: center; }
+        .question { margin-bottom: 20px; border-bottom: 1px solid #475569; padding-bottom: 15px; }
+        .evidencia { font-size: 0.8em; color: var(--blue); margin-bottom: 10px; font-style: italic; background: #0f172a; padding: 8px; border-radius: 5px; }
+        input[type="range"] { width: 100%; margin: 10px 0; accent-color: var(--blue); }
+        .btn-next { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
+        .disc-opt { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 20px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>📝 AVALIAÇÃO DIAGNÓSTICA</h2>
-        <p style="text-align: center;">Preencha os dados abaixo com atenção.</p>
-        
-        <label>Seu Nome Completo:</label>
-        <input type="text" id="nomeAluno" placeholder="Digite seu nome aqui...">
-        
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        
-        <h3>AUTOAVALIAÇÃO SAP</h3>
-        <p style="font-size: 13px;">Dê uma nota de 1 a 5 para você mesmo:</p>
-        
-        <label>1. Protagonismo e Iniciativa:</label>
-        <input type="number" id="sap0" min="1" max="5" value="3">
-        
-        <label>2. Comunicação Assertiva:</label>
-        <input type="number" id="sap1" min="1" max="5" value="3">
 
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        
-        <h3>PERFIL DISC</h3>
-        <p style="font-size: 13px;">Insira a pontuação do seu teste (0 a 40):</p>
-        
-        <label>Dominância (D):</label>
-        <input type="number" id="discD" value="10">
-        
-        <label>Influência (I):</label>
-        <input type="number" id="discI" value="10">
-
-        <button onclick="enviar()">ENVIAR MINHA AVALIAÇÃO</button>
-        <div class="footer">Responsável: Jorge</div>
+<div class="container">
+    <div id="step0" class="step active">
+        <h3>Diagnóstico Socioemocional 2026</h3>
+        <input type="text" id="nomeAluno" placeholder="Nome Completo do Aluno">
+        <button class="btn-next" onclick="nextStep(1)">INICIAR 1ª ETAPA: SAP</button>
     </div>
 
-    <script>
-        // CONFIGURAÇÃO DO SEU BANCO
-        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div id="step1" class="step">
+        <h3>1ª ETAPA: COMPETÊNCIAS (SAP)</h3>
+        <div id="sap-content"></div>
+        <button class="btn-next" onclick="nextStep(2)">PRÓXIMO: PERFIL DISC</button>
+    </div>
 
-        function enviar() {
-            const nome = document.getElementById('nomeAluno').value;
-            if(!nome) return alert("Por favor, Jorge solicita que você digite seu nome!");
+    <div id="step2" class="step">
+        <h3>2ª ETAPA: PERFIL COMPORTAMENTAL (DISC)</h3>
+        <div id="disc-content"></div>
+        <button class="btn-next" style="background:#22c55e;" onclick="finalizar()">FINALIZAR E ENVIAR</button>
+    </div>
+</div>
 
-            const dados = {
-                aluno: nome,
-                sap: {
-                    item0: parseInt(document.getElementById('sap0').value),
-                    item1: parseInt(document.getElementById('sap1').value),
-                    item2: 3, item3: 3, item4: 3, item5: 3, item6: 3 
-                },
-                disc: {
-                    D: parseInt(document.getElementById('discD').value),
-                    I: parseInt(document.getElementById('discI').value),
-                    S: 10, C: 10 
-                },
-                data: new Date().toLocaleDateString()
-            };
+<script>
+    // DADOS SAP (As 7 competências)
+    const sapData = [
+        { q: "PROTAGONISMO", e: "Tomo iniciativa e busco soluções." },
+        { q: "RESPONSABILIDADE", e: "Cumpro prazos e assumo meus atos." },
+        { q: "COMUNICAÇÃO", e: "Falo com clareza e sei ouvir." },
+        { q: "ÉTICA", e: "Respeito regras e sou honesto." },
+        { q: "RESOLUÇÃO DE PROBLEMAS", e: "Sou criativo e resiliente." },
+        { q: "TRABALHO EM EQUIPE", e: "Colaboro bem com o grupo." },
+        { q: "APRENDER A APRENDER", e: "Busco novos conhecimentos sempre." }
+    ];
 
-            db.ref('resultados_testes').push(dados).then(() => {
-                alert("Sucesso! Seus dados foram enviados para o painel do Jorge.");
-                location.reload();
-            });
+    // Geração SAP
+    const sapDiv = document.getElementById('sap-content');
+    sapData.forEach((s, i) => {
+        sapDiv.innerHTML += `<div class="question"><label><b>${s.q}</b></label><div class="evidencia">Evidência: ${s.e}</div><input type="range" id="sap${i}" min="1" max="5" value="3"></div>`;
+    });
+
+    // Geração DISC (16 Questões)
+    const discDiv = document.getElementById('disc-content');
+    for(let i=0; i<16; i++) {
+        discDiv.innerHTML += `<div class="question"><label>Questão ${i+1}: Escolha uma frase:</label>
+            <label class="disc-opt"><input type="radio" name="d${i}" value="D"> Sou decidido e direto.</label>
+            <label class="disc-opt"><input type="radio" name="d${i}" value="I"> Sou entusiasmado e falante.</label>
+            <label class="disc-opt"><input type="radio" name="d${i}" value="S"> Sou paciente e bom ouvinte.</label>
+            <label class="disc-opt"><input type="radio" name="d${i}" value="C"> Sou detalhista e organizado.</label></div>`;
+    }
+
+    function nextStep(s) {
+        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Digite seu nome!");
+        document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
+        document.getElementById('step'+s).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    // FIREBASE
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function finalizar() {
+        const nome = document.getElementById('nomeAluno').value;
+        
+        let sapRes = {
+            p: document.getElementById('sap0').value,
+            r: document.getElementById('sap1').value,
+            c: document.getElementById('sap2').value,
+            e: document.getElementById('sap3').value,
+            pb: document.getElementById('sap4').value,
+            eq: document.getElementById('sap5').value,
+            a: document.getElementById('sap6').value
+        };
+
+        let discFinal = { D: 0, I: 0, S: 0, C: 0 };
+        for(let i=0; i<16; i++) {
+            let r = document.querySelector(`input[name="d${i}"]:checked`);
+            if(r) discFinal[r.value]++;
         }
-    </script>
+
+        db.ref('resultados_testes').push({
+            aluno: nome, sap: sapRes, disc: discFinal, data: new Date().toLocaleDateString()
+        }).then(() => {
+            alert("Sucesso, Jorge! Dados enviados.");
+            location.reload();
+        });
+    }
+</script>
 </body>
 </html>
