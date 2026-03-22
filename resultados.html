@@ -2,60 +2,55 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>PAINEL JORGE 2026 - SISTEMA BLINDADO</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>PAINEL JORGE 2026 - ESTÁVEL</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --red: #ef4444; --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding: 15px; height: 100vh; overflow-y: auto; }
-        .header { background: var(--card); padding: 15px; border-radius: 10px; border-top: 4px solid var(--red); margin-bottom: 15px; }
+        :root { --red: #ef4444; --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
+        .header { border-top: 4px solid var(--red); display: flex; justify-content: space-between; align-items: center; }
         
-        /* GRADE QUE TRAVA O TAMANHO */
-        .grid-graficos { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
-            gap: 15px; 
-            max-width: 1400px; 
-            margin: auto;
+        /* GRUPO DE GRÁFICOS - TRAVADOS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card-chart { 
+            background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #334155;
+            height: 350px !important; /* TRAVA FÍSICA */
+            position: relative;
         }
-
-        .card { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 10px; 
-            border: 1px solid #334155;
-            height: 350px; /* ALTURA FIXA PARA IMPEDIR ALONGAMENTO */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .canvas-container { 
-            flex: 1; 
-            position: relative; 
-            min-height: 0; /* ESSENCIAL PARA O CHART.JS NÃO BUGAR */
-        }
-
-        h3 { color: #facc15; text-align: center; margin: 0 0 10px 0; font-size: 0.9rem; text-transform: uppercase; }
-        select, input, button { padding: 10px; border-radius: 5px; border: none; }
-        button { cursor: pointer; font-weight: bold; background: var(--blue); color: white; }
+        .canvas-container { position: relative; height: 280px; width: 100%; }
+        
+        h3 { color: var(--accent); text-align: center; text-transform: uppercase; font-size: 0.9em; margin-bottom: 10px; }
+        select, button { padding: 10px; border-radius: 6px; font-weight: bold; border: none; }
+        select { background: #0f172a; color: white; width: 300px; border: 1px solid var(--blue); }
+        button { cursor: pointer; color: white; }
+        .btn-excel { background: #22c55e; }
+        .btn-zerar { background: var(--red); }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0 0 10px 0;">GESTOR: JORGE | PAINEL 2026</h2>
-    <div style="display:flex; gap:10px;">
-        <select id="selectAluno" onchange="atualizar()" style="flex:1;"></select>
-        <button onclick="zerar()" style="background:var(--red);">ZERAR SISTEMA</button>
+<div class="container">
+    <div class="box header">
+        <div>
+            <h2 style="margin:0; font-size: 1.2em;">GESTOR: JORGE | PAINEL 2026</h2>
+            <p style="margin:5px 0 0 0; font-size: 0.8em; color: var(--blue);">Responsável: Jorge [cite: 2026-02-17]</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <select id="selectAluno" onchange="atualizar()"></select>
+            <button class="btn-zerar" onclick="zerar()">ZERAR</button>
+        </div>
     </div>
-</div>
 
-<div class="grid-graficos">
-    <div class="card"><h3>1. SAP (Radar)</h3><div class="canvas-container"><canvas id="c1"></canvas></div></div>
-    <div class="card"><h3>2. DISC (Barras)</h3><div class="canvas-container"><canvas id="c2"></canvas></div></div>
-    <div class="card"><h3>3. Competências</h3><div class="canvas-container"><canvas id="c3"></canvas></div></div>
-    <div class="card"><h3>4. Correlação</h3><div class="canvas-container"><canvas id="c4"></canvas></div></div>
+    <div class="grid">
+        <div class="card-chart"><h3>1. AUTOAVALIAÇÃO SAP (RADAR)</h3><div class="canvas-container"><canvas id="c1"></canvas></div></div>
+        <div class="card-chart"><h3>2. PERFIL DISC (BARRAS)</h3><div class="canvas-container"><canvas id="c2"></canvas></div></div>
+        <div class="card-chart"><h3>3. COMPETÊNCIAS SAP (BARRAS)</h3><div class="canvas-container"><canvas id="c3"></canvas></div></div>
+        <div class="card-chart"><h3>4. EQUILÍBRIO DISC VS SAP</h3><div class="canvas-container"><canvas id="c4"></canvas></div></div>
+    </div>
 </div>
 
 <script>
@@ -64,21 +59,14 @@
     const db = firebase.database();
     let dados = [], charts = {};
 
-    function criarChart(id, tipo, labels, colors) {
-        return new Chart(document.getElementById(id), {
-            type: tipo,
-            data: { labels: labels, datasets: [{ data: [], backgroundColor: colors, borderColor: colors[0], borderWidth: 1 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    }
-
     function init() {
-        const labelsSAP = ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'];
-        charts.radar = criarChart('c1', 'radar', labelsSAP, ['#38bdf822']);
-        charts.disc = criarChart('c2', 'bar', ['D','I','S','C'], ['#ef4444','#facc15','#22c55e','#3b82f6']);
-        charts.sap = criarChart('c3', 'bar', ['P','R','C','E','Pr','Eq','A'], ['#38bdf8']);
-        charts.corr = criarChart('c4', 'bar', ['D','I','S','C'], ['#ef4444','#facc15','#22c55e','#3b82f6']);
+        const cfg = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
         
+        charts.radar = new Chart(document.getElementById('c1'), { type: 'radar', data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: cfg });
+        charts.disc = new Chart(document.getElementById('c2'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: cfg });
+        charts.sap = new Chart(document.getElementById('c3'), { type: 'bar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [], backgroundColor: '#38bdf8' }] }, options: cfg });
+        charts.corr = new Chart(document.getElementById('c4'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: cfg });
+
         db.ref('resultados_testes').on('value', snap => {
             dados = [];
             const sel = document.getElementById('selectAluno');
@@ -93,30 +81,39 @@
 
     function atualizar() {
         const id = document.getElementById('selectAluno').value;
-        let s = [0,0,0,0,0,0,0], d = [0,0,0,0];
+        let s = [0,0,0,0,0,0,0], d = [0,0,0,0], c4 = [0,0,0,0];
 
         if (id === 'geral' && dados.length > 0) {
+            let contagem = {D:0, I:0, S:0, C:0};
             dados.forEach(r => {
-                for(let i=0; i<7; i++) s[i] += parseInt(r.sap['q'+i] || 0);
-                d[0] += r.disc.D; d[1] += r.disc.I; d[2] += r.disc.S; d[3] += r.disc.C;
+                // Conversão forçada para número para evitar o erro de 60 bilhões
+                for(let i=0; i<7; i++) s[i] += Number(r.sap['q'+i] || 0);
+                d[0] += Number(r.disc.D || 0); d[1] += Number(r.disc.I || 0); d[2] += Number(r.disc.S || 0); d[3] += Number(r.disc.C || 0);
+                
+                // Média para o Gráfico 4
+                let mediaSAP = 0; for(let i=0; i<7; i++) mediaSAP += Number(r.sap['q'+i] || 0);
+                let dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
+                if(contagem.hasOwnProperty(dom)) { c4[['D','I','S','C'].indexOf(dom)] += (mediaSAP/7); contagem[dom]++; }
             });
             s = s.map(v => v / dados.length);
+            d = d.map(v => v / dados.length);
+            c4 = c4.map((v, i) => contagem[['D','I','S','C'][i]] > 0 ? v / contagem[['D','I','S','C'][i]] : 0);
         } else {
             const r = dados.find(x => x.key === id);
             if(r) {
-                for(let i=0; i<7; i++) s[i] = parseInt(r.sap['q'+i]);
-                d = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
+                for(let i=0; i<7; i++) s[i] = Number(r.sap['q'+i]);
+                d = [Number(r.disc.D), Number(r.disc.I), Number(r.disc.S), Number(r.disc.C)];
             }
         }
-        
+
         charts.radar.data.datasets[0].data = s;
         charts.sap.data.datasets[0].data = s;
         charts.disc.data.datasets[0].data = d;
+        charts.corr.data.datasets[0].data = c4;
         Object.values(charts).forEach(c => c.update());
     }
 
-    function zerar() { if(confirm("Jorge, apagar tudo?")) db.ref('resultados_testes').remove(); }
-
+    function zerar() { if(confirm("Jorge, limpar tudo?")) db.ref('resultados_testes').remove(); }
     window.onload = init;
 </script>
 </body>
