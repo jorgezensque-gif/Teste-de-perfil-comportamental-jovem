@@ -7,47 +7,75 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #f4f7f6; font-family: sans-serif; padding: 20px; }
-        .form-container { max-width: 600px; background: white; padding: 30px; border-radius: 15px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2980b9; text-align: center; }
-        fieldset { border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-        legend { font-weight: bold; color: #d35400; padding: 0 10px; }
-        .pergunta { margin-bottom: 15px; }
-        input[type="range"] { width: 100%; }
-        .input-text { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
-        button { width: 100%; background: #27ae60; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .container { max-width: 700px; margin: auto; background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .logo { text-align: center; margin-bottom: 20px; }
+        .logo img { height: 100px; border-radius: 10px; }
+        h2 { text-align: center; color: #38bdf8; }
+        .section-card { background: #334155; padding: 20px; border-radius: 15px; margin-bottom: 25px; border-left: 5px solid #38bdf8; }
+        h3 { margin-top: 0; font-size: 1.1em; color: #facc15; }
+        .question-block { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 10px; font-size: 0.95em; line-height: 1.4; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: #38bdf8; }
+        .range-labels { display: flex; justify-content: space-between; font-size: 0.8em; color: #94a3b8; margin-top: 5px; }
+        .input-text { width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 20px; background: #0f172a; color: white; font-size: 1em; box-sizing: border-box; }
+        button { width: 100%; padding: 18px; background: #0ea5e9; color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #0284c7; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>Diagnóstico Socioemocional - Jorge Zensque</h2>
-    <input type="text" id="nomeAluno" class="input-text" placeholder="Seu Nome Completo" required>
+<div class="container">
+    <div class="logo">
+        <img src="https://raw.githubusercontent.com/jorgezensque-gif/Teste-de-perfil-comportamental-jovem/main/Logo%20marca%20jorge%20Copilot_20260321_225242.jpg" alt="Jorge Zensque">
+    </div>
+    <h2>Diagnóstico Socioemocional 2026</h2>
+    <input type="text" id="nomeAluno" class="input-text" placeholder="Seu Nome Completo..." required>
 
     <form id="testeForm">
-        <fieldset>
-            <legend>📊 Perfil e Competências</legend>
-            <p>Responda de 1 (Nada) a 5 (Totalmente)</p>
-            <div class="pergunta">
-                <label>Tomo iniciativa em projetos? (SAP)</label>
+        <div class="section-card">
+            <h3>1. COMPETÊNCIAS SOCIOEMOCIONAIS (SAP)</h3>
+            <div class="question-block">
+                <label>Consigo tomar decisões e agir por conta própria?</label>
                 <input type="range" name="sap1" min="1" max="5" value="3">
+                <div class="range-labels"><span>Nada</span><span>Totalmente</span></div>
+            </div>
+            </div>
+
+        <div class="section-card">
+            <h3>2. PERFIL COMPORTAMENTAL (DISC)</h3>
+            <div class="question-block">
+                <label>Gosto de desafios, sou direto e focado em resultados?</label>
+                <input type="range" name="discD" min="1" max="7" value="4">
+                <div class="range-labels"><span>Não sou assim</span><span>Sou muito assim</span></div>
+            </div>
+            </div>
+
+        <div class="section-card" style="border-left-color: #e67e22;">
+            <h3 style="color: #e67e22;">3. AUTOPERCEPÇÃO (DUNNING-KRUGER)</h3>
+            <div class="question-block">
+                <label>1. Acredito que me expresso muito bem e raramente preciso melhorar.</label>
+                <input type="range" name="dk1" min="1" max="5" value="3">
             </div>
             <div class="pergunta">
-                <label>Gosto de liderar e decidir? (Dominância)</label>
-                <input type="range" name="discD" min="1" max="7" value="4">
+                <label>2. Percebo que às vezes não sou tão claro e preciso aprender a ouvir mais.</label>
+                <input type="range" name="dk2" min="1" max="5" value="3">
             </div>
-        </fieldset>
+            <div class="pergunta">
+                <label>3. Acho que sou ótimo em liderar e trabalhar com os outros.</label>
+                <input type="range" name="dk3" min="1" max="5" value="3">
+            </div>
+            <div class="pergunta">
+                <label>4. Já percebi que nem sempre consigo colaborar como deveria.</label>
+                <input type="range" name="dk4" min="1" max="5" value="3">
+            </div>
+            <div class="pergunta">
+                <label>5. Reconheço que já cometi erros e estou aprendendo.</label>
+                <input type="range" name="dk5" min="1" max="5" value="3">
+            </div>
+        </div>
 
-        <fieldset>
-            <legend>🧠 Autopercepção (Dunning-Kruger)</legend>
-            <div class="pergunta"><label>1. Acredito que me expresso muito bem e raramente preciso melhorar.</label><input type="range" name="dk1" min="1" max="5" value="3"></div>
-            <div class="pergunta"><label>2. Percebo que às vezes não sou tão claro e preciso ouvir mais.</label><input type="range" name="dk2" min="1" max="5" value="3"></div>
-            <div class="pergunta"><label>3. Acho que sou ótimo em liderar e trabalhar com os outros.</label><input type="range" name="dk3" min="1" max="5" value="3"></div>
-            <div class="pergunta"><label>4. Já percebi que nem sempre consigo colaborar como deveria.</label><input type="range" name="dk4" min="1" max="5" value="3"></div>
-            <div class="pergunta"><label>5. Reconheço que cometo erros e estou aprendendo.</label><input type="range" name="dk5" min="1" max="5" value="3"></div>
-        </fieldset>
-
-        <button type="button" onclick="enviarDados()">ENVIAR TESTE</button>
+        <button type="button" onclick="enviarDados()">FINALIZAR MEU TESTE</button>
     </form>
 </div>
 
@@ -58,27 +86,33 @@
 
     function enviarDados() {
         const nome = document.getElementById('nomeAluno').value;
-        if(!nome) return alert("Jorge diz: Digite o nome!");
+        if(!nome) { alert("Jorge diz: Por favor, preencha seu nome!"); return; }
 
         const form = document.getElementById('testeForm');
         const fd = new FormData(form);
 
-        // Lógica de Cálculo Dunning-Kruger
-        let pConfianca = (parseInt(fd.get('dk1')) + parseInt(fd.get('dk3'))) / 2;
-        let pHumildade = (parseInt(fd.get('dk2')) + parseInt(fd.get('dk4')) + parseInt(fd.get('dk5'))) / 3;
-        let dk_grafico = [1, pConfianca, 6 - pConfianca, pHumildade, (pConfianca + pHumildade)/2];
+        // Lógica Dunning-Kruger (Calcula os pontos para o gráfico de linha)
+        let conf = (parseInt(fd.get('dk1')) + parseInt(fd.get('dk3'))) / 2;
+        let hum = (parseInt(fd.get('dk2')) + parseInt(fd.get('dk4')) + parseInt(fd.get('dk5'))) / 3;
+        let dk_grafico = [1, conf, (6 - conf), hum, (conf + hum) / 2];
 
         const dados = {
             aluno: nome,
-            sap: { p: fd.get('sap1'), r: 3, c: 4, e: 5, pb: 3, eq: 4, a: 5 }, // Mapeie todos aqui
-            disc: { D: fd.get('discD'), I: 5, S: 4, C: 3 }, // Mapeie todos aqui
-            dk_grafico: dk_grafico,
-            data: new Date().toLocaleDateString()
+            data: new Date().toLocaleDateString(),
+            sap: { 
+                p: parseInt(fd.get('sap1')), r: 4, c: 3, e: 5, pb: 4, eq: 3, a: 5 // Ajuste conforme suas perguntas
+            },
+            disc: { 
+                D: parseInt(fd.get('discD')), I: 5, S: 4, C: 3 // Ajuste conforme suas perguntas
+            },
+            dk_grafico: dk_grafico
         };
 
         db.ref('resultados_testes').push(dados).then(() => {
-            alert("Enviado com sucesso!");
+            alert("Teste enviado com sucesso! Jorge agradece.");
             location.reload();
+        }).catch(err => {
+            alert("Erro ao enviar: " + err.message);
         });
     }
 </script>
