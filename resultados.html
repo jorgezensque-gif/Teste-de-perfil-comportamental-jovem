@@ -21,8 +21,9 @@
         .btn-excel { background: var(--green); }
         .btn-zerar { background: var(--red); }
         .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; min-height: 400px; }
+        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; height: 450px; position: relative; }
         h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
+        canvas { width: 100% !important; height: 350px !important; }
         #resultadoLink { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; color: var(--blue); font-size: 0.8em; display: none; }
     </style>
 </head>
@@ -32,7 +33,7 @@
     <div class="box">
         <h3>🔗 Gerador de Acessos Individuais (WhatsApp)</h3>
         <div style="display:flex; gap:10px;">
-            <input type="text" id="nomeLink" placeholder="Digite o nome do aluno aqui...">
+            <input type="text" id="nomeLink" placeholder="Digite o nome do aluno...">
             <button class="btn btn-link" onclick="gerarLink()">GERAR E DISPARAR LINK</button>
         </div>
         <div id="resultadoLink"></div>
@@ -42,7 +43,7 @@
         <h2 style="color: var(--red); margin:0;">GESTOR RESPONSÁVEL: JORGE | PAINEL 2026</h2>
         <div class="top-bar">
             <select id="selectAluno" onchange="atualizarPainel()" style="flex-grow: 1;">
-                <option value="geral">📊 VISÃO GERAL DA TURMA</option>
+                <option value="geral">📊 CARREGANDO AVALIADOS...</option>
             </select>
             <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
             <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA</button>
@@ -58,7 +59,7 @@
 </div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
+    // 1. CONFIGURAÇÃO E INICIALIZAÇÃO FIREBASE
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -67,107 +68,109 @@
     let charts = {};
     const TELEFONE_JORGE = "5563984011065";
 
-    // FUNÇÃO GERAR LINK - CORRIGIDA E TESTADA
+    // 2. FUNÇÃO GERAR LINK
     function gerarLink() {
-        const inputNome = document.getElementById('nomeLink');
-        const nome = inputNome.value.trim();
-        
-        if(!nome) {
-            alert("Jorge, você esqueceu de digitar o nome do aluno!");
-            return;
-        }
-
-        // Gera ID limpo e Link
+        const nome = document.getElementById('nomeLink').value.trim();
+        if(!nome) return alert("Jorge, digite o nome!");
         const idUnico = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
-        const urlBase = "https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html";
-        const linkFinal = `${urlBase}?id=${idUnico}`;
-
-        // Exibe na tela para segurança
-        const boxResultado = document.getElementById('resultadoLink');
-        boxResultado.style.display = "block";
-        boxResultado.innerText = "Link Gerado: " + linkFinal;
-
-        // Dispara WhatsApp
-        const mensagem = encodeURIComponent(`Olá! Jorge aqui. Segue seu link exclusivo para o teste: ${linkFinal}`);
-        const zapUrl = `https://wa.me/${TELEFONE_JORGE}?text=${mensagem}`;
-        
-        window.open(zapUrl, '_blank');
-        inputNome.value = ""; // Limpa para o próximo
+        const linkFinal = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${idUnico}`;
+        document.getElementById('resultadoLink').style.display = "block";
+        document.getElementById('resultadoLink').innerText = "Link: " + linkFinal;
+        window.open(`https://wa.me/${TELEFONE_JORGE}?text=${encodeURIComponent('Jorge aqui! Link do teste: ' + linkFinal)}`, '_blank');
     }
 
-    // INICIALIZAÇÃO DOS GRÁFICOS
+    // 3. CRIAÇÃO DOS GRÁFICOS (CHART.JS)
     function initCharts() {
-        const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-        
-        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), { type: 'radar', data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: { scales: { r: { min: 0, max: 5 } } } });
-        charts.discBar = new Chart(document.getElementById('chartBarDISC'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] }, options: commonOptions });
-        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), { type: 'bar', data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] }, options: { ...commonOptions, scales: { y: { min: 0, max: 5 } } } });
-        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] }, options: { ...commonOptions, scales: { y: { min: 0, max: 5 } } } });
+        const ctxRadar = document.getElementById('chartRadarSAP').getContext('2d');
+        charts.sapRadar = new Chart(ctxRadar, {
+            type: 'radar',
+            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
+            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } }, maintainAspectRatio: false }
+        });
+
+        charts.discBar = new Chart(document.getElementById('chartBarDISC'), {
+            type: 'bar',
+            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), {
+            type: 'bar',
+            data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] },
+            options: { maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+        });
+
+        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), {
+            type: 'bar',
+            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
+            options: { maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+        });
     }
 
-    // SINCRONIZAÇÃO COM FIREBASE
+    // 4. ESCUTAR DADOS DO FIREBASE (CONEXÃO REAL)
     db.ref('resultados_testes').on('value', snap => {
         todosResultados = [];
         const select = document.getElementById('selectAluno');
         select.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
-        snap.forEach(child => {
-            const data = child.val(); data.key = child.key;
-            todosResultados.push(data);
-            select.innerHTML += `<option value="${data.key}">${data.aluno}</option>`;
-        });
+        
+        if (snap.exists()) {
+            snap.forEach(child => {
+                const data = child.val();
+                data.key = child.key;
+                todosResultados.push(data);
+                select.innerHTML += `<option value="${data.key}">${data.aluno.toUpperCase()}</option>`;
+            });
+        }
         atualizarPainel();
     });
 
+    // 5. ATUALIZAR GRÁFICOS COM OS DADOS CARREGADOS
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
-        let sapData = [0,0,0,0,0,0,0], discData = [0,0,0,0];
-        
-        if (id === 'geral') {
+        let sapData = [0,0,0,0,0,0,0], discData = [0,0,0,0], corrData = [0,0,0,0];
+
+        if (id === 'geral' && todosResultados.length > 0) {
+            let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
+            
             todosResultados.forEach(r => {
                 for(let i=0; i<7; i++) sapData[i] += parseInt(r.sap['q'+i] || 0);
                 discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
-            });
-            const t = todosResultados.length || 1;
-            sapData = sapData.map(v => v / t);
-            
-            let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
-            todosResultados.forEach(r => {
+                
                 const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
                 let m = 0; for(let i=0; i<7; i++) m += parseInt(r.sap['q'+i] || 0);
                 somasCorr[dom] += (m/7); contCorr[dom]++;
             });
-            charts.correlacao.data.datasets[0].data = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
+
+            const total = todosResultados.length;
+            sapData = sapData.map(v => v / total);
+            corrData = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
         } else {
             const r = todosResultados.find(x => x.key === id);
-            if(r) {
+            if (r) {
                 for(let i=0; i<7; i++) sapData[i] = parseInt(r.sap['q'+i]);
                 discData = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
             }
-            charts.correlacao.data.datasets[0].data = [0,0,0,0];
         }
 
         charts.sapRadar.data.datasets[0].data = sapData;
-        charts.sapBar.data.datasets[0].data = sapData;
         charts.discBar.data.datasets[0].data = discData;
-        charts.sapRadar.update(); charts.sapBar.update(); charts.discBar.update(); charts.correlacao.update();
+        charts.sapBar.data.datasets[0].data = sapData;
+        charts.correlacao.data.datasets[0].data = corrData;
+        
+        Object.values(charts).forEach(c => c.update());
     }
 
     function exportarExcel() {
-        if(todosResultados.length === 0) return alert("Não há dados para exportar!");
-        const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({ 
-            Aluno: r.aluno, Data: r.data, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C 
-        })));
+        const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({ Aluno: r.aluno, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C })));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados");
-        XLSX.writeFile(wb, "Relatorio_Jorge_2026.xlsx");
+        XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
     }
 
     function zerarSistema() {
-        if(confirm("ATENÇÃO JORGE: Isso apagará todos os resultados permanentemente. Confirma?")) {
-            db.ref('resultados_testes').remove();
-            alert("Banco de dados zerado!");
-        }
+        if(confirm("JORGE: Apagar tudo?")) db.ref('resultados_testes').remove();
     }
-    initCharts();
+
+    window.onload = initCharts;
 </script>
 </body>
 </html>
