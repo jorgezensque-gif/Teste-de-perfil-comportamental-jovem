@@ -1,55 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="notranslate" translate="no">
+<html lang="pt-BR">
 <head>
-    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <title>Avaliação Jorge - SAP & DISC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Socioemocional 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; }
-        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; }
-        
-        .pergunta-bloco { background: #1e272e; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--destaque); }
-        .titulo-p { font-weight: bold; color: var(--destaque); display: block; margin-bottom: 10px; }
-        .opcoes-grade { display: flex; justify-content: space-around; margin-top: 15px; }
-        
-        /* Estilo dos Círculos */
-        .radio-circulo { cursor: pointer; text-align: center; position: relative; }
-        .radio-circulo input { display: none; }
-        .checkmark { width: 45px; height: 45px; border: 2px solid #4b4b4b; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-weight: bold; background: #2d3436; }
-        .radio-circulo input:checked + .checkmark { background: var(--primaria); border-color: var(--primaria); transform: scale(1.1); box-shadow: 0 0 15px var(--primaria); }
-        
-        .label-disc { display: block; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin: 5px 0; border: 1px solid #444; }
-        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #b33921; transition: 0.2s; }
-        .btn-enviar:active { transform: translateY(4px); box-shadow: none; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
+        body { background: var(--dark); color: white; font-family: sans-serif; padding: 15px; margin: 0; }
+        .container { max-width: 600px; margin: auto; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .step { display: none; }
+        .active { display: block; }
+        h3 { color: var(--accent); text-align: center; font-size: 1.2em; margin-bottom: 20px; }
+        .question-card { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--blue); }
+        .label-title { font-weight: bold; display: block; margin-bottom: 5px; color: #fff; }
+        .evidencias { font-size: 0.8em; color: var(--blue); background: #0f172a; padding: 8px; border-radius: 5px; margin-bottom: 10px; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .range-container { padding: 10px 0; }
+        input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
+        .range-labels { display: flex; justify-content: space-between; font-size: 0.7em; color: #94a3b8; margin-top: 5px; }
+        .disc-opt { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; font-size: 0.9em; }
+        .btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="sessao">
-        <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="DIGITE O SEU NOME COMPLETO">
+    <div id="step0" class="step active">
+        <h3>Diagnóstico Socioemocional 2026</h3>
+        <input type="text" id="nomeAluno" placeholder="Digite seu Nome Completo">
+        <button class="btn" onclick="next(1)">INICIAR 1ª ETAPA: SAP</button>
     </div>
 
-    <div class="sessao">
-        <h2>2. COMPETÊNCIAS SAP</h2>
-        <p style="font-size: 14px; color: #ccc;">Avalie de 1 a 5 o quanto você se identifica com cada competência.</p>
-        <div id="container-sap"></div>
+    <div id="step1" class="step">
+        <h3>1. Competências (SAP)</h3>
+        <div id="sap-area"></div>
+        <button class="btn" onclick="next(2)">PRÓXIMA ETAPA: DISC</button>
     </div>
 
-    <div class="sessao">
-        <h2>3. PERFIL DISC (16 QUESTÕES)</h2>
-        <p style="font-size: 14px; color: #ccc;">Escolha a opção que melhor descreve o seu comportamento.</p>
-        <div id="container-disc"></div>
+    <div id="step2" class="step">
+        <h3>2. Perfil Comportamental (DISC)</h3>
+        <div id="disc-area"></div>
+        <button class="btn" style="background:#22c55e;" onclick="enviar()">FINALIZAR E ENVIAR</button>
     </div>
-
-    <button class="btn-enviar" onclick="enviar()">FINALIZAR E ENVIAR AO JORGE</button>
 </div>
 
 <script>
@@ -57,81 +51,63 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const saps = ["Protagonismo", "Responsabilidade", "Consciência Ambiental", "Convivência Social", "Saúde e Higiene", "Trabalho em Equipe", "Desejo de Aprender"];
-    
-    const discPerguntas = [
-        { q: "1. Em um grupo, você prefere:", o: ["Liderar e decidir", "Animar e interagir", "Ouvir e apoiar", "Analisar e organizar"], v: ["D","I","S","C"] },
-        { q: "2. Como você lida com mudanças?", o: ["Gosta de desafios", "Fica entusiasmado", "Prefere rotina", "Avalia os riscos"], v: ["D","I","S","C"] },
-        { q: "3. Qual sua maior qualidade?", o: ["Determinação", "Comunicação", "Paciência", "Precisão"], v: ["D","I","S","C"] },
-        { q: "4. Sob pressão, você tende a:", o: ["Ficar agressivo", "Falar demais", "Ficar calado", "Se isolar para pensar"], v: ["D","I","S","C"] },
-        { q: "5. No trabalho em equipe, você:", o: ["Foca no resultado", "Foca nas pessoas", "Mantém a harmonia", "Foca nos processos"], v: ["D","I","S","C"] },
-        { q: "6. Você se considera mais:", o: ["Direto e objetivo", "Extrovertido", "Calmo e gentil", "Lógico e detalhista"], v: ["D","I","S","C"] },
-        { q: "7. O que mais te motiva?", o: ["Poder e vitórias", "Reconhecimento social", "Segurança e estabilidade", "Conhecimento e lógica"], v: ["D","I","S","C"] },
-        { q: "8. Como você toma decisões?", o: ["Rápido e sozinho", "Baseado na intuição", "Consultando os outros", "Baseado em fatos"], v: ["D","I","S","C"] },
-        { q: "9. Em uma conversa, você:", o: ["Vai direto ao ponto", "Conta muitas histórias", "Escuta com atenção", "Faz perguntas técnicas"], v: ["D","I","S","C"] },
-        { q: "10. Qual seu maior medo?", o: ["Falhar e perder o controle", "Ser rejeitado pelo grupo", "Mudanças repentinas", "Cometer erros graves"], v: ["D","I","S","C"] },
-        { q: "11. Como você organiza seu dia?", o: ["Foca nas metas grandes", "Deixa fluir com energia", "Segue um plano fixo", "Usa listas detalhadas"], v: ["D","I","S","C"] },
-        { q: "12. Ao receber uma crítica:", o: ["Fica na defensiva", "Tenta se explicar", "Aceita para não brigar", "Analisa se faz sentido"], v: ["D","I","S","C"] },
-        { q: "13. Você prefere ambientes:", o: ["Competitivos", "Descontraídos", "Acolhedores", "Sérios e organizados"], v: ["D","I","S","C"] },
-        { q: "14. Como você influencia as pessoas?", o: ["Pela força da vontade", "Pelo entusiasmo", "Pela persistência", "Pela lógica"], v: ["D","I","S","C"] },
-        { q: "15. Seu ritmo de trabalho é:", o: ["Acelerado e focado", "Rápido e variado", "Constante e calmo", "Lento e cuidadoso"], v: ["D","I","S","C"] },
-        { q: "16. Você se sente melhor sendo:", o: ["O chefe", "O centro das atenções", "O braço direito", "O especialista"], v: ["D","I","S","C"] }
+    const sapData = [
+        { t: "PROTAGONISMO", e: "Iniciativa; Busca de soluções; Proatividade." },
+        { t: "RESPONSABILIDADE", e: "Cumprimento de prazos; Assumir erros; Organização." },
+        { t: "COMUNICAÇÃO", e: "Clareza ao falar; Saber ouvir; Expressão de ideias." },
+        { t: "ÉTICA", e: "Respeito às regras; Honestidade; Valores morais." },
+        { t: "RESOLUÇÃO DE PROBLEMAS", e: "Pensamento rápido; Criatividade; Resiliência." },
+        { t: "TRABALHO EM EQUIPE", e: "Colaboração; Coletividade; Aceitar críticas." },
+        { t: "APRENDER A APRENDER", e: "Curiosidade; Autoestudo; Lições aprendidas." }
     ];
 
-    // Gerar SAP
-    const sapDiv = document.getElementById('container-sap');
-    saps.forEach((s, i) => {
-        sapDiv.innerHTML += `
-            <div class="pergunta-bloco">
-                <span class="titulo-p">${s}</span>
-                <div class="opcoes-grade">
-                    ${[1,2,3,4,5].map(n => `
-                        <label class="radio-circulo">
-                            <input type="radio" name="sap${i}" value="${n}">
-                            <div class="checkmark">${n}</div>
-                        </label>`).join('')}
+    const sapArea = document.getElementById('sap-area');
+    sapData.forEach((item, i) => {
+        sapArea.innerHTML += `
+            <div class="question-card">
+                <span class="label-title">${i+1}. ${item.t}</span>
+                <div class="evidencias"><b>Evidências:</b> ${item.e}</div>
+                <div class="range-container">
+                    <input type="range" id="sap${i}" min="1" max="5" value="3">
+                    <div class="range-labels"><span>1 (Pouco)</span><span>2</span><span>3</span><span>4</span><span>5 (Muito)</span></div>
                 </div>
             </div>`;
     });
 
-    // Gerar DISC
-    const discDiv = document.getElementById('container-disc');
-    discPerguntas.forEach((d, i) => {
-        let optionsHtml = d.o.map((opt, idx) => `
-            <label class="label-disc">
-                <input type="radio" name="disc${i}" value="${d.v[idx]}"> ${opt}
-            </label>
-        `).join('');
-        
-        discDiv.innerHTML += `
-            <div class="pergunta-bloco">
-                <span class="titulo-p">${d.q}</span>
-                ${optionsHtml}
+    const discArea = document.getElementById('disc-area');
+    for(let i=1; i<=16; i++) {
+        discArea.innerHTML += `
+            <div class="question-card">
+                <span class="label-title">Questão ${i}</span>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="D"> Sou decidido e focado em metas.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="I"> Sou entusiasmado e comunicativo.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="S"> Sou paciente e bom ouvinte.</label>
+                <label class="disc-opt"><input type="radio" name="d${i}" value="C"> Sou detalhista e organizado.</label>
             </div>`;
-    });
+    }
+
+    function next(s) {
+        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Por favor, digite seu nome!");
+        document.querySelectorAll('.step').forEach(d => d.classList.remove('active'));
+        document.getElementById('step'+s).classList.add('active');
+        window.scrollTo(0,0);
+    }
 
     function enviar() {
-        const nome = document.getElementById('nome-aluno').value;
-        if (!nome) return alert("Jorge, o nome do aluno é obrigatório!");
+        const nome = document.getElementById('nomeAluno').value;
+        let sapRes = {};
+        sapData.forEach((_, i) => { sapRes['q'+i] = document.getElementById('sap'+i).value; });
 
-        let dados = { aluno: nome, data: new Date().toLocaleString(), sap: {}, disc: {D:0, I:0, S:0, C:0} };
-
-        // Coletar SAP
-        for (let i = 0; i < 7; i++) {
-            const r = document.querySelector(`input[name="sap${i}"]:checked`);
-            if (!r) return alert("Por favor, responda todas as SAPs.");
-            dados.sap[`item${i}`] = parseInt(r.value);
+        let discRes = { D: 0, I: 0, S: 0, C: 0 };
+        for(let i=1; i<=16; i++) {
+            let r = document.querySelector(`input[name="d${i}"]:checked`);
+            if(r) discRes[r.value]++;
         }
 
-        // Coletar DISC
-        for (let i = 0; i < 16; i++) {
-            const r = document.querySelector(`input[name="disc${i}"]:checked`);
-            if (!r) return alert("Por favor, responda todas as questões DISC.");
-            dados.disc[r.value]++;
-        }
-
-        db.ref('resultados_testes').push(dados).then(() => {
-            alert("Sucesso, Jorge! Dados enviados para o seu painel.");
+        db.ref('resultados_testes').push({
+            aluno: nome, sap: sapRes, disc: discRes, data: new Date().toLocaleDateString()
+        }).then(() => {
+            alert("Enviado com sucesso!");
             location.reload();
         });
     }
