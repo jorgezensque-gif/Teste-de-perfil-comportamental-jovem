@@ -2,59 +2,64 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Gestão 2026 - Jorge</title>
+    <title>Gestão Jorge 2026 | Sistema de Alunos</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #25d366; }
-        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-top: 30px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; }
-        .box { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        input { padding: 12px; border-radius: 8px; border: none; width: 250px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: var(--blue); color: white; }
-        h2, h3 { color: var(--accent); text-align: center; }
-        canvas { max-width: 100%; height: 300px !important; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #22c55e; --red: #ef4444; --purple: #a855f7; }
+        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 1300px; margin: auto; }
+        .header-gestor { background: var(--card); padding: 20px; border-radius: 12px; border-top: 4px solid var(--red); margin-bottom: 20px; }
+        .top-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        
+        select, input { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; flex-grow: 1; }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-excel { background: var(--green); }
+        .btn-zerar { background: var(--red); }
+        .btn-pdi { background: var(--purple); }
+
+        .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; min-height: 350px; }
+        h2, h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; }
+        canvas { width: 100% !important; height: 300px !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📊 PAINEL ESTRATÉGICO - GESTÃO JORGE 2026</h2>
+    <div class="header-gestor">
+        <h2 style="color: var(--red); text-align: left;">GESTOR RESPONSÁVEL: JORGE | SISTEMA DE ALUNOS 2026</h2>
+        
+        <select id="selectAluno" onchange="carregarDadosIndividuais()">
+            <option value="geral">📊 VISÃO GERAL DA TURMA</option>
+        </select>
 
-    <div class="box">
-        <h3>🔗 Gerador de Acessos</h3>
-        <input type="text" id="nomeLink" placeholder="Nome do Aluno">
-        <button class="btn" onclick="gerarLink()">GERAR E ENVIAR WHATSAPP</button>
-        <div id="resultadoLink" style="margin-top:10px; color:var(--blue); font-family:monospace;"></div>
+        <div class="top-bar">
+            <button class="btn btn-pdi">✨ GERAR PDI COM GEMINI 2.0</button>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
+            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA</button>
+        </div>
     </div>
 
     <div class="grid-graficos">
         <div class="card-grafico">
-            <h3>Gráfico Radar SAP (Média Individual)</h3>
+            <h3>Autoavaliação SAP (Radar)</h3>
             <canvas id="chartRadarSAP"></canvas>
         </div>
-
         <div class="card-grafico">
-            <h3>Gráfico Radar DISC (Perfil Predominante)</h3>
-            <canvas id="chartRadarDISC"></canvas>
+            <h3>Perfil Comportamental (DISC)</h3>
+            <canvas id="chartBarDISC"></canvas>
         </div>
-
         <div class="card-grafico">
-            <h3>Engajamento: Total de Respondidos</h3>
-            <canvas id="chartColunasGeral"></canvas>
+            <h3>Competências SAP (Barras)</h3>
+            <canvas id="chartBarSAP"></canvas>
         </div>
-
         <div class="card-grafico">
-            <h3>Distribuição DISC da Turma</h3>
-            <canvas id="chartColunasDISC"></canvas>
-        </div>
-
-        <div class="card-grafico">
-            <h3>Efeito Dunning-Kruger (Jornada)</h3>
-            <canvas id="chartDunningKruger"></canvas>
+            <h3>Jornada (Dunning-Kruger)</h3>
+            <canvas id="chartDunning"></canvas>
         </div>
     </div>
 </div>
@@ -64,68 +69,81 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function gerarLink() {
-        const nome = document.getElementById('nomeLink').value;
-        if(!nome) return alert("Nome vazio!");
-        const id = nome.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
-        const link = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${id}`;
-        document.getElementById('resultadoLink').innerText = link;
-        window.open(`https://wa.me/5563984011065?text=Jorge enviou seu link: ${link}`, '_blank');
+    let todosResultados = [];
+    let charts = {};
+
+    // INICIALIZAR GRÁFICOS
+    function initCharts() {
+        const configRadar = { type: 'radar', data: { labels: ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Ética', 'Problemas', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: { scales: { r: { min: 0, max: 5 } } } };
+        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), configRadar);
+
+        charts.discBar = new Chart(document.getElementById('chartBarDISC'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Pontos', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] } });
+        
+        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), { type: 'bar', data: { labels: ['P', 'R', 'C', 'E', 'S', 'Eq', 'A'], datasets: [{ label: 'Score', data: [0,0,0,0,0,0,0], backgroundColor: '#ef4444' }] } });
+
+        charts.dunning = new Chart(document.getElementById('chartDunning'), { type: 'line', data: { labels: ['Início', 'Pico', 'Vale', 'Subida', 'Platô'], datasets: [{ label: 'Confiança', data: [1, 5, 0.5, 2.5, 4.5], borderColor: '#a855f7', tension: 0.4 }] } });
     }
 
-    // INICIALIZAÇÃO DOS GRÁFICOS
-    const ctx1 = document.getElementById('chartRadarSAP').getContext('2d');
-    const chartSAP = new Chart(ctx1, { type: 'radar', data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível SAP', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: { scales: { r: { suggestMin: 0, suggestMax: 5 } } } });
-
-    const ctx2 = document.getElementById('chartRadarDISC').getContext('2d');
-    const chartDISC = new Chart(ctx2, { type: 'radar', data: { labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'], datasets: [{ label: 'Perfil Individual', data: [0,0,0,0], backgroundColor: 'rgba(250, 204, 21, 0.2)', borderColor: '#facc15' }] } });
-
-    const ctx3 = document.getElementById('chartColunasGeral').getContext('2d');
-    const chartGeral = new Chart(ctx3, { type: 'bar', data: { labels: ['Alunos Respondidos'], datasets: [{ label: 'Total', data: [0], backgroundColor: '#38bdf8' }] } });
-
-    const ctx4 = document.getElementById('chartColunasDISC').getContext('2d');
-    const chartTurmaDISC = new Chart(ctx4, { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Alunos por Perfil', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] } });
-
-    // 5. GRÁFICO DUNNING-KRUGER (ESTÁTICO/CONCEITUAL)
-    const ctx5 = document.getElementById('chartDunningKruger').getContext('2d');
-    new Chart(ctx5, {
-        type: 'line',
-        data: {
-            labels: ['Início', 'Pico de Confiança', 'Vale do Desespero', 'Subida da Sabedoria', 'Platô'],
-            datasets: [{
-                label: 'Confiança vs Competência',
-                data: [10, 100, 5, 40, 80],
-                borderColor: '#ef4444',
-                tension: 0.4,
-                fill: false
-            }]
-        }
-    });
-
-    // ATUALIZAÇÃO DOS DADOS EM TEMPO REAL
+    // CARREGAR DADOS
     db.ref('resultados_testes').on('value', snap => {
-        let total = 0;
-        let discTurma = { D:0, I:0, S:0, C:0 };
-        let sapMedias = [0,0,0,0,0,0,0];
-
-        snap.forEach(item => {
-            const d = item.val();
-            total++;
-            // Lógica DISC
-            const dominante = Object.keys(d.disc).reduce((a, b) => d.disc[a] > d.disc[b] ? a : b);
-            discTurma[dominante]++;
-            // Lógica SAP (Pega o último aluno para o radar individual)
-            for(let i=0; i<7; i++) sapMedias[i] = parseInt(d.sap['q'+i]);
-        });
-
-        chartGeral.data.datasets[0].data = [total];
-        chartTurmaDISC.data.datasets[0].data = [discTurma.D, discTurma.I, discTurma.S, discTurma.C];
-        chartSAP.data.datasets[0].data = sapMedias;
+        todosResultados = [];
+        const select = document.getElementById('selectAluno');
+        select.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
         
-        chartGeral.update();
-        chartTurmaDISC.update();
-        chartSAP.update();
+        snap.forEach(child => {
+            const data = child.val();
+            data.key = child.key;
+            todosResultados.push(data);
+            select.innerHTML += `<option value="${data.key}">${data.aluno}</option>`;
+        });
+        carregarDadosIndividuais();
     });
+
+    function carregarDadosIndividuais() {
+        const id = document.getElementById('selectAluno').value;
+        let sapData = [0,0,0,0,0,0,0];
+        let discData = [0,0,0,0];
+
+        if (id === 'geral') {
+            // Média da Turma
+            todosResultados.forEach(r => {
+                for(let i=0; i<7; i++) sapData[i] += parseInt(r.sap['q'+i] || 0);
+                discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
+            });
+            const total = todosResultados.length || 1;
+            sapData = sapData.map(v => v / total);
+        } else {
+            // Dados de um aluno específico
+            const aluno = todosResultados.find(r => r.key === id);
+            for(let i=0; i<7; i++) sapData[i] = parseInt(aluno.sap['q'+i]);
+            discData = [aluno.disc.D, aluno.disc.I, aluno.disc.S, aluno.disc.C];
+        }
+
+        charts.sapRadar.data.datasets[0].data = sapData;
+        charts.sapBar.data.datasets[0].data = sapData;
+        charts.discBar.data.datasets[0].data = discData;
+        charts.sapRadar.update(); charts.sapBar.update(); charts.discBar.update();
+    }
+
+    function exportarExcel() {
+        const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({
+            Aluno: r.aluno, Data: r.data, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C,
+            SAP_P: r.sap.q0, SAP_R: r.sap.q1, SAP_C: r.sap.q2, SAP_E: r.sap.q3, SAP_P: r.sap.q4, SAP_T: r.sap.q5, SAP_A: r.sap.q6
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
+        XLSX.writeFile(wb, `Relatorio_Jorge_2026.xlsx`);
+    }
+
+    function zerarSistema() {
+        if(confirm("JORGE: Tem certeza que deseja APAGAR TUDO para uma nova rodada?")) {
+            db.ref('resultados_testes').remove();
+            db.ref('links_usados').remove();
+            alert("Sistema zerado!");
+        }
+    }
+
+    initCharts();
 </script>
 </body>
 </html>
