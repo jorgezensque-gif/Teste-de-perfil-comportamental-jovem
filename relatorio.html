@@ -2,37 +2,73 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório - Jorge</title>
+    <title>Relatório Comportamental - Jorge Zensque</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: white; padding: 40px; font-family: sans-serif; }
-        h1 { color: #ff5c3a; border-bottom: 2px solid #ff5c3a; }
-        .print-btn { background: #3498db; color: white; padding: 10px; border: none; cursor: pointer; }
-        @media print { .print-btn { display: none; } }
+        body { background: white; padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+        .header-container { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #f39c12; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-img { height: 120px; }
+        .info-header { text-align: right; }
+        .info-header h1 { margin: 0; color: #2980b9; font-size: 24px; }
+        .info-header p { margin: 5px 0; font-size: 14px; color: #666; }
+        .aluno-nome { background: #f8f9fa; padding: 15px; border-left: 5px solid #2980b9; font-size: 22px; font-weight: bold; margin-bottom: 30px; text-transform: uppercase; }
+        .chart-box { background: white; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 40px; height: 350px; }
+        h3 { color: #d35400; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .print-btn { background: #2980b9; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+        @media print { .print-btn { display: none; } body { padding: 0; } }
     </style>
 </head>
 <body>
     <button class="print-btn" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
-    <h1 id="nomeAluno">CARREGANDO...</h1>
-    <div style="height:400px"><canvas id="c1"></canvas></div>
+
+    <div class="header-container">
+        <img src="https://raw.githubusercontent.com/jorgezensque-gif/Teste-de-perfil-comportamental-jovem/main/Logo%20marca%20jorge%20Copilot_20260321_225242.jpg" class="logo-img" onerror="this.src='https://via.placeholder.com/150x100?text=JORGE+ZENSQUE'">
+        <div class="info-header">
+            <h1>JORGE ZENSQUE</h1>
+            <p>Educador Social | Neurocientista do Desenvolvimento</p>
+            <p>Responsabilidade Social - ESG</p>
+        </div>
+    </div>
+
+    <div id="alunoCard" class="aluno-nome">CARREGANDO DADOS...</div>
+
+    <h3>1. AUTOAVALIAÇÃO SAP (COMPETÊNCIAS SOCIOEMOCIONAIS)</h3>
+    <div class="chart-box"><canvas id="chartSap"></canvas></div>
+
+    <h3>2. PERFIL COMPORTAMENTAL (MÉTODO DISC)</h3>
+    <div class="chart-box"><canvas id="chartDisc"></canvas></div>
+
     <script>
         const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
+
         if(id) {
             firebase.database().ref('resultados_testes/' + id).once('value', snap => {
                 const a = snap.val();
-                document.getElementById('nomeAluno').innerText = "ALUNO: " + a.aluno.toUpperCase();
-                new Chart(document.getElementById('c1'), {
+                document.getElementById('alunoCard').innerText = "ALUNO: " + a.aluno;
+
+                // Gráfico SAP
+                new Chart(document.getElementById('chartSap'), {
                     type: 'bar',
                     data: {
-                        labels: ["SAP 1", "SAP 2", "SAP 3", "SAP 4", "SAP 5", "SAP 6", "SAP 7"],
-                        datasets: [{ data: Object.values(a.sap), backgroundColor: '#00d2d3' }]
+                        labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                        datasets: [{ label: 'Nível', data: Object.values(a.sap), backgroundColor: '#2980b9' }]
                     },
-                    options: { indexAxis: 'y', scales: { x: { min: 0, max: 5 } } }
+                    options: { indexAxis: 'y', scales: { x: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+                });
+
+                // Gráfico DISC
+                new Chart(document.getElementById('chartDisc'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['D', 'I', 'S', 'C'],
+                        datasets: [{ data: [a.disc.D, a.disc.I, a.disc.S, a.disc.C], backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'] }]
+                    },
+                    options: { scales: { y: { min: 0, max: 7 } }, plugins: { legend: { display: false } } }
                 });
             });
         }
