@@ -1,177 +1,106 @@
 <!DOCTYPE html>
-<html lang="pt-br" class="notranslate" translate="no">
+<html lang="pt-BR">
 <head>
-    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <title>Painel Jorge - Gestão 360º</title>
+    <title>Painel Jorge - Gestão 360°</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #0b0d10; --card: #1e272e; --ia: #8e44ad; --destaque: #00d2d3; --danger: #e74c3c; --success: #2ecc71; }
-        body { background: var(--grafite); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; margin: 0; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; max-width: 1300px; margin: auto; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #3d4246; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .full { grid-column: 1 / -1; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; font-size: 14px; letter-spacing: 1px; margin-top: 0; }
-        select { width: 100%; padding: 15px; border-radius: 10px; background: #2d3436; color: #fff; border: 2px solid var(--destaque); font-size: 16px; margin-bottom: 15px; outline: none; }
-        .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
-        button { flex: 1; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; min-width: 160px; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
-        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        .btn-ia { background: var(--ia); }
-        .btn-excel { background: var(--success); }
-        .btn-clear { background: var(--danger); }
-        #resultadoIA { background: #2d3436; padding: 20px; border-radius: 12px; border-left: 8px solid var(--ia); display: none; margin-top: 20px; line-height: 1.6; font-size: 15px; animation: fadeIn 0.5s; }
-        .chart-container { position: relative; height: 280px; width: 100%; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { background: #1e272e; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: #2d3436; padding: 20px; border-radius: 10px; border: 1px solid #444; max-width: 900px; margin: auto; }
+        h2 { color: #ff5c3a; text-align: center; }
+        select { width: 100%; padding: 15px; background: #000; color: #00d2d3; border: 2px solid #00d2d3; border-radius: 8px; font-size: 18px; margin-bottom: 20px; cursor: pointer; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        button { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; flex: 1; min-width: 150px; }
+        .btn-pdi { background: #a29bfe; color: #2d3436; }
+        .btn-excel { background: #55efc4; color: #2d3436; }
+        .btn-zerar { background: #ff7675; color: white; }
+        /* ESTE É O BOTÃO QUE ESTÁ FALTANDO */
+        .btn-relatorio { background: #3498db; color: white; display: none; border: 2px solid #fff; }
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .chart-box { background: #353b48; padding: 15px; border-radius: 8px; height: 350px; }
+        @media (max-width: 700px) { .charts { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
+    <div class="card">
+        <h2>GESTOR RESPONSÁVEL: JORGE | SISTEMA 2026</h2>
+        
+        <select id="selectAluno" onchange="atualizarDashboard()">
+            <option value="">Escolha um aluno para analisar...</option>
+        </select>
 
-    <div class="grid">
-        <div class="card full">
-            <h2>GESTOR RESPONSÁVEL: JORGE | SISTEMA DE ALUNOS 2026</h2>
-            <select id="selectAluno" onchange="atualizarPainel()">
-                <option value="">Carregando banco de dados...</option>
-            </select>
-            
-            <div class="btn-group">
-                <button id="btnGerarIA" class="btn-ia" onclick="analisarComIA()" style="display:none;">✨ GERAR PDI COM GEMINI 2.0</button>
-                <button class="btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
-                <button class="btn-clear" onclick="limparSistema()">🗑️ ZERAR SISTEMA</button>
-            </div>
-            
-            <div id="resultadoIA"></div>
+        <div class="btn-group">
+            <button class="btn-pdi">✨ GERAR PDI COM GEMINI</button>
+            <button class="btn-excel">📊 EXCEL COMPLETO</button>
+            <button id="btnAzul" class="btn-relatorio" onclick="irParaRelatorio()">📄 RELATÓRIO INDIVIDUAL</button>
+            <button class="btn-zerar">🗑️ ZERAR SISTEMA</button>
         </div>
 
-        <div class="card"><h2>AUTOAVALIAÇÃO SAP (RADAR)</h2><div class="chart-container"><canvas id="chartRadar"></canvas></div></div>
-        <div class="card"><h2>PERFIL COMPORTAMENTAL (DISC)</h2><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
-        <div class="card"><h2>COMPETÊNCIAS SAP (BARRAS)</h2><div class="chart-container"><canvas id="chartSap"></canvas></div></div>
-        <div class="card"><h2>JORNADA (DUNNING-KRUGER)</h2><div class="chart-container"><canvas id="chartDunning"></canvas></div></div>
+        <div class="charts">
+            <div class="chart-box"><canvas id="chartRadar"></canvas></div>
+            <div class="chart-box"><canvas id="chartDisc"></canvas></div>
+        </div>
     </div>
 
-<script>
-    // --- CONFIGURAÇÃO FIREBASE ---
-    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    
-    // --- ÁREA DA CHAVE (COLE AQUI JORGE) ---
-    const MINHA_CHAVE_BRUTA = "AIzaSyCnao2sAupavhP2WoXpKz0UGVl_1yhbsI0"; 
-    const GOOGLE_API_KEY = MINHA_CHAVE_BRUTA.replace(/\s/g, '').trim(); 
+    <script>
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let dadosGerais = {};
+        let graf1, graf2;
 
-    let dadosGerais = {};
-    let charts = {};
-
-    // Sincronização em Tempo Real
-    db.ref('resultados_testes').on('value', snapshot => {
-        dadosGerais = snapshot.val() || {};
-        const sel = document.getElementById('selectAluno');
-        sel.innerHTML = '<option value="">Escolha um aluno para analisar...</option>';
-        for (let id in dadosGerais) {
-            let opt = document.createElement('option');
-            opt.value = id; opt.text = dadosGerais[id].aluno;
-            sel.add(opt);
-        }
-    });
-
-    function criarGrafico(id, type, labels, datasetsConfig) {
-        if(charts[id]) charts[id].destroy();
-        const ctx = document.getElementById(id).getContext('2d');
-        charts[id] = new Chart(ctx, {
-            type: type,
-            data: { labels: labels, datasets: datasetsConfig },
-            options: { 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: type === 'radar' ? { r: { grid: {color: '#444'}, pointLabels: {color: '#fff', font: {size: 10}}, ticks: {display: false} } } : 
-                { x: { ticks: { color: '#ccc' } }, y: { ticks: { color: '#ccc' }, beginAtZero: true, max: 5 } }
+        // Carrega a lista de alunos
+        db.ref('resultados_testes').on('value', snapshot => {
+            dadosGerais = snapshot.val();
+            const combo = document.getElementById('selectAluno');
+            combo.innerHTML = '<option value="">Escolha um aluno para analisar...</option>';
+            for(let id in dadosGerais) {
+                let opt = document.createElement('option');
+                opt.value = id;
+                opt.text = dadosGerais[id].aluno;
+                combo.add(opt);
             }
         });
-    }
 
-    function atualizarPainel() {
-        const id = document.getElementById('selectAluno').value;
-        if(!id) return;
-        document.getElementById('btnGerarIA').style.display = 'block';
-        const aluno = dadosGerais[id];
-        
-        const labelsSap = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
-        const notasSap = labelsSap.map((_, i) => aluno.sap[`item${i}`] || 0);
-        const d = aluno.disc || {D:0, I:0, S:0, C:0};
+        function atualizarDashboard() {
+            const id = document.getElementById('selectAluno').value;
+            if(!id) return;
 
-        criarGrafico('chartRadar', 'radar', labelsSap, [{ data: notasSap, backgroundColor: 'rgba(0, 210, 211, 0.3)', borderColor: '#00d2d3' }]);
-        criarGrafico('chartDisc', 'bar', ['D','I','S','C'], [{ data: [d.D, d.I, d.S, d.C], backgroundColor: ['#e74c3c','#f1c40f','#2ecc71','#3498db'] }]);
-        criarGrafico('chartSap', 'bar', ["P", "R", "C", "E", "S", "Eq", "A"], [{ data: notasSap, backgroundColor: '#ff5c3a' }]);
-        
-        const media = (notasSap.reduce((a,b)=>a+b,0)/7).toFixed(1);
-        criarGrafico('chartDunning', 'line', ['Início', 'Pico', 'Vale', 'Subida', 'Atual'], [{ data: [0.5, 5, 1, 2.5, parseFloat(media)], borderColor: '#8e44ad', tension: 0.4, fill: false, pointRadius: 5 }]);
-    }
+            // MOSTRA O BOTÃO AZUL QUANDO SELECIONA ALUNO
+            document.getElementById('btnAzul').style.display = 'block';
 
-    // --- FUNÇÃO EXCEL BLINDADA (VERSÃO JORGE) ---
-    function exportarExcel() {
-        try {
-            if (Object.keys(dadosGerais).length === 0) return alert("Jorge, não há dados para exportar.");
+            const aluno = dadosGerais[id];
             
-            const dataFinal = Object.values(dadosGerais).map(a => {
-                const s = a.sap || {};
-                const d = a.disc || {};
-                return {
-                    "Aluno": a.aluno,
-                    "DISC_Dominância": d.D || 0, "DISC_Influência": d.I || 0, "DISC_Estabilidade": d.S || 0, "DISC_Conformidade": d.C || 0,
-                    "SAP_Protagonismo": s.item0 || 0, "SAP_Responsabilidade": s.item1 || 0, "SAP_Comunicação": s.item2 || 0,
-                    "SAP_Ética": s.item3 || 0, "SAP_Problemas": s.item4 || 0, "SAP_Equipe": s.item5 || 0, "SAP_Aprender": s.item6 || 0,
-                    "MÉDIA_FINAL": (Object.values(s).reduce((a,b)=>a+b,0)/7).toFixed(2)
-                };
+            if(graf1) graf1.destroy();
+            if(graf2) graf2.destroy();
+
+            // Gráfico SAP (Radar)
+            graf1 = new Chart(document.getElementById('chartRadar'), {
+                type: 'radar',
+                data: {
+                    labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                    datasets: [{ label: 'Competências', data: Object.values(aluno.sap), backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3' }]
+                },
+                options: { plugins: { legend: { display: false } } }
             });
 
-            const ws = XLSX.utils.json_to_sheet(dataFinal);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Relatório Geral");
-            XLSX.writeFile(wb, `Relatorio_Alunos_Jorge_2026.xlsx`);
-        } catch (e) { alert("Erro ao gerar Excel: " + e.message); }
-    }
-
-    function limparSistema() {
-        if(confirm("Jorge, você tem certeza que deseja APAGAR TUDO do banco de dados?")) {
-            db.ref('resultados_testes').remove();
-            location.reload();
-        }
-    }
-
-    // --- FUNÇÃO IA GEMINI 2.0 (COM TRATAMENTO DE COTA) ---
-    async function analisarComIA() {
-        const id = document.getElementById('selectAluno').value;
-        const aluno = dadosGerais[id];
-        const box = document.getElementById('resultadoIA');
-        box.innerHTML = "🤖 Mentor Gemini 2.0 analisando dados de " + aluno.aluno + "...";
-        box.style.display = 'block';
-
-        const prompt = `Aja como um mentor de RH. Analise o aluno ${aluno.aluno}. Perfil DISC: D:${aluno.disc.D}, I:${aluno.disc.I}, S:${aluno.disc.S}, C:${aluno.disc.C}. Notas SAP médias. Sugira um PDI com 3 ações práticas.`;
-
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_API_KEY}`;
-            const resp = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            // Gráfico DISC (Barras)
+            graf2 = new Chart(document.getElementById('chartDisc'), {
+                type: 'bar',
+                data: {
+                    labels: ['D', 'I', 'S', 'C'],
+                    datasets: [{ data: [aluno.disc.D, aluno.disc.I, aluno.disc.S, aluno.disc.C], backgroundColor: ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff'] }]
+                },
+                options: { plugins: { legend: { display: false } } }
             });
-            const data = await resp.json();
-            
-            if (data.candidates && data.candidates[0].content) {
-                const texto = data.candidates[0].content.parts[0].text;
-                box.innerHTML = "<strong>🎯 ANÁLISE DE PDI (GEMINI 2.0):</strong><br><br>" + texto.replace(/\n/g, '<br>');
-            } else if (data.error && data.error.message.includes("quota")) {
-                box.innerHTML = "⚠️ Jorge, o Google atingiu o limite de cota gratuita. Aguarde 60 segundos e clique novamente.";
-            } else {
-                throw new Error(data.error ? data.error.message : "Erro desconhecido");
-            }
-        } catch (e) {
-            box.innerHTML = "❌ Erro detectado: " + e.message;
         }
-    }
-</script>
+
+        function irParaRelatorio() {
+            const id = document.getElementById('selectAluno').value;
+            window.open(`relatorio.html?id=${id}`, '_blank');
+        }
+    </script>
 </body>
 </html>
