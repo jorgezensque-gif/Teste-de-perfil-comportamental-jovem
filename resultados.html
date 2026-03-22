@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>PAINEL GESTOR - JORGE 2026</title>
+    <title>PAINEL JORGE 2026 - FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,10 +20,13 @@
         .btn-link { background: var(--blue); }
         .btn-excel { background: var(--green); }
         .btn-zerar { background: var(--red); }
+        
+        /* CORREÇÃO DO ALONGAMENTO */
         .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; height: 450px; position: relative; }
+        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; 
+                        height: 400px; display: flex; flex-direction: column; align-items: center; }
+        .chart-container { position: relative; width: 100%; height: 100%; flex-grow: 1; }
         h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
-        canvas { width: 100% !important; height: 350px !important; }
         #resultadoLink { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; color: var(--blue); font-size: 0.8em; display: none; }
     </style>
 </head>
@@ -33,7 +36,7 @@
     <div class="box">
         <h3>🔗 Gerador de Acessos Individuais (WhatsApp)</h3>
         <div style="display:flex; gap:10px;">
-            <input type="text" id="nomeLink" placeholder="Digite o nome do aluno...">
+            <input type="text" id="nomeLink" placeholder="Nome Completo do Aluno">
             <button class="btn btn-link" onclick="gerarLink()">GERAR E DISPARAR LINK</button>
         </div>
         <div id="resultadoLink"></div>
@@ -51,15 +54,14 @@
     </div>
 
     <div class="grid-graficos">
-        <div class="card-grafico"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="chartRadarSAP"></canvas></div>
-        <div class="card-grafico"><h3>2. Perfil DISC (Dominante)</h3><canvas id="chartBarDISC"></canvas></div>
-        <div class="card-grafico"><h3>3. Competências SAP (Barras)</h3><canvas id="chartBarSAP"></canvas></div>
-        <div class="card-grafico"><h3>4. Equilíbrio: DISC vs Média SAP</h3><canvas id="chartCorrelacao"></canvas></div>
+        <div class="card-grafico"><h3>1. Autoavaliação SAP (Radar)</h3><div class="chart-container"><canvas id="chartRadarSAP"></canvas></div></div>
+        <div class="card-grafico"><h3>2. Perfil DISC (Dominante)</h3><div class="chart-container"><canvas id="chartBarDISC"></canvas></div></div>
+        <div class="card-grafico"><h3>3. Competências SAP (Barras)</h3><div class="chart-container"><canvas id="chartBarSAP"></canvas></div></div>
+        <div class="card-grafico"><h3>4. Equilíbrio: DISC vs Média SAP</h3><div class="chart-container"><canvas id="chartCorrelacao"></canvas></div></div>
     </div>
 </div>
 
 <script>
-    // 1. CONFIGURAÇÃO E INICIALIZAÇÃO FIREBASE
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -68,7 +70,6 @@
     let charts = {};
     const TELEFONE_JORGE = "5563984011065";
 
-    // 2. FUNÇÃO GERAR LINK
     function gerarLink() {
         const nome = document.getElementById('nomeLink').value.trim();
         if(!nome) return alert("Jorge, digite o nome!");
@@ -79,44 +80,42 @@
         window.open(`https://wa.me/${TELEFONE_JORGE}?text=${encodeURIComponent('Jorge aqui! Link do teste: ' + linkFinal)}`, '_blank');
     }
 
-    // 3. CRIAÇÃO DOS GRÁFICOS (CHART.JS)
     function initCharts() {
-        const ctxRadar = document.getElementById('chartRadarSAP').getContext('2d');
-        charts.sapRadar = new Chart(ctxRadar, {
+        // Opção essencial para evitar alongamento: maintainAspectRatio: false
+        const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), {
             type: 'radar',
-            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
-            options: { scales: { r: { min: 0, max: 5, ticks: { display: false } } }, maintainAspectRatio: false }
+            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
+            options: { ...options, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
         });
 
         charts.discBar = new Chart(document.getElementById('chartBarDISC'), {
             type: 'bar',
             data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: options
         });
 
         charts.sapBar = new Chart(document.getElementById('chartBarSAP'), {
             type: 'bar',
             data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] },
-            options: { maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+            options: { ...options, scales: { y: { min: 0, max: 5 } } }
         });
 
         charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), {
             type: 'bar',
             data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
-            options: { maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
+            options: { ...options, scales: { y: { min: 0, max: 5 } } }
         });
     }
 
-    // 4. ESCUTAR DADOS DO FIREBASE (CONEXÃO REAL)
     db.ref('resultados_testes').on('value', snap => {
         todosResultados = [];
         const select = document.getElementById('selectAluno');
         select.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
-        
         if (snap.exists()) {
             snap.forEach(child => {
-                const data = child.val();
-                data.key = child.key;
+                const data = child.val(); data.key = child.key;
                 todosResultados.push(data);
                 select.innerHTML += `<option value="${data.key}">${data.aluno.toUpperCase()}</option>`;
             });
@@ -124,39 +123,33 @@
         atualizarPainel();
     });
 
-    // 5. ATUALIZAR GRÁFICOS COM OS DADOS CARREGADOS
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
         let sapData = [0,0,0,0,0,0,0], discData = [0,0,0,0], corrData = [0,0,0,0];
 
         if (id === 'geral' && todosResultados.length > 0) {
             let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
-            
             todosResultados.forEach(r => {
                 for(let i=0; i<7; i++) sapData[i] += parseInt(r.sap['q'+i] || 0);
                 discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
-                
                 const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
                 let m = 0; for(let i=0; i<7; i++) m += parseInt(r.sap['q'+i] || 0);
                 somasCorr[dom] += (m/7); contCorr[dom]++;
             });
-
             const total = todosResultados.length;
             sapData = sapData.map(v => v / total);
             corrData = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
-        } else {
+        } else if (id !== 'geral') {
             const r = todosResultados.find(x => x.key === id);
             if (r) {
                 for(let i=0; i<7; i++) sapData[i] = parseInt(r.sap['q'+i]);
                 discData = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
             }
         }
-
         charts.sapRadar.data.datasets[0].data = sapData;
         charts.discBar.data.datasets[0].data = discData;
         charts.sapBar.data.datasets[0].data = sapData;
         charts.correlacao.data.datasets[0].data = corrData;
-        
         Object.values(charts).forEach(c => c.update());
     }
 
