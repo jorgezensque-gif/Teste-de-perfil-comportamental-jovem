@@ -3,110 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico Socioemocional - Jorge Zensque</title>
+    <title>Diagnóstico Socioemocional 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
-        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; }
-        .container { max-width: 700px; margin: auto; background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: auto; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .step { display: none; }
         .active { display: block; }
-        .section-card { background: #334155; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        h3 { color: var(--accent); text-align: center; }
-        .question { margin-bottom: 20px; border-bottom: 1px solid #475569; padding-bottom: 15px; }
-        .evidencia { font-size: 0.8em; color: var(--blue); margin-bottom: 10px; font-style: italic; background: #0f172a; padding: 8px; border-radius: 5px; }
-        input[type="range"] { width: 100%; margin: 10px 0; accent-color: var(--blue); }
-        .btn-next { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
-        .disc-opt { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #0f172a; color: white; margin-bottom: 20px; box-sizing: border-box; }
+        h3 { color: var(--accent); text-align: center; margin-bottom: 20px; text-transform: uppercase; font-size: 1.1em; }
+        .question-box { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--blue); }
+        .evidencias { font-size: 0.8em; color: var(--blue); background: #0f172a; padding: 8px; border-radius: 5px; margin: 10px 0; line-height: 1.4; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-size: 1em; }
+        input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; margin-top: 10px; }
+        .disc-option { display: block; background: #0f172a; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; cursor: pointer; font-size: 0.9em; }
+        .disc-option:hover { border-color: var(--blue); }
+        .btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 10px; }
+        .btn:hover { background: #0ea5e9; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="step0" class="step active">
-        <h3>Diagnóstico Socioemocional 2026</h3>
-        <input type="text" id="nomeAluno" placeholder="Nome Completo do Aluno">
-        <button class="btn-next" onclick="nextStep(1)">INICIAR 1ª ETAPA: SAP</button>
+        <h3 style="color:white;">Diagnóstico Socioemocional 2026</h3>
+        <input type="text" id="nomeAluno" placeholder="Seu Nome Completo...">
+        <button class="btn" onclick="proximo(1)">INICIAR 1ª ETAPA: SAP</button>
     </div>
 
     <div id="step1" class="step">
-        <h3>1ª ETAPA: COMPETÊNCIAS (SAP)</h3>
-        <div id="sap-content"></div>
-        <button class="btn-next" onclick="nextStep(2)">PRÓXIMO: PERFIL DISC</button>
+        <h3>1. Competências (SAP)</h3>
+        <div id="sap-questions"></div>
+        <button class="btn" onclick="proximo(2)">PRÓXIMA ETAPA: DISC</button>
     </div>
 
     <div id="step2" class="step">
-        <h3>2ª ETAPA: PERFIL COMPORTAMENTAL (DISC)</h3>
-        <div id="disc-content"></div>
-        <button class="btn-next" style="background:#22c55e;" onclick="finalizar()">FINALIZAR E ENVIAR</button>
+        <h3>2. Perfil Comportamental (DISC)</h3>
+        <div id="disc-questions"></div>
+        <button class="btn" style="background:#22c55e;" onclick="enviar()">FINALIZAR DIAGNÓSTICO</button>
     </div>
 </div>
 
 <script>
-    // DADOS SAP (As 7 competências)
-    const sapData = [
-        { q: "PROTAGONISMO", e: "Tomo iniciativa e busco soluções." },
-        { q: "RESPONSABILIDADE", e: "Cumpro prazos e assumo meus atos." },
-        { q: "COMUNICAÇÃO", e: "Falo com clareza e sei ouvir." },
-        { q: "ÉTICA", e: "Respeito regras e sou honesto." },
-        { q: "RESOLUÇÃO DE PROBLEMAS", e: "Sou criativo e resiliente." },
-        { q: "TRABALHO EM EQUIPE", e: "Colaboro bem com o grupo." },
-        { q: "APRENDER A APRENDER", e: "Busco novos conhecimentos sempre." }
-    ];
-
-    // Geração SAP
-    const sapDiv = document.getElementById('sap-content');
-    sapData.forEach((s, i) => {
-        sapDiv.innerHTML += `<div class="question"><label><b>${s.q}</b></label><div class="evidencia">Evidência: ${s.e}</div><input type="range" id="sap${i}" min="1" max="5" value="3"></div>`;
-    });
-
-    // Geração DISC (16 Questões)
-    const discDiv = document.getElementById('disc-content');
-    for(let i=0; i<16; i++) {
-        discDiv.innerHTML += `<div class="question"><label>Questão ${i+1}: Escolha uma frase:</label>
-            <label class="disc-opt"><input type="radio" name="d${i}" value="D"> Sou decidido e direto.</label>
-            <label class="disc-opt"><input type="radio" name="d${i}" value="I"> Sou entusiasmado e falante.</label>
-            <label class="disc-opt"><input type="radio" name="d${i}" value="S"> Sou paciente e bom ouvinte.</label>
-            <label class="disc-opt"><input type="radio" name="d${i}" value="C"> Sou detalhista e organizado.</label></div>`;
-    }
-
-    function nextStep(s) {
-        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Digite seu nome!");
-        document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
-        document.getElementById('step'+s).classList.add('active');
-        window.scrollTo(0,0);
-    }
-
-    // FIREBASE
+    // Configurações do Firebase do Jorge
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function finalizar() {
+    // Dados das 7 competências SAP
+    const sapPerguntas = [
+        { t: "PROTAGONISMO", e: "Iniciativa; Busca de soluções; Proatividade." },
+        { t: "RESPONSABILIDADE", e: "Cumprimento de prazos; Assumir erros; Organização." },
+        { t: "COMUNICAÇÃO", e: "Clareza ao falar; Saber ouvir; Expressão de ideias." },
+        { t: "ÉTICA", e: "Respeito às regras; Honestidade; Valores morais." },
+        { t: "RESOLUÇÃO DE PROBLEMAS", e: "Pensamento rápido; Criatividade; Resiliência." },
+        { t: "TRABALHO EM EQUIPE", e: "Colaboração; Coletividade; Aceitar críticas." },
+        { t: "APRENDER A APRENDER", e: "Curiosidade; Autoestudo; Lições aprendidas." }
+    ];
+
+    // Gerar SAP na tela
+    const sapDiv = document.getElementById('sap-questions');
+    sapPerguntas.forEach((p, i) => {
+        sapDiv.innerHTML += `
+            <div class="question-box">
+                <label><b>${p.t}</b></label>
+                <div class="evidencias"><b>Evidências:</b> ${p.e}</div>
+                <input type="range" id="sap${i}" min="1" max="5" value="3">
+                <div style="display:flex; justify-content:space-between; font-size:0.7em; color:#94a3b8;"><span>Pouco</span><span>Muito</span></div>
+            </div>`;
+    });
+
+    // Gerar DISC (16 questões simplificadas para o Jorge)
+    const discDiv = document.getElementById('disc-questions');
+    for(let i=1; i<=16; i++) {
+        discDiv.innerHTML += `
+            <div class="question-box">
+                <label>Questão ${i}: Qual dessas melhor descreve você?</label>
+                <label class="disc-option"><input type="radio" name="d${i}" value="D"> Sou decidido, focado em resultados e direto.</label>
+                <label class="disc-option"><input type="radio" name="d${i}" value="I"> Sou entusiasmado, comunicativo e influente.</label>
+                <label class="disc-option"><input type="radio" name="d${i}" value="S"> Sou paciente, bom ouvinte e estável.</label>
+                <label class="disc-option"><input type="radio" name="d${i}" value="C"> Sou analítico, organizado e detalhista.</label>
+            </div>`;
+    }
+
+    function proximo(s) {
+        if(s === 1 && !document.getElementById('nomeAluno').value) return alert("Jorge diz: Por favor, digite seu nome!");
+        document.querySelectorAll('.step').forEach(d => d.classList.remove('active'));
+        document.getElementById('step' + s).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function enviar() {
         const nome = document.getElementById('nomeAluno').value;
         
-        let sapRes = {
-            p: document.getElementById('sap0').value,
-            r: document.getElementById('sap1').value,
-            c: document.getElementById('sap2').value,
-            e: document.getElementById('sap3').value,
-            pb: document.getElementById('sap4').value,
-            eq: document.getElementById('sap5').value,
-            a: document.getElementById('sap6').value
-        };
+        // Coletar SAP
+        let sapRes = { p: document.getElementById('sap0').value, r: document.getElementById('sap1').value, c: document.getElementById('sap2').value, e: document.getElementById('sap3').value, pb: document.getElementById('sap4').value, eq: document.getElementById('sap5').value, a: document.getElementById('sap6').value };
 
-        let discFinal = { D: 0, I: 0, S: 0, C: 0 };
-        for(let i=0; i<16; i++) {
+        // Coletar DISC
+        let discRes = { D: 0, I: 0, S: 0, C: 0 };
+        for(let i=1; i<=16; i++) {
             let r = document.querySelector(`input[name="d${i}"]:checked`);
-            if(r) discFinal[r.value]++;
+            if(r) discRes[r.value]++;
         }
 
         db.ref('resultados_testes').push({
-            aluno: nome, sap: sapRes, disc: discFinal, data: new Date().toLocaleDateString()
+            aluno: nome, sap: sapRes, disc: discRes, data: new Date().toLocaleDateString()
         }).then(() => {
-            alert("Sucesso, Jorge! Dados enviados.");
+            alert("Sucesso! Diagnóstico enviado para o Jorge.");
             location.reload();
         });
     }
