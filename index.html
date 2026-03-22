@@ -1,161 +1,84 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Jorge - Gestão 360°</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Perfil - Sistema Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #1e272e; color: white; font-family: sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        .navbar { background: #000; padding: 10px; display: flex; justify-content: center; gap: 10px; border-bottom: 2px solid #f39c12; }
-        .nav-link { color: #f39c12; text-decoration: none; font-weight: bold; font-size: 11px; padding: 5px 8px; border: 1px solid #f39c12; border-radius: 4px; }
-        .active { background: #f39c12; color: #000; }
-        .container { width: 98%; margin: 5px auto; }
-        h2 { color: #f39c12; text-align: center; font-size: 16px; margin: 5px 0; }
-        select { width: 100%; padding: 10px; background: #000; color: #00d2d3; border: 1px solid #00d2d3; border-radius: 5px; margin-bottom: 8px; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        button { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; text-transform: uppercase; }
-        .btn-azul { background: #3498db; color: white; }
-        .btn-excel { background: #1dd1a1; color: #000; }
-        .btn-zerar { background: #ee5253; color: white; }
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: start; }
-        .chart-card { background: #2d3436; border-radius: 8px; padding: 8px; height: 280px; border: 1px solid #444; display: flex; flex-direction: column; }
-        .canvas-container { position: relative; flex-grow: 1; width: 100%; height: 200px; }
-        h4 { text-align: center; margin: 0 0 5px 0; font-size: 11px; color: #f39c12; }
+        body { background: #0b0d10; color: white; font-family: sans-serif; padding: 20px; }
+        .box { max-width: 500px; margin: auto; background: #1e272e; padding: 25px; border-radius: 15px; border: 1px solid #ff5c3a; }
+        h2 { color: #ff5c3a; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
+        button { background: #2ecc71; color: white; font-weight: bold; cursor: pointer; }
+        label { display: block; margin-top: 15px; color: #00d2d3; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; margin-top: 20px; color: #888; }
     </style>
 </head>
 <body>
+    <div class="box">
+        <h2>📝 AVALIAÇÃO DIAGNÓSTICA</h2>
+        <p style="text-align: center;">Preencha os dados abaixo com atenção.</p>
+        
+        <label>Seu Nome Completo:</label>
+        <input type="text" id="nomeAluno" placeholder="Digite seu nome aqui...">
+        
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+        
+        <h3>AUTOAVALIAÇÃO SAP</h3>
+        <p style="font-size: 13px;">Dê uma nota de 1 a 5 para você mesmo:</p>
+        
+        <label>1. Protagonismo e Iniciativa:</label>
+        <input type="number" id="sap0" min="1" max="5" value="3">
+        
+        <label>2. Comunicação Assertiva:</label>
+        <input type="number" id="sap1" min="1" max="5" value="3">
 
-    <div class="navbar">
-        <a href="index.html" class="nav-link">📝 TESTE</a>
-        <a href="resultados.html" class="nav-link active">👤 INDIVIDUAL</a>
-        <a href="dashboard_geral.html" class="nav-link">📊 TURMA</a>
-    </div>
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+        
+        <h3>PERFIL DISC</h3>
+        <p style="font-size: 13px;">Insira a pontuação do seu teste (0 a 40):</p>
+        
+        <label>Dominância (D):</label>
+        <input type="number" id="discD" value="10">
+        
+        <label>Influência (I):</label>
+        <input type="number" id="discI" value="10">
 
-    <div class="container">
-        <h2>GESTOR: JORGE | PAINEL ANALÍTICO 2026</h2>
-        <select id="selectAluno" onchange="atualizarDashboard()">
-            <option value="">Selecione o Aluno...</option>
-        </select>
-        <div class="btn-group">
-            <button class="btn-azul" onclick="irParaRelatorio()">📄 PDF INDIVIDUAL</button>
-            <button class="btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
-            <button class="btn-zerar" onclick="zerarSistema()">🗑️ ZERAR TUDO</button>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="chart-card">
-                <h4>EQUILÍBRIO SAP (RADAR)</h4>
-                <div class="canvas-container"><canvas id="chartRadar"></canvas></div>
-            </div>
-            <div class="chart-card">
-                <h4>PERFIL COMPORTAMENTAL (DISC)</h4>
-                <div class="canvas-container"><canvas id="chartDisc"></canvas></div>
-            </div>
-            <div class="chart-card">
-                <h4>DUNNING-KRUGER</h4>
-                <div class="canvas-container"><canvas id="chartDunning"></canvas></div>
-            </div>
-        </div>
+        <button onclick="enviar()">ENVIAR MINHA AVALIAÇÃO</button>
+        <div class="footer">Responsável: Jorge</div>
     </div>
 
     <script>
+        // CONFIGURAÇÃO DO SEU BANCO
         const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let dadosGerais = {};
-        let graficos = {};
 
-        // 1. Puxar dados do Firebase
-        db.ref('resultados_testes').on('value', snap => {
-            dadosGerais = snap.val() || {};
-            const combo = document.getElementById('selectAluno');
-            combo.innerHTML = '<option value="">Selecione o Aluno...</option>';
-            for(let id in dadosGerais) {
-                let opt = document.createElement('option');
-                opt.value = id; 
-                opt.text = dadosGerais[id].aluno || "Sem Nome";
-                combo.add(opt);
-            }
-        });
+        function enviar() {
+            const nome = document.getElementById('nomeAluno').value;
+            if(!nome) return alert("Por favor, Jorge solicita que você digite seu nome!");
 
-        function atualizarDashboard() {
-            const id = document.getElementById('selectAluno').value;
-            if(!id || !dadosGerais[id]) return;
-            const a = dadosGerais[id];
-            
-            // Destruir gráficos antigos para não sobrepor
-            if(graficos.r) graficos.r.destroy();
-            if(graficos.d) graficos.d.destroy();
-            if(graficos.dk) graficos.dk.destroy();
-
-            const optBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-
-            // 1. RADAR SAP
-            const sapValues = a.sap ? Object.values(a.sap) : [0,0,0,0,0,0,0];
-            graficos.r = new Chart(document.getElementById('chartRadar'), {
-                type: 'radar',
-                data: {
-                    labels: ["Prot.", "Resp.", "Comun.", "Ética", "Prob.", "Equipe", "Apr."],
-                    datasets: [{ data: sapValues, backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3', borderWidth: 2 }]
+            const dados = {
+                aluno: nome,
+                sap: {
+                    item0: parseInt(document.getElementById('sap0').value),
+                    item1: parseInt(document.getElementById('sap1').value),
+                    item2: 3, item3: 3, item4: 3, item5: 3, item6: 3 
                 },
-                options: { ...optBase, scales: { r: { min: 0, max: 5, ticks: { display: false }, pointLabels: { font: { size: 9 }, color: '#fff' } } } }
-            });
-
-            // 2. DISC (Barras)
-            const dVal = a.disc ? [a.disc.D||0, a.disc.I||0, a.disc.S||0, a.disc.C||0] : [0,0,0,0];
-            graficos.d = new Chart(document.getElementById('chartDisc'), {
-                type: 'bar',
-                data: {
-                    labels: ['Dominância (D)', 'Influência (I)', 'Estabilidade (E)', 'Conformidade (C)'],
-                    datasets: [{ data: dVal, backgroundColor: ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff'] }]
+                disc: {
+                    D: parseInt(document.getElementById('discD').value),
+                    I: parseInt(document.getElementById('discI').value),
+                    S: 10, C: 10 
                 },
-                options: { ...optBase, scales: { y: { min: 0, max: 16, ticks: { color: '#fff' } }, x: { ticks: { font: { size: 8 }, color: '#fff', maxRotation: 45 } } } }
-            });
+                data: new Date().toLocaleDateString()
+            };
 
-            // 3. DUNNING-KRUGER (Linha Real)
-            // Se não houver dados dk_grafico, usamos uma linha neutra [1,1,1,1,1]
-            const dkVal = a.dk_grafico || [1, 1, 1, 1, 1];
-            graficos.dk = new Chart(document.getElementById('chartDunning'), {
-                type: 'line',
-                data: {
-                    labels: ['Início', 'Pico', 'Vale', 'Subida', 'Platô'],
-                    datasets: [{ data: dkVal, borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.2)', fill: true, tension: 0.4 }]
-                },
-                options: { ...optBase, scales: { y: { min: 0, max: 5, display: false }, x: { ticks: { font: { size: 9 }, color: '#fff' } } } }
-            });
-        }
-
-        function exportarExcel() {
-            if(!dadosGerais || Object.keys(dadosGerais).length === 0) return alert("Não há dados!");
-            const lista = Object.values(dadosGerais).map(a => ({
-                Aluno: a.aluno, 
-                Dominância: a.disc?.D || 0, 
-                Influência: a.disc?.I || 0, 
-                Estabilidade: a.disc?.S || 0, 
-                Conformidade: a.disc?.C || 0,
-                Data: a.data || ""
-            }));
-            const ws = XLSX.utils.json_to_sheet(lista);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Resultados");
-            XLSX.writeFile(wb, "Relatorio_Jorge_Gestao360.xlsx");
-        }
-
-        function zerarSistema() {
-            if(confirm("Jorge, você tem certeza? Isso apagará TODOS os registros da turma atual!")) {
-                db.ref('resultados_testes').remove();
-                alert("Sistema zerado!");
+            db.ref('resultados_testes').push(dados).then(() => {
+                alert("Sucesso! Seus dados foram enviados para o painel do Jorge.");
                 location.reload();
-            }
-        }
-
-        function irParaRelatorio() {
-            const id = document.getElementById('selectAluno').value;
-            if(!id) return alert("Selecione um aluno!");
-            window.open(`relatorio.html?id=${id}`, '_blank');
+            });
         }
     </script>
 </body>
