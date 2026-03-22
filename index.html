@@ -1,51 +1,54 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="notranslate" translate="no">
+<html lang="pt-BR">
 <head>
-    <meta name="google" content="notranslate">
     <meta charset="UTF-8">
-    <title>Avaliação Jorge - SAP & DISC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Diagnóstico Socioemocional - Jorge Zensque</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primaria: #ff5c3a; --grafite: #1e272e; --card: #2d3436; --texto: #ffffff; --destaque: #00d2d3; }
-        body { background: var(--grafite); color: var(--texto); font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        .container { max-width: 850px; margin: auto; }
-        .sessao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #4b4b4b; }
-        h2 { color: var(--primaria); border-bottom: 2px solid var(--primaria); padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
-        .descricao-sap { font-size: 14px; color: #bbb; font-style: italic; margin-bottom: 10px; display: block; }
-        .evidencias { background: rgba(0,210,211,0.1); padding: 12px; border-radius: 8px; font-size: 13px; color: var(--destaque); margin-bottom: 15px; border-left: 4px solid var(--destaque); }
-        .pergunta-bloco { background: #1e272e; padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid transparent; transition: 0.3s; }
-        .pergunta-bloco:hover { border-left-color: var(--primaria); }
-        .opcoes-grade { display: flex; justify-content: space-around; margin-top: 15px; }
-        .radio-circulo { cursor: pointer; text-align: center; }
-        .radio-circulo input { display: none; }
-        .checkmark { width: 45px; height: 45px; border: 2px solid #4b4b4b; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; font-weight: bold; background: #2d3436; }
-        .radio-circulo input:checked + .checkmark { background: var(--primaria); border-color: var(--primaria); transform: scale(1.1); box-shadow: 0 0 10px var(--primaria); }
-        .label-disc { display: block; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin: 8px 0; border: 1px solid #444; cursor: pointer; transition: 0.2s; }
-        .label-disc:hover { background: rgba(255, 92, 58, 0.1); }
-        .label-disc input { margin-right: 10px; }
-        .btn-enviar { width: 100%; padding: 25px; background: var(--primaria); color: white; border: none; border-radius: 12px; font-size: 22px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 0 #b33921; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #4b4b4b; background: #000; color: #fff; box-sizing: border-box; }
+        body { background: #f4f7f6; font-family: sans-serif; padding: 20px; }
+        .form-container { max-width: 600px; background: white; padding: 30px; border-radius: 15px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2980b9; text-align: center; }
+        fieldset { border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+        legend { font-weight: bold; color: #d35400; padding: 0 10px; }
+        .pergunta { margin-bottom: 15px; }
+        input[type="range"] { width: 100%; }
+        .input-text { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
+        button { width: 100%; background: #27ae60; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="sessao">
-        <h2>1. IDENTIFICAÇÃO</h2>
-        <input type="text" id="nome-aluno" placeholder="NOME COMPLETO DO JOVEM">
-    </div>
 
-    <div class="sessao">
-        <h2>2. AUTOAVALIAÇÃO SAP</h2>
-        <div id="container-sap"></div>
-    </div>
+<div class="form-container">
+    <h2>Diagnóstico Socioemocional - Jorge Zensque</h2>
+    <input type="text" id="nomeAluno" class="input-text" placeholder="Seu Nome Completo" required>
 
-    <div class="sessao">
-        <h2>3. PERFIL COMPORTAMENTAL (16 QUESTÕES)</h2>
-        <div id="container-disc"></div>
-    </div>
+    <form id="testeForm">
+        <fieldset>
+            <legend>📊 Perfil e Competências</legend>
+            <p>Responda de 1 (Nada) a 5 (Totalmente)</p>
+            <div class="pergunta">
+                <label>Tomo iniciativa em projetos? (SAP)</label>
+                <input type="range" name="sap1" min="1" max="5" value="3">
+            </div>
+            <div class="pergunta">
+                <label>Gosto de liderar e decidir? (Dominância)</label>
+                <input type="range" name="discD" min="1" max="7" value="4">
+            </div>
+        </fieldset>
 
-    <button class="btn-enviar" onclick="enviar()">FINALIZAR E ENVIAR AO JORGE</button>
+        <fieldset>
+            <legend>🧠 Autopercepção (Dunning-Kruger)</legend>
+            <div class="pergunta"><label>1. Acredito que me expresso muito bem e raramente preciso melhorar.</label><input type="range" name="dk1" min="1" max="5" value="3"></div>
+            <div class="pergunta"><label>2. Percebo que às vezes não sou tão claro e preciso ouvir mais.</label><input type="range" name="dk2" min="1" max="5" value="3"></div>
+            <div class="pergunta"><label>3. Acho que sou ótimo em liderar e trabalhar com os outros.</label><input type="range" name="dk3" min="1" max="5" value="3"></div>
+            <div class="pergunta"><label>4. Já percebi que nem sempre consigo colaborar como deveria.</label><input type="range" name="dk4" min="1" max="5" value="3"></div>
+            <div class="pergunta"><label>5. Reconheço que cometo erros e estou aprendendo.</label><input type="range" name="dk5" min="1" max="5" value="3"></div>
+        </fieldset>
+
+        <button type="button" onclick="enviarDados()">ENVIAR TESTE</button>
+    </form>
 </div>
 
 <script>
@@ -53,74 +56,28 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const dadosSap = [
-        { t: "1. SER PROTAGONISTA", d: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino.", e: "Sou visto como referência; Respeito e me faço respeitar; Construo meu Projeto de Vida; Reconheço potenciais e talentos." },
-        { t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "É comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido, respeitar regras e normas de convivência.", e: "Cumpro tarefas e prazos; Sou pontual; Reconheço a importância do trabalho; Cuido da minha apresentação pessoal." },
-        { t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Capacidade de compreender o outro e expressar-se em linguagem clara e objetiva, com predisposição para ouvir e compreender mensagens.", e: "Postura coerente; Percebo o humor do outro; Faço críticas construtivas; Sei esperar minha vez de falar." },
-        { t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta e confiável.", e: "Sou honesto e ético; Assumo quando cometo erros; Respeito opiniões diferentes; Busco conhecer meus direitos e deveres." },
-        { t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Capacidade de enfrentar problemas, pensando em alternativas de solução e tomando decisões. Capacidade de aprender e reconhecer erros.", e: "Resolvo problemas diretamente com as pessoas; Penso antes de agir; Não me envergonho de pedir ajuda; Sei lidar com meus sentimentos." },
-        { t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Capacidade de colaborar e partilhar, colocando os interesses do grupo acima dos interesses pessoais e percebendo seus limites.", e: "Penso no bem-estar do grupo; Busco o consenso; Assumo desafios coletivos; Consigo receber críticas." },
-        { t: "7. APRENDER A APRENDER", d: "Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática o que aprendeu ao longo da vida.", e: "Comprometimento com a vida escolar; Tiro lições de situações boas ou ruins; Sou curioso e argumento; Utilizo conteúdos no dia a dia." }
-    ];
+    function enviarDados() {
+        const nome = document.getElementById('nomeAluno').value;
+        if(!nome) return alert("Jorge diz: Digite o nome!");
 
-    const sapContainer = document.getElementById('container-sap');
-    dadosSap.forEach((s, i) => {
-        sapContainer.innerHTML += `
-            <div class="pergunta-bloco">
-                <span style="font-weight:bold; color:var(--primaria); font-size:18px;">${s.t}</span>
-                <p class="descricao-sap">${s.d}</p>
-                <div class="evidencias"><strong>Evidências:</strong> ${s.e}</div>
-                <div class="opcoes-grade">
-                    ${[1,2,3,4,5].map(n => `<label class="radio-circulo"><input type="radio" name="sap${i}" value="${n}"><div class="checkmark">${n}</div></label>`).join('')}
-                </div>
-            </div>`;
-    });
+        const form = document.getElementById('testeForm');
+        const fd = new FormData(form);
 
-    const discPerguntas = [
-        { q: "1. Em um grupo, você prefere:", o: ["Liderar e decidir", "Animar e interagir", "Ouvir e apoiar", "Analisar e organizar"], v: ["D","I","S","C"] },
-        { q: "2. Como você lida com mudanças?", o: ["Gosta de desafios", "Fica entusiasmado", "Prefere rotina", "Avalia os riscos"], v: ["D","I","S","C"] },
-        { q: "3. Qual sua maior qualidade?", o: ["Determinação", "Comunicação", "Paciência", "Precisão"], v: ["D","I","S","C"] },
-        { q: "4. Sob pressão, você tende a:", o: ["Ficar agressivo", "Falar demais", "Ficar calado", "Se isolar para pensar"], v: ["D","I","S","C"] },
-        { q: "5. No trabalho em equipe, você:", o: ["Foca no resultado", "Foca nas pessoas", "Mantém a harmonia", "Foca nos processos"], v: ["D","I","S","C"] },
-        { q: "6. Você se considera mais:", o: ["Direto e objetivo", "Extrovertido", "Calmo e gentil", "Lógico e detalhista"], v: ["D","I","S","C"] },
-        { q: "7. O que mais te motiva?", o: ["Poder e vitórias", "Reconhecimento social", "Segurança e estabilidade", "Conhecimento e lógica"], v: ["D","I","S","C"] },
-        { q: "8. Como você toma decisões?", o: ["Rápido e sozinho", "Baseado na intuição", "Consultando os outros", "Baseado em fatos"], v: ["D","I","S","C"] },
-        { q: "9. Em uma conversa, você:", o: ["Vai direto ao ponto", "Conta muitas histórias", "Escuta com atenção", "Faz perguntas técnicas"], v: ["D","I","S","C"] },
-        { q: "10. Qual seu maior medo?", o: ["Falhar e perder o controle", "Ser rejeitado pelo grupo", "Mudanças repentinas", "Cometer erros graves"], v: ["D","I","S","C"] },
-        { q: "11. Como você organiza seu dia?", o: ["Foca nas metas grandes", "Deixa fluir com energia", "Segue um plano fixo", "Usa listas detalhadas"], v: ["D","I","S","C"] },
-        { q: "12. Ao receber uma crítica:", o: ["Fica na defensiva", "Tenta se explicar", "Aceita para não brigar", "Analisa se faz sentido"], v: ["D","I","S","C"] },
-        { q: "13. Você prefere ambientes:", o: ["Competitivos", "Descontraídos", "Acolhedores", "Sérios e organizados"], v: ["D","I","S","C"] },
-        { q: "14. Como você influencia as pessoas?", o: ["Pela força da vontade", "Pelo entusiasmo", "Pela persistência", "Pela lógica"], v: ["D","I","S","C"] },
-        { q: "15. Seu ritmo de trabalho é:", o: ["Acelerado e focado", "Rápido e variado", "Constante e calmo", "Lento e cuidadoso"], v: ["D","I","S","C"] },
-        { q: "16. Você se sente melhor sendo:", o: ["O chefe", "O centro das atenções", "O braço direito", "O especialista"], v: ["D","I","S","C"] }
-    ];
+        // Lógica de Cálculo Dunning-Kruger
+        let pConfianca = (parseInt(fd.get('dk1')) + parseInt(fd.get('dk3'))) / 2;
+        let pHumildade = (parseInt(fd.get('dk2')) + parseInt(fd.get('dk4')) + parseInt(fd.get('dk5'))) / 3;
+        let dk_grafico = [1, pConfianca, 6 - pConfianca, pHumildade, (pConfianca + pHumildade)/2];
 
-    const discContainer = document.getElementById('container-disc');
-    discPerguntas.forEach((d, i) => {
-        let opts = d.o.map((o, idx) => `<label class="label-disc"><input type="radio" name="disc${i}" value="${d.v[idx]}"> ${o}</label>`).join('');
-        discContainer.innerHTML += `<div class="pergunta-bloco"><span style="font-weight:bold; color:var(--destaque);">${d.q}</span>${opts}</div>`;
-    });
-
-    function enviar() {
-        const nome = document.getElementById('nome-aluno').value;
-        if (!nome) return alert("Jorge, o nome do aluno é obrigatório!");
-
-        let dados = { aluno: nome, data: new Date().toLocaleString(), sap: {}, disc: {D:0, I:0, S:0, C:0} };
-
-        for (let i = 0; i < 7; i++) {
-            const r = document.querySelector(`input[name="sap${i}"]:checked`);
-            if (!r) return alert("Responda todas as SAPs!");
-            dados.sap[`item${i}`] = parseInt(r.value);
-        }
-
-        for (let i = 0; i < 16; i++) {
-            const r = document.querySelector(`input[name="disc${i}"]:checked`);
-            if (!r) return alert("Responda todas as 16 questões DISC!");
-            dados.disc[r.value]++;
-        }
+        const dados = {
+            aluno: nome,
+            sap: { p: fd.get('sap1'), r: 3, c: 4, e: 5, pb: 3, eq: 4, a: 5 }, // Mapeie todos aqui
+            disc: { D: fd.get('discD'), I: 5, S: 4, C: 3 }, // Mapeie todos aqui
+            dk_grafico: dk_grafico,
+            data: new Date().toLocaleDateString()
+        };
 
         db.ref('resultados_testes').push(dados).then(() => {
-            alert("Sucesso, Jorge! Dados enviados.");
+            alert("Enviado com sucesso!");
             location.reload();
         });
     }
