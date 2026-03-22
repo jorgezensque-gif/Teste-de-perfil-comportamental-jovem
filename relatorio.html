@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório Individual - Sistema Jorge</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body { background: white; color: black; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; line-height: 1.5; }
+        .header { border-bottom: 3px solid #ff5c3a; margin-bottom: 30px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { color: #ff5c3a; margin: 0; font-size: 24px; }
+        .info-aluno { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #2d3436; }
+        .chart-box { height: 380px; margin-bottom: 50px; padding: 15px; border: 1px solid #eee; border-radius: 10px; }
+        .print-no { background: #3498db; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 20px; transition: 0.3s; }
+        .print-no:hover { background: #2980b9; }
+        @media print { .print-no { display: none; } body { padding: 0; } .chart-box { border: none; } }
+        footer { margin-top: 50px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <button class="print-no" onclick="window.print()">🖨️ IMPRIMIR / SALVAR COMO PDF</button>
+
+    <div class="header">
+        <h1>AVALIAÇÃO DE PERFIL E COMPETÊNCIAS</h1>
+        <div style="text-align: right; font-size: 12px;">Responsável: Jorge</div>
+    </div>
+
+    <div class="info-aluno" id="relNome">CARREGANDO DADOS...</div>
+
+    <h3>1. AUTOAVALIAÇÃO SAP (COMPETÊNCIAS SOCIOEMOCIONAIS)</h3>
+    <div class="chart-box">
+        <canvas id="relSap"></canvas>
+    </div>
+
+    <h3>2. PERFIL COMPORTAMENTAL (METODOLOGIA DISC)</h3>
+    <div class="chart-box">
+        <canvas id="relDisc"></canvas>
+    </div>
+
+    <footer>
+        Relatório gerado automaticamente pelo Sistema de Gestão Jorge - 2026
+    </footer>
+
+    <script>
+        // CONFIGURAÇÃO DO SEU BANCO
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // CAPTURA O ID DO ALUNO DA URL
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        if(id) {
+            db.ref('resultados_testes/' + id).once('value', snapshot => {
+                const a = snapshot.val();
+                if(!a) {
+                    document.getElementById('relNome').innerText = "ALUNO NÃO ENCONTRADO";
+                    return;
+                }
+                
+                document.getElementById('relNome').innerText = "JOVEM: " + a.aluno.toUpperCase();
+                
+                // GRÁFICO SAP (BARRAS HORIZONTAIS)
+                new Chart(document.getElementById('relSap'), {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            "1. SER PROTAGONISTA", 
+                            "2. RESPONSÁVEL/COMPROMETIDO", 
+                            "3. COMUNICAR-SE", 
+                            "4. ÉTICO E CIDADÃO", 
+                            "5. RESOLVER PROBLEMAS", 
+                            "6. TRABALHO EM EQUIPE", 
+                            "7. APRENDER A APRENDER"
+                        ],
+                        datasets: [{ 
+                            label: 'Pontuação',
+                            data: [a.sap.item0, a.sap.item1, a.sap.item2, a.sap.item3, a.sap.item4, a.sap.item5, a.sap.item6], 
+                            backgroundColor: '#00d2d3',
+                            borderRadius: 5
+                        }]
+                    },
+                    options: { 
+                        indexAxis: 'y', 
+                        maintainAspectRatio: false, 
+                        scales: { x: { min: 0, max: 5, ticks: { stepSize: 1 } } },
+                        plugins: { legend: { display: false } } 
+                    }
+                });
+
+                // GRÁFICO DISC
+                new Chart(document.getElementById('relDisc'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['D - Dominância', 'I - Influência', 'S - Estabilidade', 'C - Conformidade'],
+                        datasets: [{ 
+                            data: [a.disc.D, a.disc.I, a.disc.S, a.disc.C], 
+                            backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'],
+                            borderRadius: 5
+                        }]
+                    },
+                    options: { 
+                        indexAxis: 'y',
+                        maintainAspectRatio: false, 
+                        scales: { x: { min: 0, max: 16 } },
+                        plugins: { legend: { display: false } } 
+                    }
+                });
+            });
+        } else {
+            document.getElementById('relNome').innerText = "ERRO: NENHUM ALUNO SELECIONADO";
+        }
+    </script>
+</body>
+</html>
