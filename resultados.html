@@ -9,13 +9,11 @@
     <style>
         body { background: #1e272e; color: white; font-family: sans-serif; padding: 0; margin: 0; }
         
-        /* MENU DE NAVEGAÇÃO */
         .navbar { background: #000; padding: 15px; display: flex; justify-content: center; gap: 20px; border-bottom: 2px solid #f39c12; }
-        .nav-link { color: #f39c12; text-decoration: none; font-weight: bold; padding: 8px 15px; border: 1px solid #f39c12; border-radius: 5px; transition: 0.3s; }
-        .nav-link:hover { background: #f39c12; color: #000; }
-        .active { background: #f39c12; color: #000; }
+        .nav-link { color: #f39c12; text-decoration: none; font-weight: bold; padding: 8px 15px; border: 1px solid #f39c12; border-radius: 5px; }
+        .nav-link:hover, .active { background: #f39c12; color: #000; }
 
-        .card { background: #2d3436; padding: 20px; border-radius: 10px; border: 1px solid #444; max-width: 950px; margin: 20px auto; }
+        .card { background: #2d3436; padding: 20px; border-radius: 10px; border: 1px solid #444; max-width: 1000px; margin: 20px auto; }
         h2 { color: #f39c12; text-align: center; }
         select { width: 100%; padding: 15px; background: #000; color: #00d2d3; border: 2px solid #00d2d3; border-radius: 8px; font-size: 18px; margin-bottom: 20px; }
         
@@ -25,11 +23,13 @@
         .btn-pdi { background: #a29bfe; color: #2d3436; }
         .btn-excel { background: #55efc4; color: #2d3436; }
         .btn-azul { background: #3498db; color: white; border: 2px solid #fff; }
-        .btn-zerar { background: #ff7675; color: white; }
 
         .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .chart-box { background: #353b48; padding: 15px; border-radius: 8px; height: 350px; }
-        @media (max-width: 700px) { .charts { grid-template-columns: 1fr; } }
+        .chart-box { background: #353b48; padding: 15px; border-radius: 8px; min-height: 320px; }
+        .full-width { grid-column: 1 / -1; height: 350px; }
+        
+        h4 { text-align: center; color: #f39c12; margin-top: 0; }
+        @media (max-width: 700px) { .charts { grid-template-columns: 1fr; } .full-width { grid-column: auto; } }
     </style>
 </head>
 <body>
@@ -51,12 +51,21 @@
             <button class="btn-pdi">✨ GERAR PDI COM GEMINI</button>
             <button class="btn-excel">📊 EXCEL COMPLETO</button>
             <button class="btn-azul" onclick="irParaRelatorio()">📄 RELATÓRIO INDIVIDUAL</button>
-            <button class="btn-zerar">🗑️ ZERAR SISTEMA</button>
         </div>
 
         <div class="charts">
-            <div class="chart-box"><canvas id="chartRadar"></canvas></div>
-            <div class="chart-box"><canvas id="chartDisc"></canvas></div>
+            <div class="chart-box">
+                <h4>EQUILÍBRIO SAP (RADAR)</h4>
+                <canvas id="chartRadar"></canvas>
+            </div>
+            <div class="chart-box">
+                <h4>PERFIL DISC</h4>
+                <canvas id="chartDisc"></canvas>
+            </div>
+            <div class="chart-box full-width">
+                <h4>CURVA DE APRENDIZADO (DUNNING-KRUGER)</h4>
+                <canvas id="chartDunning"></canvas>
+            </div>
         </div>
     </div>
 
@@ -65,16 +74,15 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let dadosGerais = {};
-        let graf1, graf2;
+        let g1, g2, g3;
 
-        db.ref('resultados_testes').on('value', snapshot => {
-            dadosGerais = snapshot.val();
+        db.ref('resultados_testes').on('value', snap => {
+            dadosGerais = snap.val();
             const combo = document.getElementById('selectAluno');
-            combo.innerHTML = '<option value="">Escolha um aluno para analisar...</option>';
+            combo.innerHTML = '<option value="">Escolha um aluno...</option>';
             for(let id in dadosGerais) {
                 let opt = document.createElement('option');
-                opt.value = id;
-                opt.text = dadosGerais[id].aluno;
+                opt.value = id; opt.text = dadosGerais[id].aluno;
                 combo.add(opt);
             }
         });
@@ -82,35 +90,50 @@
         function atualizarDashboard() {
             const id = document.getElementById('selectAluno').value;
             if(!id) return;
-            const aluno = dadosGerais[id];
+            const a = dadosGerais[id];
             
-            if(graf1) graf1.destroy();
-            if(graf2) graf2.destroy();
+            if(g1) g1.destroy(); if(g2) g2.destroy(); if(g3) g3.destroy();
 
-            // RADAR SAP
-            graf1 = new Chart(document.getElementById('chartRadar'), {
+            // 1. RADAR
+            g1 = new Chart(document.getElementById('chartRadar'), {
                 type: 'radar',
                 data: {
                     labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
-                    datasets: [{ data: Object.values(aluno.sap), backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3' }]
+                    datasets: [{ data: Object.values(a.sap), backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
             });
 
-            // DISC BARRAS
-            graf2 = new Chart(document.getElementById('chartDisc'), {
+            // 2. DISC
+            g2 = new Chart(document.getElementById('chartDisc'), {
                 type: 'bar',
                 data: {
                     labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'],
-                    datasets: [{ data: [aluno.disc.D, aluno.disc.I, aluno.disc.S, aluno.disc.C], backgroundColor: ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff'] }]
+                    datasets: [{ data: [a.disc.D, a.disc.I, a.disc.S, a.disc.C], backgroundColor: ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 7 } }, plugins: { legend: { display: false } } }
+            });
+
+            // 3. DUNNING-KRUGER (LINHA)
+            g3 = new Chart(document.getElementById('chartDunning'), {
+                type: 'line',
+                data: {
+                    labels: ['Início', 'Pico da Confiança', 'Vale do Desespero', 'Subida da Iluminação', 'Platô da Maestria'],
+                    datasets: [{
+                        data: [1, 5, 1.5, 3.5, 4.8],
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } }, plugins: { legend: { display: false } } }
             });
         }
 
         function irParaRelatorio() {
             const id = document.getElementById('selectAluno').value;
-            if(!id) { alert("Jorge, selecione um aluno primeiro!"); return; }
+            if(!id) return;
             window.open(`relatorio.html?id=${id}`, '_blank');
         }
     </script>
