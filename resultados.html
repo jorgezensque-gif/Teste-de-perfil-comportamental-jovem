@@ -7,36 +7,44 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #1e272e; color: white; font-family: sans-serif; padding: 0; margin: 0; }
+        body { background: #1e272e; color: white; font-family: sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        
         .navbar { background: #000; padding: 10px; display: flex; justify-content: center; gap: 15px; border-bottom: 2px solid #f39c12; }
-        .nav-link { color: #f39c12; text-decoration: none; font-weight: bold; padding: 5px 10px; border: 1px solid #f39c12; border-radius: 5px; font-size: 13px; }
+        .nav-link { color: #f39c12; text-decoration: none; font-weight: bold; font-size: 12px; padding: 5px 10px; border: 1px solid #f39c12; border-radius: 4px; }
         .active { background: #f39c12; color: #000; }
 
-        .card { background: #2d3436; padding: 15px; border-radius: 10px; max-width: 1100px; margin: 10px auto; }
-        h2 { color: #f39c12; text-align: center; margin: 5px 0; font-size: 18px; }
+        .container { max-width: 1200px; margin: 5px auto; padding: 10px; }
         
-        select { width: 100%; padding: 10px; background: #000; color: #00d2d3; border: 2px solid #00d2d3; border-radius: 8px; font-size: 16px; margin-bottom: 10px; }
-        
-        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        button { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; flex: 1; font-size: 12px; }
-        .btn-azul { background: #3498db; color: white; }
-
-        /* AJUSTE DE TAMANHO DOS GRÁFICOS */
-        .charts-container { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 colunas para caber tudo lado a lado */
-            gap: 15px; 
+        /* GRID DE 3 COLUNAS RÍGIDO */
+        .dashboard-grid { 
+            display: flex; 
+            justify-content: space-around; 
+            gap: 10px; 
+            flex-wrap: nowrap; /* Impede que eles caiam para baixo */
         }
-        .chart-box { 
-            background: #353b48; 
-            padding: 10px; 
+
+        .chart-card { 
+            background: #2d3436; 
             border-radius: 8px; 
-            height: 280px; /* Altura travada para não crescer */
-            position: relative;
+            padding: 10px; 
+            width: 32%; /* Divide a tela em 3 certinho */
+            height: 300px; /* ALTURA MÁXIMA FIXA */
+            box-sizing: border-box;
+            border: 1px solid #444;
         }
-        h4 { text-align: center; color: #f39c12; margin: 0 0 10px 0; font-size: 14px; }
 
-        @media (max-width: 900px) { .charts-container { grid-template-columns: 1fr; } }
+        .canvas-container {
+            position: relative;
+            height: 220px; /* Espaço real para o gráfico */
+            width: 100%;
+        }
+
+        h2 { color: #f39c12; text-align: center; font-size: 16px; margin-bottom: 10px; }
+        h4 { text-align: center; margin: 0 0 10px 0; font-size: 13px; color: #00d2d3; text-transform: uppercase; }
+        
+        select { width: 100%; padding: 8px; background: #000; color: #fff; border: 1px solid #f39c12; border-radius: 5px; margin-bottom: 10px; }
+        .btn-azul { background: #3498db; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
     </style>
 </head>
 <body>
@@ -47,19 +55,30 @@
         <a href="dashboard_geral.html" class="nav-link">📊 TURMA</a>
     </div>
 
-    <div class="card">
-        <h2>GESTOR RESPONSÁVEL: JORGE</h2>
+    <div class="container">
+        <h2>GESTOR: JORGE | PAINEL DE ANÁLISE</h2>
+        
         <select id="selectAluno" onchange="atualizarDashboard()">
-            <option value="">Escolha um aluno...</option>
+            <option value="">Selecione o Aluno...</option>
         </select>
-        <div class="btn-group">
-            <button class="btn-azul" onclick="irParaRelatorio()">📄 GERAR RELATÓRIO PDF</button>
-        </div>
+        
+        <button class="btn-azul" onclick="irParaRelatorio()" style="margin-bottom:15px;">📄 ABRIR RELATÓRIO PDF PARA IMPRIMIR</button>
 
-        <div class="charts-container">
-            <div class="chart-box"><h4>RADAR SAP</h4><canvas id="chartRadar"></canvas></div>
-            <div class="chart-box"><h4>PERFIL DISC</h4><canvas id="chartDisc"></canvas></div>
-            <div class="chart-box"><h4>DUNNING-KRUGER</h4><canvas id="chartDunning"></canvas></div>
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <h4>Radar SAP</h4>
+                <div class="canvas-container"><canvas id="chartRadar"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <h4>Perfil DISC</h4>
+                <div class="canvas-container"><canvas id="chartDisc"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+                <h4>Dunning-Kruger</h4>
+                <div class="canvas-container"><canvas id="chartDunning"></canvas></div>
+            </div>
         </div>
     </div>
 
@@ -68,12 +87,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let dadosGerais = {};
-        let graficosInstancias = {};
+        let graficos = {};
 
         db.ref('resultados_testes').on('value', snap => {
             dadosGerais = snap.val();
             const combo = document.getElementById('selectAluno');
-            combo.innerHTML = '<option value="">Escolha um aluno...</option>';
+            combo.innerHTML = '<option value="">Selecione o Aluno...</option>';
             for(let id in dadosGerais) {
                 let opt = document.createElement('option');
                 opt.value = id; opt.text = dadosGerais[id].aluno;
@@ -86,38 +105,38 @@
             if(!id) return;
             const a = dadosGerais[id];
             
-            // Destruir gráficos antigos para evitar bugs
-            ['radar','disc','dunning'].forEach(k => {
-                if(graficosInstancias[k]) graficosInstancias[k].destroy();
-            });
+            // Destruição total para evitar sobreposição
+            if(graficos.r) graficos.r.destroy();
+            if(graficos.d) graficos.d.destroy();
+            if(graficos.dk) graficos.dk.destroy();
 
-            const configComum = { responsive: true, maintainAspectRatio: false };
+            const optBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 
-            graficosInstancias['radar'] = new Chart(document.getElementById('chartRadar'), {
+            graficos.r = new Chart(document.getElementById('chartRadar'), {
                 type: 'radar',
                 data: {
                     labels: ["Prot.", "Resp.", "Com.", "Ética", "Prob.", "Equip.", "Apr."],
-                    datasets: [{ data: Object.values(a.sap), backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3' }]
+                    datasets: [{ data: Object.values(a.sap), backgroundColor: 'rgba(0, 210, 211, 0.2)', borderColor: '#00d2d3', borderWidth: 2 }]
                 },
-                options: { ...configComum, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
+                options: { ...optBase, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
             });
 
-            graficosInstancias['disc'] = new Chart(document.getElementById('chartDisc'), {
+            graficos.d = new Chart(document.getElementById('chartDisc'), {
                 type: 'bar',
                 data: {
                     labels: ['D', 'I', 'S', 'C'],
                     datasets: [{ data: [a.disc.D, a.disc.I, a.disc.S, a.disc.C], backgroundColor: ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff'] }]
                 },
-                options: { ...configComum, scales: { y: { min: 0, max: 7 } }, plugins: { legend: { display: false } } }
+                options: { ...optBase, scales: { y: { min: 0, max: 7 } } }
             });
 
-            graficosInstancias['dunning'] = new Chart(document.getElementById('chartDunning'), {
+            graficos.dk = new Chart(document.getElementById('chartDunning'), {
                 type: 'line',
                 data: {
                     labels: ['Início', 'Pico', 'Vale', 'Subida', 'Platô'],
                     datasets: [{ data: [1, 5, 1.5, 3.5, 4.8], borderColor: '#f39c12', fill: true, tension: 0.4 }]
                 },
-                options: { ...configComum, scales: { y: { min: 0, max: 5, display: false } }, plugins: { legend: { display: false } } }
+                options: { ...optBase, scales: { y: { min: 0, max: 5, display: false } } }
             });
         }
 
