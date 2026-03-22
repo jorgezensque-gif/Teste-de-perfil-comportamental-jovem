@@ -2,62 +2,78 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>PAINEL JORGE 2026 - FINAL</title>
+    <title>PAINEL JORGE 2026 - FIXO</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
-        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #22c55e; --red: #ef4444; }
-        body { background: var(--dark); color: white; font-family: sans-serif; padding: 20px; margin: 0; }
-        .container { max-width: 1300px; margin: auto; }
-        .box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
-        .header-gestor { border-top: 4px solid var(--red); }
-        .top-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        input, select { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; }
-        input { flex-grow: 1; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; }
-        .btn-link { background: var(--blue); }
-        .btn-excel { background: var(--green); }
-        .btn-zerar { background: var(--red); }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --red: #ef4444; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
+        .container { max-width: 1200px; margin: auto; }
         
-        /* CORREÇÃO DO ALONGAMENTO */
-        .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; 
-                        height: 400px; display: flex; flex-direction: column; align-items: center; }
-        .chart-container { position: relative; width: 100%; height: 100%; flex-grow: 1; }
-        h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
-        #resultadoLink { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; color: var(--blue); font-size: 0.8em; display: none; }
+        .box { background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #334155; }
+        .header { border-top: 4px solid var(--red); }
+
+        /* GRADE DOS GRÁFICOS - FIXAÇÃO DE ALTURA */
+        .grid-graficos { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .card-grafico { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid #334155;
+            height: 380px; /* ALTURA TRAVADA PARA NÃO ALONGAR */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-wrapper { 
+            flex-grow: 1; 
+            position: relative; 
+            width: 100%; 
+            height: 300px; /* LIMITADOR REAL DO CANVAS */
+        }
+
+        h3 { color: var(--accent); text-align: center; font-size: 1rem; margin-bottom: 10px; text-transform: uppercase; }
+        
+        /* BOTÕES E INPUTS */
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        input, select { padding: 10px; border-radius: 5px; border: 1px solid #334155; background: #0f172a; color: white; flex-grow: 1; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-blue { background: var(--blue); }
+        .btn-red { background: var(--red); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="box">
-        <h3>🔗 Gerador de Acessos Individuais (WhatsApp)</h3>
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="nomeLink" placeholder="Nome Completo do Aluno">
-            <button class="btn btn-link" onclick="gerarLink()">GERAR E DISPARAR LINK</button>
+    <div class="box header">
+        <h2 style="margin:0; color:var(--red);">GESTOR: JORGE | PAINEL 2026</h2>
+        <div class="controls">
+            <select id="selectAluno" onchange="atualizarPainel()">
+                <option value="geral">📊 VISÃO GERAL DA TURMA</option>
+            </select>
+            <button class="btn btn-red" onclick="zerarSistema()">ZERAR</button>
         </div>
-        <div id="resultadoLink"></div>
     </div>
 
-    <div class="box header-gestor">
-        <h2 style="color: var(--red); margin:0;">GESTOR RESPONSÁVEL: JORGE | PAINEL 2026</h2>
-        <div class="top-bar">
-            <select id="selectAluno" onchange="atualizarPainel()" style="flex-grow: 1;">
-                <option value="geral">📊 CARREGANDO AVALIADOS...</option>
-            </select>
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
-            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA</button>
+    <div class="box">
+        <h3>🔗 Gerar Link</h3>
+        <div class="controls">
+            <input type="text" id="nomeLink" placeholder="Nome do aluno">
+            <button class="btn btn-blue" onclick="gerarLink()">GERAR LINK</button>
         </div>
     </div>
 
     <div class="grid-graficos">
-        <div class="card-grafico"><h3>1. Autoavaliação SAP (Radar)</h3><div class="chart-container"><canvas id="chartRadarSAP"></canvas></div></div>
-        <div class="card-grafico"><h3>2. Perfil DISC (Dominante)</h3><div class="chart-container"><canvas id="chartBarDISC"></canvas></div></div>
-        <div class="card-grafico"><h3>3. Competências SAP (Barras)</h3><div class="chart-container"><canvas id="chartBarSAP"></canvas></div></div>
-        <div class="card-grafico"><h3>4. Equilíbrio: DISC vs Média SAP</h3><div class="chart-container"><canvas id="chartCorrelacao"></canvas></div></div>
+        <div class="card-grafico"><h3>1. SAP (Radar)</h3><div class="chart-wrapper"><canvas id="c1"></canvas></div></div>
+        <div class="card-grafico"><h3>2. DISC (Dominante)</h3><div class="chart-wrapper"><canvas id="c2"></canvas></div></div>
+        <div class="card-grafico"><h3>3. Competências SAP</h3><div class="chart-wrapper"><canvas id="c3"></canvas></div></div>
+        <div class="card-grafico"><h3>4. Equilíbrio DISC/SAP</h3><div class="chart-wrapper"><canvas id="c4"></canvas></div></div>
     </div>
 </div>
 
@@ -65,105 +81,61 @@
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    let todosResultados = [];
+    let dados = [];
     let charts = {};
-    const TELEFONE_JORGE = "5563984011065";
 
-    function gerarLink() {
-        const nome = document.getElementById('nomeLink').value.trim();
-        if(!nome) return alert("Jorge, digite o nome!");
-        const idUnico = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
-        const linkFinal = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${idUnico}`;
-        document.getElementById('resultadoLink').style.display = "block";
-        document.getElementById('resultadoLink').innerText = "Link: " + linkFinal;
-        window.open(`https://wa.me/${TELEFONE_JORGE}?text=${encodeURIComponent('Jorge aqui! Link do teste: ' + linkFinal)}`, '_blank');
-    }
-
-    function initCharts() {
-        // Opção essencial para evitar alongamento: maintainAspectRatio: false
-        const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-
-        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), {
-            type: 'radar',
-            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
-            options: { ...options, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
-        });
-
-        charts.discBar = new Chart(document.getElementById('chartBarDISC'), {
-            type: 'bar',
-            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
-            options: options
-        });
-
-        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), {
-            type: 'bar',
-            data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] },
-            options: { ...options, scales: { y: { min: 0, max: 5 } } }
-        });
-
-        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), {
-            type: 'bar',
-            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
-            options: { ...options, scales: { y: { min: 0, max: 5 } } }
-        });
+    function init() {
+        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+        
+        charts.radar = new Chart(document.getElementById('c1'), { type: 'radar', data: { labels: ['P', 'R', 'C', 'E', 'Pr', 'Eq', 'A'], datasets: [{ data: [0,0,0,0,0,0,0], borderColor: '#38bdf8' }] }, options: opt });
+        charts.disc = new Chart(document.getElementById('c2'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: opt });
+        charts.sap = new Chart(document.getElementById('c3'), { type: 'bar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] }, options: opt });
+        charts.corr = new Chart(document.getElementById('c4'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [0,0,0,0], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: opt });
     }
 
     db.ref('resultados_testes').on('value', snap => {
-        todosResultados = [];
-        const select = document.getElementById('selectAluno');
-        select.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const data = child.val(); data.key = child.key;
-                todosResultados.push(data);
-                select.innerHTML += `<option value="${data.key}">${data.aluno.toUpperCase()}</option>`;
-            });
-        }
+        dados = [];
+        const sel = document.getElementById('selectAluno');
+        sel.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
+        snap.forEach(c => {
+            let d = c.val(); d.key = c.key; dados.push(d);
+            sel.innerHTML += `<option value="${d.key}">${d.aluno.toUpperCase()}</option>`;
+        });
         atualizarPainel();
     });
 
     function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
-        let sapData = [0,0,0,0,0,0,0], discData = [0,0,0,0], corrData = [0,0,0,0];
+        let s = [0,0,0,0,0,0,0], d = [0,0,0,0];
 
-        if (id === 'geral' && todosResultados.length > 0) {
-            let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
-            todosResultados.forEach(r => {
-                for(let i=0; i<7; i++) sapData[i] += parseInt(r.sap['q'+i] || 0);
-                discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
-                const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
-                let m = 0; for(let i=0; i<7; i++) m += parseInt(r.sap['q'+i] || 0);
-                somasCorr[dom] += (m/7); contCorr[dom]++;
+        if (id === 'geral' && dados.length > 0) {
+            dados.forEach(r => {
+                for(let i=0; i<7; i++) s[i] += parseInt(r.sap['q'+i] || 0);
+                d[0] += r.disc.D; d[1] += r.disc.I; d[2] += r.disc.S; d[3] += r.disc.C;
             });
-            const total = todosResultados.length;
-            sapData = sapData.map(v => v / total);
-            corrData = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
-        } else if (id !== 'geral') {
-            const r = todosResultados.find(x => x.key === id);
-            if (r) {
-                for(let i=0; i<7; i++) sapData[i] = parseInt(r.sap['q'+i]);
-                discData = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
+            s = s.map(v => v / dados.length);
+        } else {
+            const r = dados.find(x => x.key === id);
+            if(r) {
+                for(let i=0; i<7; i++) s[i] = parseInt(r.sap['q'+i]);
+                d = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
             }
         }
-        charts.sapRadar.data.datasets[0].data = sapData;
-        charts.discBar.data.datasets[0].data = discData;
-        charts.sapBar.data.datasets[0].data = sapData;
-        charts.correlacao.data.datasets[0].data = corrData;
+        charts.radar.data.datasets[0].data = s;
+        charts.sap.data.datasets[0].data = s;
+        charts.disc.data.datasets[0].data = d;
         Object.values(charts).forEach(c => c.update());
     }
 
-    function exportarExcel() {
-        const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({ Aluno: r.aluno, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados");
-        XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
+    function gerarLink() {
+        const n = document.getElementById('nomeLink').value;
+        const url = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${Date.now()}`;
+        window.open(`https://wa.me/5563984011065?text=Link: ${url}`, '_blank');
     }
 
-    function zerarSistema() {
-        if(confirm("JORGE: Apagar tudo?")) db.ref('resultados_testes').remove();
-    }
+    function zerarSistema() { if(confirm("Zerar tudo?")) db.ref('resultados_testes').remove(); }
 
-    window.onload = initCharts;
+    window.onload = init;
 </script>
 </body>
 </html>
