@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gestão Jorge 2026 | Sistema de Alunos</title>
+    <title>Painel Gestor 2026 - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,53 +13,48 @@
         .container { max-width: 1300px; margin: auto; }
         .header-gestor { background: var(--card); padding: 20px; border-radius: 12px; border-top: 4px solid var(--red); margin-bottom: 20px; }
         .top-bar { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        
-        select, input { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; flex-grow: 1; }
-        
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        select { padding: 12px; border-radius: 8px; border: 2px solid #334155; background: #0f172a; color: white; font-size: 1em; flex-grow: 1; cursor: pointer; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-excel { background: var(--green); }
         .btn-zerar { background: var(--red); }
-        .btn-pdi { background: var(--purple); }
-
         .grid-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; min-height: 350px; }
-        h2, h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; }
-        canvas { width: 100% !important; height: 300px !important; }
+        .card-grafico { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; }
+        h2, h3 { margin: 0 0 15px 0; color: var(--accent); font-size: 1.1em; text-transform: uppercase; text-align: center; }
+        canvas { width: 100% !important; height: 320px !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-gestor">
-        <h2 style="color: var(--red); text-align: left;">GESTOR RESPONSÁVEL: JORGE | SISTEMA DE ALUNOS 2026</h2>
+        <h2 style="color: var(--red); text-align: left;">GESTOR RESPONSÁVEL: JORGE | PAINEL ESTRATÉGICO 2026</h2>
         
-        <select id="selectAluno" onchange="carregarDadosIndividuais()">
+        <select id="selectAluno" onchange="atualizarPainel()">
             <option value="geral">📊 VISÃO GERAL DA TURMA</option>
         </select>
 
         <div class="top-bar">
-            <button class="btn btn-pdi">✨ GERAR PDI COM GEMINI 2.0</button>
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL COMPLETO</button>
-            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA</button>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 EXPORTAR EXCEL COMPLETO</button>
+            <button class="btn btn-zerar" onclick="zerarSistema()">🗑️ ZERAR SISTEMA (NOVA RODADA)</button>
         </div>
     </div>
 
     <div class="grid-graficos">
         <div class="card-grafico">
-            <h3>Autoavaliação SAP (Radar)</h3>
+            <h3>1. Autoavaliação SAP (Radar)</h3>
             <canvas id="chartRadarSAP"></canvas>
         </div>
         <div class="card-grafico">
-            <h3>Perfil Comportamental (DISC)</h3>
+            <h3>2. Perfil DISC (Dominante)</h3>
             <canvas id="chartBarDISC"></canvas>
         </div>
         <div class="card-grafico">
-            <h3>Competências SAP (Barras)</h3>
+            <h3>3. Competências SAP (Barras)</h3>
             <canvas id="chartBarSAP"></canvas>
         </div>
         <div class="card-grafico">
-            <h3>Jornada (Dunning-Kruger)</h3>
-            <canvas id="chartDunning"></canvas>
+            <h3>4. Equilíbrio: DISC vs Média SAP</h3>
+            <canvas id="chartCorrelacao"></canvas>
         </div>
     </div>
 </div>
@@ -72,19 +67,35 @@
     let todosResultados = [];
     let charts = {};
 
-    // INICIALIZAR GRÁFICOS
     function initCharts() {
-        const configRadar = { type: 'radar', data: { labels: ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Ética', 'Problemas', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] }, options: { scales: { r: { min: 0, max: 5 } } } };
-        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), configRadar);
+        // RADAR SAP
+        charts.sapRadar = new Chart(document.getElementById('chartRadarSAP'), {
+            type: 'radar',
+            data: { labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'], datasets: [{ label: 'Nível', data: [0,0,0,0,0,0,0], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8' }] },
+            options: { scales: { r: { min: 0, max: 5 } } }
+        });
 
-        charts.discBar = new Chart(document.getElementById('chartBarDISC'), { type: 'bar', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Pontos', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] } });
-        
-        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), { type: 'bar', data: { labels: ['P', 'R', 'C', 'E', 'S', 'Eq', 'A'], datasets: [{ label: 'Score', data: [0,0,0,0,0,0,0], backgroundColor: '#ef4444' }] } });
+        // BARRAS DISC
+        charts.discBar = new Chart(document.getElementById('chartBarDISC'), {
+            type: 'bar',
+            data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Pontuação', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] }
+        });
 
-        charts.dunning = new Chart(document.getElementById('chartDunning'), { type: 'line', data: { labels: ['Início', 'Pico', 'Vale', 'Subida', 'Platô'], datasets: [{ label: 'Confiança', data: [1, 5, 0.5, 2.5, 4.5], borderColor: '#a855f7', tension: 0.4 }] } });
+        // BARRAS SAP
+        charts.sapBar = new Chart(document.getElementById('chartBarSAP'), {
+            type: 'bar',
+            data: { labels: ['P', 'R', 'C', 'E', 'S', 'Eq', 'A'], datasets: [{ label: 'Score', data: [0,0,0,0,0,0,0], backgroundColor: '#38bdf8' }] },
+            options: { scales: { y: { min: 0, max: 5 } } }
+        });
+
+        // CORRELAÇÃO (Substituindo Dunning-Kruger)
+        charts.correlacao = new Chart(document.getElementById('chartCorrelacao'), {
+            type: 'bar',
+            data: { labels: ['Dominante (D)', 'Influente (I)', 'Estável (S)', 'Cauteloso (C)'], datasets: [{ label: 'Média SAP por Perfil', data: [0,0,0,0], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }] },
+            options: { scales: { y: { min: 0, max: 5 } } }
+        });
     }
 
-    // CARREGAR DADOS
     db.ref('resultados_testes').on('value', snap => {
         todosResultados = [];
         const select = document.getElementById('selectAluno');
@@ -96,50 +107,58 @@
             todosResultados.push(data);
             select.innerHTML += `<option value="${data.key}">${data.aluno}</option>`;
         });
-        carregarDadosIndividuais();
+        atualizarPainel();
     });
 
-    function carregarDadosIndividuais() {
+    function atualizarPainel() {
         const id = document.getElementById('selectAluno').value;
         let sapData = [0,0,0,0,0,0,0];
         let discData = [0,0,0,0];
-
+        
         if (id === 'geral') {
-            // Média da Turma
             todosResultados.forEach(r => {
                 for(let i=0; i<7; i++) sapData[i] += parseInt(r.sap['q'+i] || 0);
                 discData[0] += r.disc.D; discData[1] += r.disc.I; discData[2] += r.disc.S; discData[3] += r.disc.C;
             });
-            const total = todosResultados.length || 1;
-            sapData = sapData.map(v => v / total);
+            const t = todosResultados.length || 1;
+            sapData = sapData.map(v => v / t);
+            
+            // Lógica de correlação (Média SAP de quem é D, de quem é I, etc)
+            let somasCorr = {D:0, I:0, S:0, C:0}, contCorr = {D:0, I:0, S:0, C:0};
+            todosResultados.forEach(r => {
+                const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
+                let m = 0; for(let i=0; i<7; i++) m += parseInt(r.sap['q'+i] || 0);
+                somasCorr[dom] += (m/7); contCorr[dom]++;
+            });
+            charts.correlacao.data.datasets[0].data = [contCorr.D?somasCorr.D/contCorr.D:0, contCorr.I?somasCorr.I/contCorr.I:0, contCorr.S?somasCorr.S/contCorr.S:0, contCorr.C?somasCorr.C/contCorr.C:0];
         } else {
-            // Dados de um aluno específico
-            const aluno = todosResultados.find(r => r.key === id);
-            for(let i=0; i<7; i++) sapData[i] = parseInt(aluno.sap['q'+i]);
-            discData = [aluno.disc.D, aluno.disc.I, aluno.disc.S, aluno.disc.C];
+            const r = todosResultados.find(x => x.key === id);
+            for(let i=0; i<7; i++) sapData[i] = parseInt(r.sap['q'+i]);
+            discData = [r.disc.D, r.disc.I, r.disc.S, r.disc.C];
+            charts.correlacao.data.datasets[0].data = [0,0,0,0]; // Desativa correlação na visão individual
         }
 
         charts.sapRadar.data.datasets[0].data = sapData;
         charts.sapBar.data.datasets[0].data = sapData;
         charts.discBar.data.datasets[0].data = discData;
-        charts.sapRadar.update(); charts.sapBar.update(); charts.discBar.update();
+        charts.sapRadar.update(); charts.sapBar.update(); charts.discBar.update(); charts.correlacao.update();
     }
 
     function exportarExcel() {
         const ws = XLSX.utils.json_to_sheet(todosResultados.map(r => ({
             Aluno: r.aluno, Data: r.data, D: r.disc.D, I: r.disc.I, S: r.disc.S, C: r.disc.C,
-            SAP_P: r.sap.q0, SAP_R: r.sap.q1, SAP_C: r.sap.q2, SAP_E: r.sap.q3, SAP_P: r.sap.q4, SAP_T: r.sap.q5, SAP_A: r.sap.q6
+            P: r.sap.q0, R: r.sap.q1, C: r.sap.q2, E: r.sap.q3, Pr: r.sap.q4, Eq: r.sap.q5, A: r.sap.q6
         })));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
-        XLSX.writeFile(wb, `Relatorio_Jorge_2026.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Dados");
+        XLSX.writeFile(wb, "Relatorio_Jorge_Completo.xlsx");
     }
 
     function zerarSistema() {
-        if(confirm("JORGE: Tem certeza que deseja APAGAR TUDO para uma nova rodada?")) {
+        if(confirm("JORGE: Apagar tudo para nova rodada?")) {
             db.ref('resultados_testes').remove();
             db.ref('links_usados').remove();
-            alert("Sistema zerado!");
+            alert("Sistema limpo!");
         }
     }
 
