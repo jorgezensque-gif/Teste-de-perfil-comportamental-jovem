@@ -3,124 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>PAINEL FINAL JORGE 2026</title>
+    <title>PAINEL GESTOR JORGE 2026 - FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --red: #ef4444; --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --yellow: #facc15; }
+        :root { --red: #ef4444; --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --yellow: #facc15; --green: #22c55e; }
         body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
+        .container { max-width: 1300px; margin: auto; }
         .box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
         
-        /* GERADOR VOLTOU */
-        .gerador-container { border: 2px dashed var(--blue); display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border-radius: 6px; border: none; font-size: 1rem; }
-        .btn-ws { background: #22c55e; color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; }
+        /* GERADOR DE LINK */
+        .gerador-link { border: 2px dashed var(--blue); display: flex; gap: 10px; align-items: center; }
+        input { flex: 1; padding: 12px; border-radius: 6px; border: none; font-size: 1rem; outline: none; }
+        .btn-ws { background: var(--green); color: white; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        /* CABEÇALHO E BOTÕES */
+        .header-main { border-top: 4px solid var(--red); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .controles { display: flex; gap: 10px; flex-wrap: wrap; }
+        select { background: #0f172a; color: white; padding: 10px; border-radius: 6px; border: 1px solid var(--blue); font-weight: bold; }
+        .btn-exp { background: #3b82f6; color: white; padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-zerar { background: var(--red); color: white; padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+
+        /* GRID GRÁFICOS */
+        .grid-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
         .card-chart { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #334155; height: 380px !important; position: relative; }
         .canvas-container { position: relative; height: 300px; width: 100%; }
-        
         h3 { color: var(--yellow); text-align: center; text-transform: uppercase; font-size: 0.9em; margin-bottom: 10px; }
-        select { background: #0f172a; color: white; padding: 10px; border-radius: 6px; border: 1px solid var(--blue); width: 250px; font-weight: bold; }
-        .btn-zerar { background: var(--red); color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div style="max-width: 1300px; margin: auto;">
-    <div class="box gerador-container">
-        <strong style="color: var(--blue);">🔗 CONVITE WHATSAPP:</strong>
-        <input type="text" id="inputNome" placeholder="Nome do Aluno">
-        <button class="btn-ws" onclick="enviarWhats()">GERAR E ENVIAR</button>
+<div class="container">
+    <div class="box gerador-link">
+        <strong style="color: var(--blue);">🔗 CONVITE:</strong>
+        <input type="text" id="nomeAluno" placeholder="Nome Completo do Aluno">
+        <button class="btn-ws" onclick="dispararWhats()">GERAR E DISPARAR WHATSAPP</button>
     </div>
 
-    <div class="box" style="display:flex; justify-content:space-between; align-items:center; border-top: 4px solid var(--red);">
+    <div class="box header-main">
         <div>
             <h2 style="margin:0;">GESTOR: JORGE | PAINEL 2026</h2>
-            <small style="color: var(--blue);">Responsável: Jorge [2026-02-17]</small>
+            <small style="color: var(--blue);">Responsável: Jorge Zensque</small>
         </div>
-        <div style="display:flex; gap:10px;">
-            <select id="filtroAluno" onchange="renderizar()"></select>
-            <button class="btn-zerar" onclick="resetDB()">ZERAR TUDO</button>
+        <div class="controles">
+            <select id="filtro" onchange="atualizarInterface()"></select>
+            <button class="btn-exp" style="background: var(--green);" onclick="exportar('excel')">📊 EXCEL</button>
+            <button class="btn-exp" onclick="exportar('csv')">📄 CSV</button>
+            <button class="btn-zerar" onclick="limparTudo()">ZERAR</button>
         </div>
     </div>
 
-    <div class="grid">
-        <div class="card-chart"><h3>1. SAP (Radar)</h3><div class="canvas-container"><canvas id="graf1"></canvas></div></div>
-        <div class="card-chart"><h3>2. DISC (Barras)</h3><div class="canvas-container"><canvas id="graf2"></canvas></div></div>
-        <div class="card-chart"><h3>3. Competências SAP</h3><div class="canvas-container"><canvas id="graf3"></canvas></div></div>
-        <div class="card-chart"><h3>4. Equilíbrio DISC vs SAP</h3><div class="canvas-container"><canvas id="graf4"></canvas></div></div>
+    <div class="grid-charts">
+        <div class="card-chart"><h3>1. AUTOAVALIAÇÃO SAP (RADAR)</h3><div class="canvas-container"><canvas id="gr1"></canvas></div></div>
+        <div class="card-chart"><h3>2. PERFIL comportamental (DISC)</h3><div class="canvas-container"><canvas id="gr2"></canvas></div></div>
+        <div class="card-chart"><h3>3. COMPETÊNCIAS TÉCNICAS (SAP)</h3><div class="canvas-container"><canvas id="gr3"></canvas></div></div>
+        <div class="card-chart"><h3>4. EQUILÍBRIO: DISC VS SAP</h3><div class="canvas-container"><canvas id="gr4"></canvas></div></div>
     </div>
 </div>
 
 <script>
+    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-    let listaResultados = [], mapaGraficos = {};
+    
+    let dadosLocais = [];
+    let meusGraficos = {};
 
-    function enviarWhats() {
-        const n = document.getElementById('inputNome').value;
+    // WHATSAPP
+    function dispararWhats() {
+        const n = document.getElementById('nomeAluno').value.trim();
         if(!n) return alert("Jorge, digite o nome!");
         const link = `https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/index.html?id=${Date.now()}&nome=${encodeURIComponent(n)}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Olá " + n + "! Faça seu teste aqui: " + link)}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Olá " + n + "! Segue o link do seu teste: " + link)}`, '_blank');
     }
 
-    function montarGraficos() {
-        const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } } };
-        mapaGraficos.radar = new Chart(document.getElementById('graf1'), { type: 'radar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)' }] }, options: { ...opt, scales: { r: { min:0, max:5 } } } });
-        mapaGraficos.disc = new Chart(document.getElementById('graf2'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: opt });
-        mapaGraficos.sap = new Chart(document.getElementById('graf3'), { type: 'bar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [], backgroundColor: '#38bdf8' }] }, options: opt });
-        mapaGraficos.corr = new Chart(document.getElementById('graf4'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: opt });
+    // INICIALIZAÇÃO DOS GRÁFICOS (TRAVADOS)
+    function carregarGraficos() {
+        const baseOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 5 } } };
+        
+        meusGraficos.radar = new Chart(document.getElementById('gr1'), { type: 'radar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [], borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)' }] }, options: { ...baseOpt, scales: { r: { min:0, max:5 } } } });
+        meusGraficos.disc = new Chart(document.getElementById('gr2'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: baseOpt });
+        meusGraficos.sap = new Chart(document.getElementById('gr3'), { type: 'bar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ data: [], backgroundColor: '#38bdf8' }] }, options: baseOpt });
+        meusGraficos.corr = new Chart(document.getElementById('gr4'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{ data: [], backgroundColor: ['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options: baseOpt });
     }
 
-    database.ref('resultados_testes').on('value', s => {
-        listaResultados = [];
-        const menu = document.getElementById('filtroAluno');
-        menu.innerHTML = '<option value="geral">📊 VISÃO GERAL</option>';
-        s.forEach(child => {
-            let item = child.val(); item.key = child.key;
-            listaResultados.push(item);
-            menu.innerHTML += `<option value="${item.key}">${item.aluno.toUpperCase()}</option>`;
+    // BUSCA DADOS FIREBASE
+    database.ref('resultados_testes').on('value', snap => {
+        dadosLocais = [];
+        const menu = document.getElementById('filtro');
+        menu.innerHTML = '<option value="geral">📊 VISÃO GERAL DA TURMA</option>';
+        snap.forEach(c => {
+            let d = c.val(); d.key = c.key;
+            dadosLocais.push(d);
+            menu.innerHTML += `<option value="${d.key}">${d.aluno.toUpperCase()}</option>`;
         });
-        renderizar();
+        atualizarInterface();
     });
 
-    function renderizar() {
-        const alvo = document.getElementById('filtroAluno').value;
-        let vSAP = [0,0,0,0,0,0,0], vDISC = [0,0,0,0], vCorr = [0,0,0,0], qtdCorr = [0,0,0,0];
+    // ATUALIZAÇÃO DO PAINEL
+    function atualizarInterface() {
+        const selecao = document.getElementById('filtro').value;
+        let s = [0,0,0,0,0,0,0], d = [0,0,0,0], c4 = [0,0,0,0], q4 = [0,0,0,0];
 
-        if (alvo === 'geral' && listaResultados.length > 0) {
-            listaResultados.forEach(r => {
-                for(let i=0; i<7; i++) vSAP[i] += Number(r.sap['q'+i] || 0);
-                vDISC[0] += Number(r.disc.D || 0); vDISC[1] += Number(r.disc.I || 0); vDISC[2] += Number(r.disc.S || 0); vDISC[3] += Number(r.disc.C || 0);
+        if (selecao === 'geral' && dadosLocais.length > 0) {
+            dadosLocais.forEach(r => {
+                for(let i=0; i<7; i++) s[i] += Number(r.sap['q'+i] || 0);
+                d[0] += Number(r.disc.D || 0); d[1] += Number(r.disc.I || 0); d[2] += Number(r.disc.S || 0); d[3] += Number(r.disc.C || 0);
                 
-                let mediaS = 0; for(let i=0; i<7; i++) mediaS += Number(r.sap['q'+i] || 0);
+                let mediaSAP = 0; for(let i=0; i<7; i++) mediaSAP += Number(r.sap['q'+i] || 0);
                 const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
-                const pos = ['D','I','S','C'].indexOf(dom);
-                vCorr[pos] += (mediaS/7); qtdCorr[pos]++;
+                const idx = ['D','I','S','C'].indexOf(dom);
+                c4[idx] += (mediaSAP/7); q4[idx]++;
             });
-            vSAP = vSAP.map(v => v / listaResultados.length);
-            vDISC = vDISC.map(v => v / listaResultados.length);
-            vCorr = vCorr.map((v, i) => qtdCorr[i] > 0 ? v / qtdCorr[i] : 0);
+            s = s.map(v => v/dadosLocais.length);
+            d = d.map(v => v/dadosLocais.length);
+            c4 = c4.map((v, i) => q4[i] > 0 ? v/q4[i] : 0);
         } else {
-            const r = listaResultados.find(x => x.key === alvo);
+            const r = dadosLocais.find(x => x.key === selecao);
             if(r) {
-                for(let i=0; i<7; i++) vSAP[i] = Number(r.sap['q'+i]);
-                vDISC = [Number(r.disc.D), Number(r.disc.I), Number(r.disc.S), Number(r.disc.C)];
+                for(let i=0; i<7; i++) s[i] = Number(r.sap['q'+i]);
+                d = [Number(r.disc.D), Number(r.disc.I), Number(r.disc.S), Number(r.disc.C)];
             }
         }
-
-        mapaGraficos.radar.data.datasets[0].data = vSAP;
-        mapaGraficos.sap.data.datasets[0].data = vSAP;
-        mapaGraficos.disc.data.datasets[0].data = vDISC;
-        mapaGraficos.corr.data.datasets[0].data = vCorr;
-        Object.values(mapaGraficos).forEach(c => c.update());
+        meusGraficos.radar.data.datasets[0].data = s;
+        meusGraficos.sap.data.datasets[0].data = s;
+        meusGraficos.disc.data.datasets[0].data = d;
+        meusGraficos.corr.data.datasets[0].data = c4;
+        Object.values(meusGraficos).forEach(g => g.update());
     }
 
-    function resetDB() { if(confirm("Jorge, apagar tudo?")) database.ref('resultados_testes').remove(); }
-    window.onload = montarGraficos;
+    // FUNÇÃO EXPORTAR (EXCEL/CSV)
+    function exportar(tipo) {
+        if(dadosLocais.length === 0) return alert("Sem dados para exportar!");
+        let conteudo = "Aluno,Dominancia,Influencia,Estabilidade,Conformidade,Media SAP\n";
+        dadosLocais.forEach(r => {
+            let m = 0; for(let i=0; i<7; i++) m += Number(r.sap['q'+i] || 0);
+            conteudo += `${r.aluno},${r.disc.D},${r.disc.I},${r.disc.S},${r.disc.C},${(m/7).toFixed(2)}\n`;
+        });
+        const blob = new Blob(["\ufeff" + conteudo], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Relatorio_Jorge_${tipo === 'excel' ? 'Excel' : 'CSV'}.csv`;
+        link.click();
+    }
+
+    function limparTudo() { if(confirm("Jorge, apagar todos os dados?")) database.ref('resultados_testes').remove(); }
+
+    window.onload = carregarGraficos;
 </script>
+
 </body>
 </html>
