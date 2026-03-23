@@ -2,100 +2,118 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Coletivo - Jorge Zensque</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>DASHBOARD GERAL - MAPEAMENTO DE TURMA</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #1e272e; color: white; font-family: sans-serif; padding: 20px; }
-        .card { background: #2d3436; padding: 25px; border-radius: 12px; border: 1px solid #444; max-width: 1100px; margin: auto; }
-        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #f39c12; margin-bottom: 25px; padding-bottom: 15px; }
-        .logo-img { height: 70px; }
-        h2 { color: #f39c12; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-        .stats { background: #2980b9; padding: 12px; border-radius: 6px; text-align: center; font-size: 18px; margin-bottom: 25px; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .chart-box { background: #ffffff; color: #333; padding: 20px; border-radius: 10px; height: 450px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        h4 { text-align: center; margin-top: 0; color: #2d3436; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .header { background: #1e293b; padding: 20px; border-radius: 12px; border-bottom: 4px solid #f59e0b; margin-bottom: 20px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; height: 450px; position: relative; }
+        h3 { color: #1e293b; text-align: center; margin-bottom: 15px; text-transform: uppercase; font-size: 0.9rem; }
+        .stats { background: #3b82f6; color: white; padding: 10px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <img src="https://raw.githubusercontent.com/jorgezensque-gif/Teste-de-perfil-comportamental-jovem/main/Logo%20marca%20jorge%20Copilot_20260321_225242.jpg" class="logo-img">
-            <h2>Mapeamento Coletivo de Turma</h2>
-        </div>
 
-        <div id="contador" class="stats">📊 ANALISANDO DADOS DO GRUPO...</div>
-
-        <div class="grid">
-            <div class="chart-box">
-                <h4>PERFIL COMPORTAMENTAL MÉDIO (DISC)</h4>
-                <canvas id="geralDisc"></canvas>
-            </div>
-
-            <div class="chart-box">
-                <h4>EQUILÍBRIO SOCIOEMOCIONAL (RADAR SAP)</h4>
-                <canvas id="geralRadar"></canvas>
-            </div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1 style="margin:0; font-size: 1.5rem;">MAPEAMENTO COLETIVO DE TURMA</h1>
+        <small>Gestor Responsável: Jorge Zensque</small>
     </div>
 
-    <script>
-        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        
-        firebase.database().ref('resultados_testes').on('value', snap => {
-            const dados = snap.val();
-            if(!dados) return;
+    <div id="contador" class="stats">CONTANDO JOVENS...</div>
 
-            let total = 0;
-            let somaDisc = { D:0, I:0, S:0, C:0 };
-            let somaSap = [0,0,0,0,0,0,0];
+    <div class="grid">
+        <div class="card">
+            <h3>Média de Perfil Comportamental (DISC)</h3>
+            <canvas id="canvasDISC"></canvas>
+        </div>
+        <div class="card">
+            <h3>Equilíbrio Socioemocional (Radar SAP)</h3>
+            <canvas id="canvasRadar"></canvas>
+        </div>
+    </div>
+</div>
 
-            for(let id in dados) {
-                total++;
-                somaDisc.D += dados[id].disc.D;
-                somaDisc.I += dados[id].disc.I;
-                somaDisc.S += dados[id].disc.S;
-                somaDisc.C += dados[id].disc.C;
-                
-                const sapValues = Object.values(dados[id].sap);
-                sapValues.forEach((val, i) => somaSap[i] += val);
-            }
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-            document.getElementById('contador').innerText = `TOTAL DE AVALIADOS NO BANCO DE DADOS: ${total} JOVENS`;
+    let chartDISC, chartRadar;
 
-            // 1. DISC COLETIVO (BARRAS COM NOMES)
-            new Chart(document.getElementById('geralDisc'), {
-                type: 'bar',
-                data: {
-                    labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'],
-                    datasets: [{
-                        data: [somaDisc.D/total, somaDisc.I/total, somaDisc.S/total, somaDisc.C/total],
-                        backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 7 } }, plugins: { legend: { display: false } } }
-            });
-
-            // 2. RADAR SAP COLETIVO
-            new Chart(document.getElementById('geralRadar'), {
-                type: 'radar',
-                data: {
-                    labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
-                    datasets: [{
-                        label: 'Média do Grupo',
-                        data: somaSap.map(v => v/total),
-                        backgroundColor: 'rgba(41, 128, 185, 0.3)',
-                        borderColor: '#2980b9',
-                        pointBackgroundColor: '#2980b9',
-                        borderWidth: 3
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 5, ticks: { display: false } } } }
-            });
+    function iniciar() {
+        // Configuração do Gráfico DISC
+        chartDISC = new Chart(document.getElementById('canvasDISC'), {
+            type: 'bar',
+            data: {
+                labels: ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'],
+                datasets: [{ data: [], backgroundColor: ['#ef4444', '#facc15', '#22c55e', '#3b82f6'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 7 } } }
         });
-    </script>
+
+        // Configuração do Radar SAP (COM TRAVA DE ESCALA)
+        chartRadar = new Chart(document.getElementById('canvasRadar'), {
+            type: 'radar',
+            data: {
+                labels: ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Ética', 'Problemas', 'Equipe', 'Aprender'],
+                datasets: [{ 
+                    label: 'Média da Turma', 
+                    data: [], 
+                    backgroundColor: 'rgba(59, 130, 246, 0.4)', 
+                    borderColor: '#3b82f6', 
+                    borderWidth: 3,
+                    fill: true 
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 5, // Trava para não "vazar" da tela
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#1e293b' },
+                        grid: { color: '#cbd5e1' }
+                    }
+                }
+            }
+        });
+    }
+
+    database.ref('resultados_testes').on('value', snap => {
+        let n = 0;
+        let d = [0,0,0,0], s = [0,0,0,0,0,0,0];
+
+        snap.forEach(child => {
+            const r = child.val();
+            n++;
+            // Força conversão para número
+            d[0] += parseFloat(r.disc.D || 0);
+            d[1] += parseFloat(r.disc.I || 0);
+            d[2] += parseFloat(r.disc.S || 0);
+            d[3] += parseFloat(r.disc.C || 0);
+
+            for(let i=0; i<7; i++) {
+                s[i] += parseFloat(r.sap['q'+i] || 0);
+            }
+        });
+
+        if(n > 0) {
+            document.getElementById('contador').innerText = `TOTAL DE AVALIADOS: ${n} JOVENS`;
+            chartDISC.data.datasets[0].data = d.map(v => v/n);
+            chartRadar.data.datasets[0].data = s.map(v => v/n);
+            chartDISC.update();
+            chartRadar.update();
+        }
+    });
+
+    window.onload = iniciar;
+</script>
 </body>
 </html>
