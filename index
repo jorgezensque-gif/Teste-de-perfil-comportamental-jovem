@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Gestor - Jorge Zensque</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --blue: #38bdf8; --green: #22c55e; --red: #ef4444; --text: #f3f4f6; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
+        .header-admin { border: 2px dashed var(--blue); padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; }
+        .header-admin input { flex: 1; padding: 12px; border-radius: 6px; border: none; background: #000; color: white; }
+        .btn-wpp { background-color: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .painel-box { background-color: var(--card); border-radius: 12px; padding: 20px; border-top: 5px solid var(--red); }
+        .controles { display: flex; gap: 10px; align-items: center; }
+        .btn-acao { padding: 10px 18px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; }
+        .btn-excel { background-color: var(--green); }
+        .btn-zerar { background-color: var(--red); }
+        select { background: #111827; color: white; padding: 10px; border-radius: 6px; border: 1px solid var(--blue); cursor: pointer; }
+        .grid-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)); gap: 20px; margin-top: 20px; }
+        .card-chart { background-color: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; height: 350px; }
+        h3 { margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; color: var(--text); }
+    </style>
+</head>
+<body>
+
+    <div class="header-admin">
+        <input type="text" id="nomeAluno" placeholder="Nome do Aluno">
+        <button class="btn-wpp" onclick="gerarLink()">GERAR E DISPARAR WHATSAPP</button>
+    </div>
+
+    <div class="painel-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div>
+                <h2 style="margin:0;">PAINEL GESTOR</h2>
+                <small>Responsável: Jorge Zensque</small>
+            </div>
+            <div class="controles">
+                <select id="selectTurma" onchange="selecionarAluno(this.value)">
+                    <option value="todos">📊 TURMA</option>
+                </select>
+                <button class="btn-acao btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
+                <button class="btn-acao btn-zerar" onclick="zerarDados()">ZERAR</button>
+            </div>
+        </div>
+
+        <div class="grid-charts">
+            <div class="card-chart"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="radarSap"></canvas></div>
+            <div class="card-chart"><h3>2. Perfil (DISC)</h3><canvas id="barDisc"></canvas></div>
+            <div class="card-chart"><h3>3. Técnico (SAP)</h3><canvas id="barSapTecnico"></canvas></div>
+            <div class="card-chart"><h3>4. Equilíbrio: DISC vs SAP</h3><canvas id="barEquilibrio"></canvas></div>
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let dadosAlunos = {};
+    let charts = {};
+
+    function carregarDados() {
+        db.ref('resultados').on('value', snapshot => {
+            dadosAlunos = snapshot.val() || {};
+            const select = document.getElementById('selectTurma');
+            select.innerHTML = '<option value="todos">📊 TURMA (Geral)</option>';
+            
+            Object.keys(dadosAlunos).forEach(id => {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = dadosAlunos[id].nome || id;
+                select.appendChild(opt);
+            });
+            atualizarGraficos('todos');
+        });
+    }
+
+    function atualizarGraficos(filtro) {
+        let disc = {D:0, I:0, S:0, C:0};
+        let sap = [0,0,0,0,0,0,0];
+        let total = 0;
+
+        const lista = filtro === 'todos' ? Object.values(dadosAlunos) : [dadosAlunos[filtro]];
+
+        lista.forEach(r => {
+            total++;
+            ['D','I','S','C'].forEach(l => disc[l] += (r.pontosDISC && r.pontosDISC[l]) || 0);
+            for(let i=0; i<7; i++) sap[i] += (r.pontosSAP && r.pontosSAP[i]) || 0;
+        });
+
+        const mSap = sap.map(v => total > 0 ? (v/total).toFixed(1) : 0);
+        const mDisc = Object.values(disc).map(v => total > 0 ? (v/total).toFixed(1) : 0);
+
+        renderRadar('radarSap', mSap);
+        renderBar('barDisc', mDisc, ['D','I','S','C'], '#ef4444');
+        renderBar('barSapTecnico', mSap, ['P','R','C','E','Pr','Eq','A'], '#38bdf8');
+        renderBar('barEquilibrio', mSap, ['P','R','C','E','Pr','Eq','A'], '#facc15');
+    }
+
+    function renderRadar(id, data) {
+        if(charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id), {
+            type: 'radar',
+            data: {
+                labels: ['P','R','C','E','Pr','Eq','A'],
+                datasets: [{ label: 'Média', data: data, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)' }]
+            },
+            options: { scales: { r: { min:0, max:5, grid:{color:'#334155'}, pointLabels:{color:'#fff'} } }, plugins:{legend:{display:false}} }
+        });
+    }
+
+    function renderBar(id, data, labels, color) {
+        if(charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: color }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: {color:'#1e293b'} } } }
+        });
+    }
+
+    function selecionarAluno(id) { atualizarGraficos(id); }
+
+    function gerarLink() {
+        const nome = document.getElementById('nomeAluno').value;
+        if(!nome) return alert("Digite o nome!");
+        const link = window.location.origin + window.location.pathname + "?id=" + Date.now() + "&nome=" + encodeURIComponent(nome);
+        window.open(`https://api.whatsapp.com/send?text=Olá ${nome}, faça seu teste: ${link}`);
+    }
+
+    function zerarDados() {
+        if(confirm("Jorge, apagar todos os resultados?")) db.ref('resultados').remove();
+    }
+
+    function exportarExcel() {
+        const ws = XLSX.utils.json_to_sheet(Object.values(dadosAlunos));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
+        XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
+    }
+
+    window.onload = carregarDados;
+</script>
+</body>
+</html>
