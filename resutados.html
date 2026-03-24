@@ -3,28 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação SAP & DISC - Jorge Zensque</title>
+    <title>Avaliação SAP & DISC</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .quiz-container { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 600px; width: 100%; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .pergunta { display: none; }
-        .pergunta.ativa { display: block; }
-        .opcoes { display: grid; gap: 10px; margin-top: 20px; }
-        button { background: #38bdf8; color: #0f172a; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #22c55e; color: white; }
-        .progresso { height: 8px; background: #334155; border-radius: 4px; margin-bottom: 20px; }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; display: flex; justify-content: center; }
+        .quiz-card { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 500px; width: 100%; border-top: 5px solid #38bdf8; }
+        .opcao { display: block; width: 100%; background: #334155; color: white; border: none; padding: 12px; margin: 10px 0; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.3s; }
+        .opcao:hover { background: #38bdf8; color: #0f172a; }
+        .progresso { height: 10px; background: #0f172a; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
         .barra { height: 100%; background: #22c55e; width: 0%; transition: 0.3s; }
     </style>
 </head>
 <body>
-
-<div class="quiz-container">
-    <div class="progresso"><div class="barra" id="barraProgresso"></div></div>
-    <div id="quiz-content">
+    <div class="quiz-card">
+        <div class="progresso"><div class="barra" id="progresso"></div></div>
+        <div id="pergunta-container">
+            <h2 id="pergunta-texto">Carregando...</h2>
+            <div id="opcoes-container"></div>
         </div>
-</div>
+    </div>
 
 <script>
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
@@ -32,53 +30,62 @@
     const db = firebase.database();
 
     const params = new URLSearchParams(window.location.search);
-    const nomeAluno = params.get('nome') || "Aluno";
+    const nomeAluno = params.get('nome') || "Aluno Teste";
 
-    // 16 Perguntas (Exemplo misto SAP e DISC)
-    const perguntas = [
-        { t: "Em um grupo, você prefere:", o: ["Liderar as decisões (D)", "Animar as pessoas (I)", "Manter a harmonia (S)", "Analisar os fatos (C)"], v: ["D", "I", "S", "C"], tipo: "DISC" },
-        { t: "Sobre prazos, você:", o: ["Cumpre a qualquer custo", "Se enrola um pouco", "Prefere ritmo constante", "É perfeccionista"], v: ["D", "I", "S", "C"], tipo: "DISC" },
-        // ... Adicione as outras 14 perguntas aqui seguindo o padrão
+    // Misto de 16 Perguntas: DISC (Comportamental) e SAP (Socioemocional)
+    const quiz = [
+        { q: "1. Como você reage a desafios?", o: ["Enfrento com força (D)", "Fico entusiasmado (I)", "Analiso com calma (S)", "Busco perfeição (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "2. Em um projeto, você foca em:", o: ["Resultados rápidos (D)", "Pessoas e interação (I)", "Estabilidade e rotina (S)", "Regras e detalhes (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "3. Você se considera alguém que planeja o futuro?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 0 },
+        { q: "4. Você consegue controlar suas emoções sob pressão?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 1 },
+        { q: "5. Você prefere trabalhar:", o: ["Sozinho (D)", "Em equipe animada (I)", "Em equipe calma (S)", "Com processos claros (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "6. Como você lida com mudanças?", o: ["Gosto e lidero (D)", "Me adapto rápido (I)", "Demoro a aceitar (S)", "Analiso os riscos (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "7. Você costuma terminar o que começa?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 2 },
+        { q: "8. Você tem facilidade em fazer amigos?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 3 },
+        { q: "9. Sua comunicação é mais:", o: ["Direta e curta (D)", "Expressiva e alegre (I)", "Ouvinte e paciente (S)", "Precisa e técnica (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "10. Quando alguém te critica, você:", o: ["Fica agressivo (D)", "Leva pro pessoal (I)", "Fica em silêncio (S)", "Questiona os fatos (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "11. Você se sente confiante em suas habilidades?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 4 },
+        { q: "12. Você busca aprender coisas novas por conta própria?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 5 },
+        { q: "13. Você prefere ambientes:", o: ["Competitivos (D)", "Sociais (I)", "Previsíveis (S)", "Organizados (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "14. Você é movido por:", o: ["Poder e vitórias (D)", "Reconhecimento (I)", "Segurança (S)", "Conhecimento (C)"], v: ["D","I","S","C"], t: "DISC" },
+        { q: "15. Você perdoa facilmente os erros dos outros?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 6 },
+        { q: "16. Você se organiza antes de começar uma tarefa?", o: ["Nunca", "Raramente", "Às vezes", "Sempre"], v: [1,2,3,5], t: "SAP", idx: 0 }
     ];
 
     let atual = 0;
-    let respostasDISC = { D:0, I:0, S:0, C:0 };
-    let respostasSAP = [0,0,0,0,0,0,0]; // Médias das competências
+    let pontosDISC = { D:0, I:0, S:0, C:0 };
+    let pontosSAP = [0,0,0,0,0,0,0];
 
-    function carregarPergunta() {
-        const p = perguntas[atual];
-        if (!p) return finalizar();
-        
-        let html = `<h3>${p.t}</h3><div class="opcoes">`;
-        p.o.forEach((opcao, i) => {
-            html += `<button onclick="proxima('${p.v[i]}', ${p.tipo === 'SAP' ? i : -1})">${opcao}</button>`;
+    function mostrarPergunta() {
+        if(atual >= quiz.length) return finalizar();
+        const p = quiz[atual];
+        document.getElementById('pergunta-texto').innerText = p.q;
+        const container = document.getElementById('opcoes-container');
+        container.innerHTML = "";
+        p.o.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = "opcao";
+            btn.innerText = opt;
+            btn.onclick = () => responder(p.v[i], p.t, p.idx);
+            container.appendChild(btn);
         });
-        document.getElementById('quiz-content').innerHTML = html + `</div>`;
-        document.getElementById('barraProgresso').style.width = ((atual / perguntas.length) * 100) + "%";
+        document.getElementById('progresso').style.width = ((atual/quiz.length)*100) + "%";
     }
 
-    function proxima(valor, indexSAP) {
-        if (indexSAP === -1) { respostasDISC[valor]++; } 
-        else { respostasSAP[indexSAP] = (respostasSAP[indexSAP] || 0) + 1; }
-        
+    function responder(valor, tipo, idx) {
+        if(tipo === "DISC") pontosDISC[valor]++;
+        else pontosSAP[idx] += valor;
         atual++;
-        carregarPergunta();
+        mostrarPergunta();
     }
 
     function finalizar() {
-        const resultado = {
-            nome: nomeAluno,
-            data: new Date().toLocaleString(),
-            pontosDISC: respostasDISC,
-            pontosSAP: [4, 3, 5, 2, 4, 3, 5] // Simulação SAP para o gráfico radar
-        };
-
-        db.ref('resultados').push(resultado).then(() => {
-            document.getElementById('quiz-content').innerHTML = "<h2>Obrigado! Suas respostas foram enviadas para Jorge.</h2>";
+        const payload = { nome: nomeAluno, data: new Date().toLocaleDateString(), pontosDISC, pontosSAP };
+        db.ref('resultados').push(payload).then(() => {
+            document.getElementById('pergunta-container').innerHTML = "<h2>✅ Avaliação Concluída!</h2><p>Jorge já recebeu seus dados.</p>";
         });
     }
-
-    carregarPergunta();
+    mostrarPergunta();
 </script>
 </body>
 </html>
