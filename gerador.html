@@ -5,56 +5,52 @@
     <title>Gerador de Links - Jorge</title>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h2 { color: #facc15; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1.1em; color: black; }
-        button { width: 100%; padding: 15px; background: #38bdf8; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .link-gerado { background: #0f172a; padding: 15px; margin-top: 20px; border-radius: 8px; border: 1px dashed #38bdf8; word-break: break-all; display: none; }
+        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; color: black; }
+        button { width: 100%; padding: 15px; background: #38bdf8; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #resultado { background: #0f172a; padding: 15px; margin-top: 20px; border-radius: 8px; border: 1px dashed #38bdf8; display: none; word-break: break-all; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Gerador de Links DISC</h2>
-    <p>Digite o nome do aluno:</p>
+<div class="box" id="painel-gerador" style="display:none;">
+    <h2>Gerador de Links - Jorge</h2>
+    <p>Digite o nome do aluno para gerar o link:</p>
     <input type="text" id="idAluno" placeholder="Ex: Maria Silva">
     <button onclick="gerarLink()">GERAR LINK E COPIAR</button>
-
-    <div id="resultado" class="link-gerado">
-        <b style="color: #38bdf8;">Link pronto para o WhatsApp:</b><br>
+    <div id="resultado">
+        <b style="color: #38bdf8;">Link copiado! Envie no WhatsApp:</b><br><br>
         <span id="linkFinal"></span>
     </div>
 </div>
 
 <script>
-    // --- SUA TRAVA DE SEGURANÇA ---
-    const senhaAcesso = "SUA_SENHA_AQUI"; // Coloque sua senha aqui!
-    if (sessionStorage.getItem("acesso_autorizado") !== "true") {
-        const tentativa = prompt("Senha do Jorge:");
-        if (tentativa === senhaAcesso) { 
-            sessionStorage.setItem("acesso_autorizado", "true"); 
-        } else { 
-            alert("Senha Incorreta!");
-            window.location.href = "index.html"; // Se errar, volta pro teste
-        }
+    // 🔑 MUDE SUA SENHA AQUI:
+    const SENHA_MESTRA = "1234"; 
+
+    // Só mostra o gerador se a senha estiver certa
+    const tentativa = prompt("Digite a Senha do Jorge para acessar o Gerador:");
+    
+    if (tentativa === SENHA_MESTRA) {
+        document.getElementById('painel-gerador').style.display = 'block';
+    } else {
+        alert("Senha Incorreta!");
+        // Se errar, ele apenas recarrega para tentar de novo, não volta pro teste
+        window.location.reload(); 
     }
 
     function gerarLink() {
         const nome = document.getElementById('idAluno').value.trim();
-        if (!nome) return alert("Digite o nome do aluno!");
+        if (!nome) return alert("Digite o nome!");
 
-        // Transforma "Maria Silva" em "maria-silva"
         const idLimpo = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
-        
-        const base = "https://teste-de-perfil-comportamental-jove.vercel.app/";
-        const linkCompleto = base + "?id=" + idLimpo;
+        const link = "https://teste-de-perfil-comportamental-jove.vercel.app/?id=" + idLimpo;
 
-        document.getElementById('linkFinal').innerText = linkCompleto;
+        document.getElementById('linkFinal').innerText = link;
         document.getElementById('resultado').style.display = 'block';
 
-        // Copia para o seu celular/PC
-        navigator.clipboard.writeText(linkCompleto).then(() => {
-            alert("Link de " + nome + " copiado! Agora é só colar no WhatsApp.");
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Link de " + nome + " copiado com sucesso!");
         });
     }
 </script>
