@@ -2,40 +2,34 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel do Jorge - Gerador</title>
+    <title>Painel do Jorge</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; text-align: center; width: 400px; border: 1px solid #334155; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
-        button { width: 100%; padding: 15px; background: #38bdf8; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
-        #link-box { margin-top: 20px; padding: 15px; border: 1px dashed #38bdf8; display: none; word-break: break-all; color: #facc15; }
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        .caixa { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
+        button { width: 100%; padding: 15px; background: #38bdf8; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: black; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Gerador de Links</h2>
-        <input type="text" id="nomeAluno" placeholder="Nome do Aluno">
-        <button onclick="gerar()">GERAR LINK DO ALUNO</button>
-        <div id="link-box"></div>
+    <div class="caixa">
+        <h2>Criar Novo Link</h2>
+        <input type="text" id="nome" placeholder="Nome do Aluno">
+        <button onclick="gerar()">GERAR E COPIAR LINK</button>
+        <p id="link-gerado" style="margin-top:20px; color:#38bdf8; word-break:break-all;"></p>
     </div>
 
     <script>
         function gerar() {
-            const nome = document.getElementById('nomeAluno').value.trim();
+            const nome = document.getElementById('nome').value.trim();
             if (!nome) return alert("Digite o nome!");
-            
-            // Cria o ID limpo (ex: maria-leopoldina)
             const id = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
             
-            // O LINK AGORA APONTA PARA index.html (O TESTE)
+            // O link que você vai mandar pro WhatsApp aponta para o index.html
             const link = window.location.origin + "/index.html?id=" + id;
-
-            const box = document.getElementById('link-box');
-            box.style.display = 'block';
-            box.innerText = link;
-
+            
+            document.getElementById('link-gerado').innerText = link;
             navigator.clipboard.writeText(link);
-            alert("Link de " + nome + " copiado! Mande este link para o aluno.");
+            alert("Link copiado para o WhatsApp!");
         }
     </script>
 </body>
