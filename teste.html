@@ -2,97 +2,80 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação 16 Perguntas</title>
+    <title>Quiz 16 Perguntas</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .quiz-container { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; border-top: 5px solid #38bdf8; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        button { background: #334155; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 16px; transition: 0.2s; }
-        button:hover { background: #38bdf8; color: #0f172a; font-weight: bold; }
-        .progresso { height: 8px; background: #0f172a; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
-        .barra { height: 100%; background: #22c55e; width: 0%; transition: 0.3s; }
+        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 5px solid #38bdf8; }
+        .btn { background: #334155; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; text-align: left; }
+        .btn:hover { background: #38bdf8; color: #0f172a; }
     </style>
 </head>
 <body>
-
-<div class="quiz-container">
-    <div class="progresso"><div class="barra" id="barra"></div></div>
-    <div id="quiz-corpo">
-        <h2 id="pergunta-txt">Carregando...</h2>
-        <div id="botoes" class="opcoes"></div>
+    <div class="box">
+        <h2 id="pergunta"></h2>
+        <div id="opcoes"></div>
     </div>
-</div>
 
 <script>
-    // Inicialização Simples do Firebase
     const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(config);
     const db = firebase.database();
 
-    const params = new URLSearchParams(window.location.search);
-    const nomeAluno = params.get('nome') || "Visitante";
-
-    const perguntas = [
-        { q: "1. Como você prefere atuar em um projeto?", o: ["Liderando a equipe", "Motivando os colegas", "Mantendo o ritmo e a calma", "Cuidando dos detalhes técnicos"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "2. Qual é a sua maior prioridade?", o: ["Vencer e bater metas", "Ser aceito e popular", "Ter segurança e harmonia", "Seguir processos e regras"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "3. Em uma conversa, você costuma ser:", o: ["Direto e objetivo", "Entusiasmado e alegre", "Bom ouvinte e paciente", "Preciso e técnico"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "4. Como você reage a novos desafios?", o: ["Com determinação", "Com otimismo", "Com cautela", "Com análise"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "5. O que mais te incomoda?", o: ["Falta de autonomia", "Isolamento", "Mudanças bruscas", "Desorganização"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "6. Como você toma decisões?", o: ["Rápido e focado", "Intuitivo", "Pensando no grupo", "Baseado em fatos"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "7. Sob pressão, você tende a ser:", o: ["Autoritário", "Agitado", "Passivo", "Perfeccionista"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "8. Como as pessoas te definem?", o: ["Decidido", "Comunicativo", "Confiável", "Disciplinado"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "9. Autoconfiança: Você acredita no seu potencial?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 0 },
-        { q: "10. Responsabilidade: Você entrega no prazo?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 1 },
-        { q: "11. Organização: Você planeja antes de agir?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 2 },
-        { q: "12. Sociabilidade: Gosta de conhecer pessoas?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 3 },
-        { q: "13. Estabilidade: Mantém a calma no estresse?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 4 },
-        { q: "14. Abertura ao Novo: Gosta de aprender coisas novas?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 5 },
-        { q: "15. Empatia: Se coloca no lugar do outro?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 6 },
-        { q: "16. Foco: Consegue ignorar distrações?", o: ["Raramente", "Às vezes", "Quase sempre", "Sempre"], v: [1,2,4,5], t: "SAP", i: 7 }
+    const nome = new URLSearchParams(window.location.search).get('nome') || "Jorge";
+    
+    // As 16 perguntas completas
+    const lista = [
+        { q: "1. Como prefere atuar em projetos?", o: ["Liderar", "Motivar", "Paciência", "Técnica"], v: ["D","I","S","C"] },
+        { q: "2. Qual sua prioridade?", o: ["Metas", "Pessoas", "Segurança", "Regras"], v: ["D","I","S","C"] },
+        { q: "3. Na conversa, você é:", o: ["Direto", "Entusiasmado", "Ouvinte", "Preciso"], v: ["D","I","S","C"] },
+        { q: "4. Reação a desafios:", o: ["Determinação", "Otimismo", "Cautela", "Análise"], v: ["D","I","S","C"] },
+        { q: "5. O que incomoda?", o: ["Falta de poder", "Isolamento", "Mudança", "Desordem"], v: ["D","I","S","C"] },
+        { q: "6. Como decide?", o: ["Rápido", "Intuição", "Grupo", "Dados"], v: ["D","I","S","C"] },
+        { q: "7. Sob pressão:", o: ["Autoritário", "Agitado", "Calado", "Crítico"], v: ["D","I","S","C"] },
+        { q: "8. Como te veem?", o: ["Decidido", "Alegre", "Fiel", "Sério"], v: ["D","I","S","C"] },
+        // SAP
+        { q: "9. Autoconfiança:", o: ["Baixa", "Média", "Alta", "Total"], v: [1,2,4,5], s: 0 },
+        { q: "10. Entrega prazos?", o: ["Não", "Às vezes", "Sempre", "Adiantado"], v: [1,2,4,5], s: 1 },
+        { q: "11. Organização:", o: ["Nenhuma", "Pouca", "Muita", "Total"], v: [1,2,4,5], s: 2 },
+        { q: "12. Sociabilidade:", o: ["Tímido", "Normal", "Gosta", "Ama"], v: [1,2,4,5], s: 3 },
+        { q: "13. Mantém a calma?", o: ["Nunca", "Raramente", "Geralmente", "Sempre"], v: [1,2,4,5], s: 4 },
+        { q: "14. Curiosidade:", o: ["Zero", "Pouca", "Bastante", "Muita"], v: [1,2,4,5], s: 5 },
+        { q: "15. Empatia:", o: ["Não", "Às vezes", "Sim", "Sempre"], v: [1,2,4,5], s: 6 },
+        { q: "16. Foco total?", o: ["Não", "Difícil", "Fácil", "Sempre"], v: [1,2,4,5], s: 7 }
     ];
 
-    let atual = 0;
+    let index = 0;
     let disc = { D:0, I:0, S:0, C:0 };
     let sap = [0,0,0,0,0,0,0,0];
 
-    function renderizar() {
-        if (atual >= perguntas.length) return finalizar();
-        
-        const p = perguntas[atual];
-        document.getElementById('pergunta-txt').innerText = p.q;
-        document.getElementById('barra').style.width = (atual / perguntas.length * 100) + "%";
-        
-        const container = document.getElementById('botoes');
-        container.innerHTML = "";
-        
-        p.o.forEach((opcao, index) => {
-            const btn = document.createElement('button');
-            btn.innerText = opcao;
-            btn.onclick = () => {
-                const valor = p.v[index];
-                if(p.t === "DISC") disc[valor]++;
-                else sap[p.i] = valor;
-                
-                atual++;
-                renderizar();
+    function mostrar() {
+        if (index >= lista.length) {
+            db.ref('resultados').push({ nome, disc, sap }).then(() => {
+                document.body.innerHTML = "<h1>✅ Sucesso! Dados enviados.</h1>";
+            });
+            return;
+        }
+        const p = lista[index];
+        document.getElementById('pergunta').innerText = p.q;
+        const div = document.getElementById('opcoes');
+        div.innerHTML = "";
+        p.o.forEach((txt, i) => {
+            const b = document.createElement('button');
+            b.className = "btn";
+            b.innerText = txt;
+            b.onclick = () => {
+                const val = p.v[i];
+                if (typeof val === 'string') disc[val]++;
+                else sap[p.s] = val;
+                index++;
+                mostrar();
             };
-            container.appendChild(btn);
+            div.appendChild(b);
         });
     }
-
-    function finalizar() {
-        const dados = { nome: nomeAluno, data: new Date().toLocaleDateString(), pontosDISC: disc, pontosSAP: sap };
-        db.ref('resultados').push(dados).then(() => {
-            document.getElementById('quiz-corpo').innerHTML = "<h2>✅ Concluído!</h2><p>Seus dados foram enviados. Volte ao painel principal.</p>";
-        }).catch(err => {
-            alert("Erro ao salvar. Verifique sua internet.");
-        });
-    }
-
-    renderizar();
+    mostrar();
 </script>
 </body>
 </html>
