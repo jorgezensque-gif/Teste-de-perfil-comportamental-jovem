@@ -131,7 +131,7 @@
     function gerarLink() {
         const nome = document.getElementById('nomeAluno').value;
         if(!nome) return alert("Por favor, digite o nome do aluno!");
-        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/resultados.html?id=${Date.now()}&nome=${encodeURIComponent(nome)}`;
+        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?id=${Date.now()}&nome=${encodeURIComponent(nome)}`;
         window.open(`https://api.whatsapp.com/send?text=Olá ${nome}, aqui está seu link para o teste: ${link}`);
     }
 
