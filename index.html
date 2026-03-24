@@ -17,18 +17,18 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="main-box">
     <h2 id="status">Verificando...</h2>
     
-    <div id="area-teste" class="hidden">
-        <p>Olá! Digite seu nome completo:</p>
+    <div id="area-form" class="hidden">
+        <p>Olá! Digite seu nome para começar:</p>
         <input type="text" id="nomeAluno" placeholder="Nome Completo">
-        <button class="btn" onclick="enviarEBloquear()">ENVIAR E FINALIZAR</button>
+        <button class="btn" onclick="enviarFinal()">FINALIZAR TESTE</button>
     </div>
 
     <div id="area-bloqueio" class="hidden">
         <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
-        <p>Este teste já foi respondido. Se precisar refazer, peça um novo link ao Jorge.</p>
+        <p>Este teste já foi respondido. Solicite um novo link ao Jorge.</p>
     </div>
 </div>
 
@@ -43,33 +43,37 @@
     if (!linkID) {
         document.getElementById('status').innerText = "❌ Link Inválido";
     } else {
-        // CHECAGEM DIRETA PELO NOME DO ID
+        // BUSCA A TRAVA NA PASTA CORRETA
         db.ref('links_travados/' + linkID).once('value', snap => {
             if (snap.exists()) {
                 document.getElementById('status').classList.add('hidden');
                 document.getElementById('area-bloqueio').classList.remove('hidden');
             } else {
-                document.getElementById('status').innerText = "Link Autorizado";
-                document.getElementById('area-teste').classList.remove('hidden');
+                document.getElementById('status').innerText = "Bem-vindo!";
+                document.getElementById('area-form').classList.remove('hidden');
             }
         });
     }
 
-    function enviarEBloquear() {
+    function enviarFinal() {
         const nome = document.getElementById('nomeAluno').value;
         if (!nome) return alert("Digite seu nome!");
 
-        // SALVA COM O ID COMO CHAVE (ISSO TRAVA O LINK)
+        // 1. Cria a trava (impede o reuso do link)
         db.ref('links_travados/' + linkID).set({
             aluno: nome,
             data: new Date().toLocaleString(),
-            status: "usado"
+            usado: true
         }).then(() => {
-            // Também salva nos seus resultados gerais
-            db.ref('resultados_testes').push({ aluno: nome, link_id: linkID });
-            
-            alert("Sucesso! Link travado.");
-            window.location.reload();
+            // 2. Salva o resultado para você ver no dashboard
+            db.ref('resultados_testes').push({
+                aluno: nome,
+                link_id: linkID,
+                data: new Date().toLocaleString()
+            });
+
+            alert("Teste enviado com sucesso!");
+            window.location.reload(); // Recarrega para ativar o bloqueio na hora
         });
     }
 </script>
