@@ -2,57 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Links - Jorge</title>
+    <title>Painel do Jorge - Gerador</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; color: black; }
-        button { width: 100%; padding: 15px; background: #38bdf8; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #resultado { background: #0f172a; padding: 15px; margin-top: 20px; border-radius: 8px; border: 1px dashed #38bdf8; display: none; word-break: break-all; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: #1e293b; padding: 30px; border-radius: 15px; text-align: center; width: 400px; border: 1px solid #334155; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #38bdf8; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
+        #link-box { margin-top: 20px; padding: 15px; border: 1px dashed #38bdf8; display: none; word-break: break-all; color: #facc15; }
     </style>
 </head>
 <body>
-
-<div class="box" id="painel-gerador" style="display:none;">
-    <h2>Gerador de Links - Jorge</h2>
-    <p>Digite o nome do aluno para gerar o link:</p>
-    <input type="text" id="idAluno" placeholder="Ex: Maria Silva">
-    <button onclick="gerarLink()">GERAR LINK E COPIAR</button>
-    <div id="resultado">
-        <b style="color: #38bdf8;">Link copiado! Envie no WhatsApp:</b><br><br>
-        <span id="linkFinal"></span>
+    <div class="box">
+        <h2>Gerador de Links</h2>
+        <input type="text" id="nomeAluno" placeholder="Nome do Aluno">
+        <button onclick="gerar()">GERAR LINK DO ALUNO</button>
+        <div id="link-box"></div>
     </div>
-</div>
 
-<script>
-    // 🔑 MUDE SUA SENHA AQUI:
-    const SENHA_MESTRA = "Vaicorinthians2026"; 
+    <script>
+        function gerar() {
+            const nome = document.getElementById('nomeAluno').value.trim();
+            if (!nome) return alert("Digite o nome!");
+            
+            // Cria o ID limpo (ex: maria-leopoldina)
+            const id = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+            
+            // O LINK AGORA APONTA PARA index.html (O TESTE)
+            const link = window.location.origin + "/index.html?id=" + id;
 
-    // Só mostra o gerador se a senha estiver certa
-    const tentativa = prompt("Digite a Senha do Jorge para acessar o Gerador:");
-    
-    if (tentativa === SENHA_MESTRA) {
-        document.getElementById('painel-gerador').style.display = 'block';
-    } else {
-        alert("Senha Incorreta!");
-        // Se errar, ele apenas recarrega para tentar de novo, não volta pro teste
-        window.location.reload(); 
-    }
+            const box = document.getElementById('link-box');
+            box.style.display = 'block';
+            box.innerText = link;
 
-    function gerarLink() {
-        const nome = document.getElementById('idAluno').value.trim();
-        if (!nome) return alert("Digite o nome!");
-
-        const idLimpo = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
-        const link = "https://teste-de-perfil-comportamental-jove.vercel.app/?id=" + idLimpo;
-
-        document.getElementById('linkFinal').innerText = link;
-        document.getElementById('resultado').style.display = 'block';
-
-        navigator.clipboard.writeText(link).then(() => {
-            alert("Link de " + nome + " copiado com sucesso!");
-        });
-    }
-</script>
+            navigator.clipboard.writeText(link);
+            alert("Link de " + nome + " copiado! Mande este link para o aluno.");
+        }
+    </script>
 </body>
 </html>
