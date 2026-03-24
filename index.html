@@ -24,83 +24,85 @@
     </style>
 </head>
 <body>
-
     <div class="header-admin">
         <input type="text" id="nomeAluno" placeholder="Nome do Aluno">
         <button class="btn btn-wpp" onclick="gerarLink()">GERAR E DISPARAR WHATSAPP</button>
     </div>
-
     <div class="painel-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin:0;">PAINEL GESTOR</h2>
-                <small style="color: #38bdf8;">Responsável: Jorge Zensque</small>
-            </div>
+            <div><h2 style="margin:0;">PAINEL GESTOR</h2><small style="color:var(--blue);">Jorge Zensque</small></div>
             <div style="display: flex; gap: 10px;">
-                <select id="selectTurma" onchange="selecionarAluno(this.value)">
-                    <option value="todos">📊 TURMA</option>
-                </select>
+                <select id="selectTurma" onchange="selecionarAluno(this.value)"><option value="todos">📊 TURMA</option></select>
                 <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
                 <button class="btn btn-zerar" onclick="zerarDados()">ZERAR</button>
             </div>
         </div>
-
         <div class="grid-charts">
-            <div class="card-chart"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="radarSap"></canvas></div>
+            <div class="card-chart"><h3>1. Autoavaliação SAP</h3><canvas id="radarSap"></canvas></div>
             <div class="card-chart"><h3>2. Perfil (DISC)</h3><canvas id="barDisc"></canvas></div>
             <div class="card-chart"><h3>3. Técnico (SAP)</h3><canvas id="barSapTecnico"></canvas></div>
-            <div class="card-chart"><h3>4. Equilíbrio: DISC vs SAP</h3><canvas id="barEquilibrio"></canvas></div>
+            <div class="card-chart"><h3>4. Equilíbrio</h3><canvas id="barEquilibrio"></canvas></div>
         </div>
     </div>
-
 <script>
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    let dadosAlunos = {};
-    let charts = {};
+    let dadosAlunos = {}, charts = {};
 
     function carregarDados() {
         db.ref('resultados').on('value', snapshot => {
             dadosAlunos = snapshot.val() || {};
             const select = document.getElementById('selectTurma');
             select.innerHTML = '<option value="todos">📊 TURMA (Geral)</option>';
-            
             Object.keys(dadosAlunos).forEach(id => {
                 const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = dadosAlunos[id].nome || id;
+                opt.value = id; opt.textContent = dadosAlunos[id].nome || id;
                 select.appendChild(opt);
             });
             atualizarGraficos('todos');
         });
     }
 
+    function render(id, type, labels, data, color) {
+        if(charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id), {
+            type: type,
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: color, borderColor: color }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
+            scales: type === 'bar' ? { y: { beginAtZero: true } } : { r: { min: 0, max: 5 } } }
+        });
+    }
+
     function atualizarGraficos(filtro) {
         let lista = filtro === 'todos' ? Object.values(dadosAlunos) : [dadosAlunos[filtro]];
-        // Lógica de cálculo simplificada para os gráficos
-        console.log("Atualizando gráficos para:", filtro);
+        let sap = [0,0,0,0,0,0,0], disc = [0,0,0,0], total = lista.length;
+        lista.forEach(r => {
+            if(r.pontosSAP) r.pontosSAP.forEach((v, i) => sap[i] += v);
+            if(r.pontosDISC) { disc[0]+=r.pontosDISC.D; disc[1]+=r.pontosDISC.I; disc[2]+=r.pontosDISC.S; disc[3]+=r.pontosDISC.C; }
+        });
+        const mSap = sap.map(v => total > 0 ? (v/total).toFixed(1) : 0);
+        const mDisc = disc.map(v => total > 0 ? (v/total).toFixed(1) : 0);
+        render('radarSap', 'radar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
+        render('barDisc', 'bar', ['D','I','S','C'], mDisc, '#ef4444');
+        render('barSapTecnico', 'bar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
+        render('barEquilibrio', 'bar', ['P','R','C','E','Pr','Eq','A'], mSap, '#facc15');
     }
 
-    function gerarLink() {
-        const nome = document.getElementById('nomeAluno').value;
-        if(!nome) return alert("Digite o nome!");
-        const link = window.location.origin + "/resultados.html?nome=" + encodeURIComponent(nome);
-        window.open(`https://api.whatsapp.com/send?text=Olá ${nome}, faça seu teste: ${link}`);
-    }
-
-    function zerarDados() {
-        if(confirm("Jorge, deseja apagar todos os dados?")) db.ref('resultados').remove();
-    }
-
+    function selecionarAluno(id) { atualizarGraficos(id); }
+    function zerarDados() { if(confirm("Apagar tudo?")) db.ref('resultados').remove(); }
     function exportarExcel() {
         const ws = XLSX.utils.json_to_sheet(Object.values(dadosAlunos));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Dados");
         XLSX.writeFile(wb, "Relatorio_Jorge.xlsx");
     }
-
+    function gerarLink() {
+        const nome = document.getElementById('nomeAluno').value;
+        if(!nome) return alert("Digite o nome");
+        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/resultados.html?id=${Date.now()}&nome=${encodeURIComponent(nome)}`;
+        window.open(`https://api.whatsapp.com/send?text=Olá ${nome}, link: ${link}`);
+    }
     window.onload = carregarDados;
 </script>
 </body>
