@@ -1,164 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel Gestor - Jorge Zensque</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-    <style>
-        :root { --bg: #0f172a; --card: #1e293b; --blue: #38bdf8; --green: #22c55e; --red: #ef4444; }
-        body { background-color: var(--bg); color: white; font-family: sans-serif; padding: 20px; margin: 0; }
-        .header-admin { border: 2px dashed var(--blue); padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; }
-        .header-admin input { flex: 1; padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; font-size: 16px; }
-        .painel-box { background-color: var(--card); border-radius: 15px; padding: 20px; border-top: 4px solid var(--red); box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
-        .btn { padding: 10px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
-        .btn-wpp { background-color: var(--green); }
-        .btn-excel { background-color: var(--green); }
-        .btn-zerar { background-color: var(--red); }
-        .btn:hover { opacity: 0.8; }
-        select { background: #111827; color: white; padding: 10px; border-radius: 6px; border: 1px solid var(--blue); cursor: pointer; }
-        .grid-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card-chart { background-color: #0f172a; padding: 15px; border-radius: 10px; height: 350px; border: 1px solid #334155; }
-        h3 { margin: 0 0 15px 0; font-size: 13px; text-transform: uppercase; color: #9ca3af; letter-spacing: 1px; }
-    </style>
-</head>
-<body>
+// Procure a parte que carrega os nomes e use este código:
+const selectAlunos = document.getElementById('selectAlunos'); // Verifique se o ID é este no seu HTML
 
-    <div class="header-admin">
-        <input type="text" id="nomeAluno" placeholder="Nome do Aluno para novo teste...">
-        <button class="btn btn-wpp" onclick="gerarLink()">GERAR E DISPARAR WHATSAPP</button>
-    </div>
-
-    <div class="painel-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin:0;">PAINEL GESTOR</h2>
-                <small style="color: var(--blue);">Responsável: Jorge Zensque</small>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <select id="selectTurma" onchange="selecionarAluno(this.value)">
-                    <option value="todos">📊 TURMA (Geral)</option>
-                </select>
-                <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
-                <button class="btn btn-zerar" onclick="zerarDados()">ZERAR</button>
-            </div>
-        </div>
-
-        <div class="grid-charts">
-            <div class="card-chart"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="radarSap"></canvas></div>
-            <div class="card-chart"><h3>2. Perfil Comportamental (DISC)</h3><canvas id="barDisc"></canvas></div>
-            <div class="card-chart"><h3>3. Desempenho Técnico (SAP)</h3><canvas id="barSapTecnico"></canvas></div>
-            <div class="card-chart"><h3>4. Equilíbrio de Competências</h3><canvas id="barEquilibrio"></canvas></div>
-        </div>
-    </div>
-
-<script>
-    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let dadosAlunos = {};
-    let charts = {};
-
-    // Inicialização e monitoramento do Banco de Dados
-    function carregarDados() {
-        db.ref('resultados').on('value', snapshot => {
-            dadosAlunos = snapshot.val() || {};
-            const select = document.getElementById('selectTurma');
-            select.innerHTML = '<option value="todos">📊 TURMA (Média Geral)</option>';
-            
-            Object.keys(dadosAlunos).forEach(id => {
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = dadosAlunos[id].nome || "Aluno Sem Nome";
-                select.appendChild(opt);
-            });
-            atualizarGraficos('todos');
+db.ref('resultados').on('value', (snapshot) => {
+    selectAlunos.innerHTML = '<option value="">Selecione um Aluno</option>';
+    const dados = snapshot.val();
+    
+    if (dados) {
+        // Cria uma lista de nomes únicos para não repetir
+        const nomesUnicos = [...new Set(Object.values(dados).map(d => d.nome))];
+        
+        nomesUnicos.forEach(nomeAluno => {
+            const option = document.createElement('option');
+            option.value = nomeAluno;
+            option.text = nomeAluno;
+            selectAlunos.appendChild(option);
         });
     }
-
-    function renderChart(id, type, labels, data, color) {
-        if(charts[id]) charts[id].destroy();
-        const ctx = document.getElementById(id).getContext('2d');
-        charts[id] = new Chart(ctx, {
-            type: type,
-            data: {
-                labels: labels,
-                datasets: [{ 
-                    data: data, 
-                    backgroundColor: type === 'radar' ? 'rgba(56,189,248,0.2)' : color, 
-                    borderColor: color, 
-                    borderWidth: 2,
-                    pointBackgroundColor: color
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: type === 'bar' ? 
-                    { y: { beginAtZero: true, max: 5, grid: { color: '#1e293b' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } : 
-                    { r: { min: 0, max: 5, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#fff', font: { size: 12 } }, ticks: { display: false } } }
-            }
-        });
-    }
-
-    function atualizarGraficos(filtro) {
-        let lista = filtro === 'todos' ? Object.values(dadosAlunos) : [dadosAlunos[filtro]];
-        let sap = [0,0,0,0,0,0,0], disc = [0,0,0,0], total = lista.length;
-
-        lista.forEach(r => {
-            if(r.pontosSAP) r.pontosSAP.forEach((v, i) => sap[i] += Number(v || 0));
-            if(r.pontosDISC) {
-                disc[0] += Number(r.pontosDISC.D || 0); disc[1] += Number(r.pontosDISC.I || 0);
-                disc[2] += Number(r.pontosDISC.S || 0); disc[3] += Number(r.pontosDISC.C || 0);
-            }
-        });
-
-        const mSap = sap.map(v => total > 0 ? (v/total).toFixed(1) : 0);
-        const mDisc = disc.map(v => total > 0 ? (v/total).toFixed(1) : 0);
-
-        renderChart('radarSap', 'radar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
-        renderChart('barDisc', 'bar', ['D','I','S','C'], mDisc, '#ef4444');
-        renderChart('barSapTecnico', 'bar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
-        renderChart('barEquilibrio', 'bar', ['P','R','C','E','Pr','Eq','A'], mSap, '#facc15');
-    }
-
-    function selecionarAluno(id) { atualizarGraficos(id); }
-
-    function gerarLink() {
-        const nome = document.getElementById('nomeAluno').value;
-        if(!nome) return alert("Por favor, digite o nome do aluno!");
-        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?id=${Date.now()}&nome=${encodeURIComponent(nome)}`;
-        window.open(`https://api.whatsapp.com/send?text=Olá ${nome}, aqui está seu link para o teste: ${link}`);
-    }
-
-    function zerarDados() {
-        if(confirm("ATENÇÃO JORGE: Você tem certeza que deseja APAGAR TODOS os resultados do banco de dados?")) {
-            db.ref('resultados').remove().then(() => alert("Banco de dados limpo com sucesso!"));
-        }
-    }
-
-    function exportarExcel() {
-        if(Object.keys(dadosAlunos).length === 0) return alert("Não há dados para exportar!");
-        const dadosFormatados = Object.values(dadosAlunos).map(aluno => ({
-            Nome: aluno.nome,
-            Data: aluno.data || "N/A",
-            D: aluno.pontosDISC?.D || 0,
-            I: aluno.pontosDISC?.I || 0,
-            S: aluno.pontosDISC?.S || 0,
-            C: aluno.pontosDISC?.C || 0,
-            SAP_Media: (aluno.pontosSAP?.reduce((a,b)=>a+b,0)/7 || 0).toFixed(2)
-        }));
-        const ws = XLSX.utils.json_to_sheet(dadosFormatados);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
-        XLSX.writeFile(wb, "Relatorio_Alunos_Jorge.xlsx");
-    }
-
-    window.onload = carregarDados;
-</script>
-</body>
-</html>
+});
