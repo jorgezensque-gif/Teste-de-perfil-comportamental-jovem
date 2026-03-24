@@ -2,38 +2,60 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Links - Jorge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste DISC - Resposta</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 30px; border-radius: 15px; text-align: center; width: 400px; border: 1px solid #334155; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #38bdf8; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #resultado { margin-top: 20px; padding: 15px; border: 1px dashed #38bdf8; border-radius: 8px; display: none; font-size: 14px; word-break: break-all; }
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 50px 20px; }
+        .caixa { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 400px; margin: auto; border: 1px solid #334155; }
+        .btn { width: 100%; padding: 15px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .escondido { display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Gerador de Links - Jorge</h2>
-        <input type="text" id="nomeAluno" placeholder="Nome do aluno">
-        <button onclick="gerar()">GERAR LINK E COPIAR</button>
-        <div id="resultado"></div>
+    <div class="caixa">
+        <div id="verificando">Verificando seu acesso...</div>
+
+        <div id="tela-teste" class="escondido">
+            <h2>Bem-vindo!</h2>
+            <p>Clique abaixo para enviar sua resposta única.</p>
+            <button class="btn" onclick="responder()">ENVIAR RESPOSTA</button>
+        </div>
+
+        <div id="tela-bloqueio" class="escondido">
+            <h1 style="color:#facc15;">⚠️ LINK USADO</h1>
+            <p>Este teste já foi respondido. Peça um novo link ao Jorge.</p>
+        </div>
     </div>
 
     <script>
-        function gerar() {
-            const nome = document.getElementById('nomeAluno').value.trim();
-            if (!nome) return alert("Digite o nome!");
+        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            // Transforma "Maria Leopoldina" em "maria-leopoldina"
-            const id = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
-            const link = `https://teste-de-perfil-comportamental-jove.vercel.app/?id=${id}`;
+        const urlParams = new URLSearchParams(window.location.search);
+        const linkID = urlParams.get('id');
 
-            const resDiv = document.getElementById('resultado');
-            resDiv.style.display = 'block';
-            resDiv.innerText = link;
+        if (!linkID) {
+            document.getElementById('verificando').innerText = "❌ Link Inválido!";
+        } else {
+            // VERIFICA SE JÁ EXISTE TRAVA
+            db.ref('travas/' + linkID).once('value', snap => {
+                document.getElementById('verificando').classList.add('escondido');
+                if (snap.exists()) {
+                    document.getElementById('tela-bloqueio').classList.remove('escondido');
+                } else {
+                    document.getElementById('tela-teste').classList.remove('escondido');
+                }
+            });
+        }
 
-            navigator.clipboard.writeText(link);
-            alert("Link de " + nome + " copiado!");
+        function responder() {
+            db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
+                alert("Enviado com sucesso!");
+                window.location.reload();
+            });
         }
     </script>
 </body>
