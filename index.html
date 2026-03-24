@@ -3,55 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste DISC - Resposta</title>
+    <title>Diagnóstico Socioemocional 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 50px 20px; }
-        .caixa { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 400px; margin: auto; border: 1px solid #334155; }
-        .btn { width: 100%; padding: 15px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .escondido { display: none; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f1f5f9; }
+        body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 600px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
+        .pergunta { margin-bottom: 30px; padding: 20px; background: #1a2233; border-radius: 10px; }
+        .opcoes { display: flex; justify-content: space-between; margin-top: 15px; }
+        .radio-group { text-align: center; cursor: pointer; }
+        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--blue); }
+        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        .hidden { display: none; }
+        h2 { color: #facc15; text-align: center; border-bottom: 2px solid var(--blue); padding-bottom: 10px; }
+        .titulo-secao { color: var(--blue); margin-top: 40px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-    <div class="caixa">
-        <div id="status">Verificando...</div>
-        <div id="tela-teste" class="escondido">
-            <h2>Bem-vindo!</h2>
-            <button class="btn" onclick="responder()">ENVIAR RESPOSTA</button>
-        </div>
-        <div id="tela-bloqueio" class="escondido">
-            <h1 style="color:#facc15;">⚠️ LINK JÁ UTILIZADO</h1>
-        </div>
+
+<div class="container">
+    <div id="status">Verificando link...</div>
+
+    <div id="tela-bloqueio" class="hidden">
+        <h1 style="color:#facc15; text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
+        <p style="text-align: center;">Este teste já foi respondido e enviado. Se precisar refazer, solicite um novo link ao Jorge.</p>
     </div>
 
-    <script>
-        const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div id="tela-teste" class="hidden">
+        <h2>DIAGNÓSTICO 2026</h2>
+        
+        <div class="titulo-secao">1. COMPETÊNCIAS (SAP)</div>
+        <p>Avalie-se de 1 a 5 para cada item:</p>
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const linkID = urlParams.get('id');
+        <div class="pergunta">
+            <p><strong>1. SER PROTAGONISTA:</strong> Referência no grupo, respeito mútuo, projeto de vida e oferece ajuda.</p>
+            <div class="opcoes">
+                <div class="radio-group">1<br><input type="radio" name="sap1" value="1"></div>
+                <div class="radio-group">2<br><input type="radio" name="sap1" value="2"></div>
+                <div class="radio-group">3<br><input type="radio" name="sap1" value="3"></div>
+                <div class="radio-group">4<br><input type="radio" name="sap1" value="4"></div>
+                <div class="radio-group">5<br><input type="radio" name="sap1" value="5"></div>
+            </div>
+        </div>
 
-        if (!linkID) {
-            document.getElementById('status').innerText = "❌ Link Inválido!";
-        } else {
-            db.ref('travas/' + linkID).once('value', snap => {
-                document.getElementById('status').classList.add('escondido');
-                if (snap.exists()) {
-                    document.getElementById('tela-bloqueio').classList.remove('escondido');
-                } else {
-                    document.getElementById('tela-teste').classList.remove('escondido');
-                }
-            });
-        }
+        <div class="pergunta">
+            <p><strong>2. SER RESPONSÁVEL:</strong> Cumpre prazos, pontualidade, higiene pessoal e cumpre regras.</p>
+            <div class="opcoes">
+                <div class="radio-group">1<br><input type="radio" name="sap2" value="1"></div>
+                <div class="radio-group">2<br><input type="radio" name="sap2" value="2"></div>
+                <div class="radio-group">3<br><input type="radio" name="sap2" value="3"></div>
+                <div class="radio-group">4<br><input type="radio" name="sap2" value="4"></div>
+                <div class="radio-group">5<br><input type="radio" name="sap2" value="5"></div>
+            </div>
+        </div>
 
-        function responder() {
+        <button class="btn" onclick="enviarResposta()">FINALIZAR E ENVIAR</button>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const linkID = urlParams.get('id');
+
+    // VERIFICA SE O LINK EXISTE E SE JÁ FOI USADO
+    if (!linkID) {
+        document.getElementById('status').innerHTML = "<h1>❌ Link Inválido</h1>";
+    } else {
+        db.ref('travas/' + linkID).once('value', snap => {
+            document.getElementById('status').classList.add('hidden');
+            if (snap.exists()) {
+                document.getElementById('tela-bloqueio').classList.remove('hidden');
+            } else {
+                document.getElementById('tela-teste').classList.remove('hidden');
+            }
+        });
+    }
+
+    function enviarResposta() {
+        // Coleta os dados (exemplo simplificado de 2 perguntas)
+        const s1 = document.querySelector('input[name="sap1"]:checked')?.value;
+        const s2 = document.querySelector('input[name="sap2"]:checked')?.value;
+
+        if (!s1 || !s2) return alert("Responda todas as perguntas!");
+
+        // 1. Grava o resultado do teste
+        db.ref('resultados/' + linkID).set({
+            aluno: linkID,
+            sap1: s1,
+            sap2: s2,
+            data: new Date().toLocaleString()
+        }).then(() => {
+            // 2. Grava a trava para ninguém usar o link de novo
             db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
-                alert("Enviado! Link travado.");
+                alert("Resposta enviada com sucesso!");
                 window.location.reload();
             });
-        }
-    </script>
+        });
+    }
+</script>
 </body>
 </html>
