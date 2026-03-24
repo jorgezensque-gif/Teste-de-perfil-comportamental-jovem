@@ -15,17 +15,13 @@
 </head>
 <body>
     <div class="caixa">
-        <div id="verificando">Verificando seu acesso...</div>
-
+        <div id="status">Verificando...</div>
         <div id="tela-teste" class="escondido">
             <h2>Bem-vindo!</h2>
-            <p>Clique abaixo para enviar sua resposta única.</p>
             <button class="btn" onclick="responder()">ENVIAR RESPOSTA</button>
         </div>
-
         <div id="tela-bloqueio" class="escondido">
-            <h1 style="color:#facc15;">⚠️ LINK USADO</h1>
-            <p>Este teste já foi respondido. Peça um novo link ao Jorge.</p>
+            <h1 style="color:#facc15;">⚠️ LINK JÁ UTILIZADO</h1>
         </div>
     </div>
 
@@ -38,11 +34,10 @@
         const linkID = urlParams.get('id');
 
         if (!linkID) {
-            document.getElementById('verificando').innerText = "❌ Link Inválido!";
+            document.getElementById('status').innerText = "❌ Link Inválido!";
         } else {
-            // VERIFICA SE JÁ EXISTE TRAVA
             db.ref('travas/' + linkID).once('value', snap => {
-                document.getElementById('verificando').classList.add('escondido');
+                document.getElementById('status').classList.add('escondido');
                 if (snap.exists()) {
                     document.getElementById('tela-bloqueio').classList.remove('escondido');
                 } else {
@@ -53,7 +48,7 @@
 
         function responder() {
             db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
-                alert("Enviado com sucesso!");
+                alert("Enviado! Link travado.");
                 window.location.reload();
             });
         }
