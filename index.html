@@ -12,7 +12,8 @@
         .container { max-width: 800px; margin: auto; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
         .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 30px 0 15px; padding-bottom: 5px; text-transform: uppercase; font-weight: bold; }
         .card { background: #1a2233; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
-        .opcoes-disc { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+        .enunciado-disc { color: var(--accent); font-weight: bold; margin-bottom: 10px; display: block; }
+        .opcoes-disc { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .item-disc { background: #2d3748; padding: 12px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; }
         input[type="radio"] { margin-right: 15px; transform: scale(1.2); accent-color: var(--blue); }
         .btn-enviar { width: 100%; padding: 20px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 30px; }
@@ -20,20 +21,26 @@
     </style>
 </head>
 <body>
+
 <div class="container">
     <div id="status">Verificando acesso...</div>
     <div id="tela-bloqueio" class="hidden">
         <h1 style="color:var(--accent); text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
     </div>
+
     <div id="tela-teste" class="hidden">
         <h2 style="text-align:center;">DIAGNÓSTICO 2026</h2>
+
         <div class="secao-titulo">PARTE 1: SAP (AUTOAVALIAÇÃO)</div>
         <div id="sap-container"></div>
-        <div class="secao-titulo">PARTE 2: PERFIL DISC</div>
+
+        <div class="secao-titulo">PARTE 2: PERFIL COMPORTAMENTAL (DISC)</div>
         <div id="disc-container"></div>
+
         <button class="btn-enviar" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
     </div>
 </div>
+
 <script>
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
@@ -41,25 +48,35 @@
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
 
+    // 7 COMPETÊNCIAS SAP
     const saps = [
-        { t: "1-SER PROTAGONISTA", d: "Identidade, autônomo, solidário e construtor do destino. [cite: 14]" },
-        { t: "2-SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, cumpre prazos, regras e higiene pessoal. [cite: 14]" },
-        { t: "3-COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressão clara e capacidade de ouvir. [cite: 14]" },
-        { t: "4-SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, honestidade e respeito às diferenças. [cite: 14]" },
-        { t: "5-RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas e tomar decisões. [cite: 14]" },
-        { t: "6-TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaboração e foco nos interesses do grupo. [cite: 14]" },
-        { t: "7-APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos. [cite: 14]" }
+        { t: "1-SER PROTAGONISTA", d: "Se conscientiza de sua identidade, autônomo e construtor do destino." },
+        { t: "2-SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, prazos, regras e higiene pessoal." },
+        { t: "3-COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Capacidade de compreender o outro e se expressar." },
+        { t: "4-SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, princípios, honestidade e respeito." },
+        { t: "5-RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas, pensar alternativas e decidir." },
+        { t: "6-TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e colocar o grupo acima do pessoal." },
+        { t: "7-APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos." }
     ];
 
-    const discPerguntas = [
-        ["Animado", "Aventureiro", "Analítico", "Adaptável"], ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"],
-        ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"], ["Convincente", "Competitivo", "Considerado", "Controlado"],
-        ["Estimulante", "Ousado", "Respeitoso", "Reservado"], ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"],
-        ["Promotor", "Positivo", "Planejador", "Paciente"], ["Espontâneo", "Seguro", "Pontual", "Tímido"],
-        ["Otimista", "Franco", "Ordeiro", "Cortês"], ["Engraçado", "Vigoroso", "Fiel", "Amigável"],
-        ["Encantador", "Audaz", "Minucioso", "Diplomático"], ["Alegre", "Confiante", "Culto", "Tolerante"],
-        ["Inspirador", "Independente", "Idealista", "Inofensivo"], ["Demonstrativo", "Decisivo", "Profundo", "Irônico"],
-        ["Misturável", "Impaciente", "Músico", "Mediador"], ["Vivo", "Obstinado", "Pensativo", "Condescendente"]
+    // 16 PERGUNTAS DISC COM ENUNCIADOS
+    const discDados = [
+        { q: "Como você se descreve em situações sociais?", opts: ["Animado", "Aventureiro", "Analítico", "Adaptável"] },
+        { q: "Qual característica é mais forte em você?", opts: ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"] },
+        { q: "Como você age em um grupo?", opts: ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"] },
+        { q: "Ao tentar convencer alguém, você é:", opts: ["Convincente", "Competitivo", "Considerado", "Controlado"] },
+        { q: "Em novos desafios, você se sente:", opts: ["Estimulante", "Ousado", "Respeitoso", "Reservado"] },
+        { q: "Como os outros te percebem?", opts: ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"] },
+        { q: "Sua postura no trabalho/estudo é:", opts: ["Promotor", "Positivo", "Planejador", "Paciente"] },
+        { q: "Como você lida com imprevistos?", opts: ["Espontâneo", "Seguro", "Pontual", "Tímido"] },
+        { q: "Sua atitude perante a vida é:", opts: ["Otimista", "Franco", "Ordeiro", "Cortês"] },
+        { q: "Em momentos de descontração, você é:", opts: ["Engraçado", "Vigoroso", "Fiel", "Amigável"] },
+        { q: "Ao lidar com pessoas, você busca ser:", opts: ["Encantador", "Audaz", "Minucioso", "Diplomático"] },
+        { q: "Sua maior qualidade é ser:", opts: ["Alegre", "Confiante", "Culto", "Tolerante"] },
+        { q: "Sua forma de pensar é:", opts: ["Inspirador", "Independente", "Idealista", "Inofensivo"] },
+        { q: "Como você expressa suas opiniões?", opts: ["Demonstrativo", "Decisivo", "Profundo", "Irônico"] },
+        { q: "Como você se adapta ao ambiente?", opts: ["Misturável", "Impaciente", "Músico", "Mediador"] },
+        { q: "Sua energia diária é:", opts: ["Vivo", "Obstinado", "Pensativo", "Condescendente"] }
     ];
 
     const sapDiv = document.getElementById('sap-container');
@@ -68,8 +85,18 @@
     });
 
     const discDiv = document.getElementById('disc-container');
-    discPerguntas.forEach((p, i) => {
-        discDiv.innerHTML += `<div class="card" style="border-left-color: var(--blue);"><strong>Linha ${i+1}:</strong><div class="opcoes-disc">${p.map((palavra, idx) => `<label class="item-disc"><input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${palavra}</label>`).join('')}</div></div>`;
+    discDados.forEach((item, i) => {
+        discDiv.innerHTML += `
+            <div class="card" style="border-left-color: var(--blue);">
+                <span class="enunciado-disc">${i+1}. ${item.q}</span>
+                <div class="opcoes-disc">
+                    ${item.opts.map((palavra, idx) => `
+                        <label class="item-disc">
+                            <input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${palavra}
+                        </label>
+                    `).join('')}
+                </div>
+            </div>`;
     });
 
     if (linkID) {
