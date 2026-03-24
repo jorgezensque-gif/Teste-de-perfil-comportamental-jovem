@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>BACKUP PAINEL JORGE 2026</title>
+    <script>
+        (function() {
+            const SENHA_MESTRA = "JORGE2026";
+            if (sessionStorage.getItem("logado") !== "true") {
+                let s = prompt("ACESSO RESTRITO - GESTOR JORGE\nDigite a senha:");
+                if (s === SENHA_MESTRA) { sessionStorage.setItem("logado", "true"); } 
+                else { window.location.href = "https://google.com"; }
+            }
+        })();
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --red: #ef4444; --blue: #38bdf8; --card: #1e293b; --yellow: #facc15; --green: #22c55e; }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .box { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 20px; }
+        .grid-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card-chart { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #334155; height: 380px; }
+        .btn-exp { background: var(--green); color: white; padding: 10px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
+        select { background: #0f172a; color: white; padding: 10px; border-radius: 6px; border: 1px solid var(--blue); }
+    </style>
+</head>
+<body onload="carregarGraficos()">
+    <div class="box" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin:0;">GESTOR: JORGE | PAINEL FINAL</h2>
+            <small>Responsável: Jorge Zensque</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <select id="filtro" onchange="atualizarInterface()"></select>
+            <button class="btn-exp" onclick="exportar('excel')">📊 EXCEL</button>
+        </div>
+    </div>
+    <div class="grid-charts">
+        <div class="card-chart"><h3>1. AUTOAVALIAÇÃO SAP (RADAR)</h3><canvas id="gr1"></canvas></div>
+        <div class="card-chart"><h3>2. PERFIL COMPORTAMENTAL</h3><canvas id="gr2"></canvas></div>
+        <div class="card-chart"><h3>3. TÉCNICO (SAP)</h3><canvas id="gr3"></canvas></div>
+        <div class="card-chart"><h3>4. EQUILÍBRIO</h3><canvas id="gr4"></canvas></div>
+    </div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    let dadosLocais = [], meusGraficos = {};
+
+    function carregarGraficos() {
+        const opt = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 5 } } };
+        meusGraficos.radar = new Chart(document.getElementById('gr1'), { type: 'radar', data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{ label:'Média', data:[], backgroundColor:'rgba(56,189,248,0.3)', borderColor:'#38bdf8', fill:true }] }, options: { ...opt, scales: { r: { min:0, max:5 } } } });
+        meusGraficos.disc = new Chart(document.getElementById('gr2'), { type:'bar', data: { labels:['D','I','S','C'], datasets:[{ data:[], backgroundColor:['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options:opt });
+        meusGraficos.sap = new Chart(document.getElementById('gr3'), { type:'bar', data: { labels:['P','R','C','E','Pr','Eq','A'], datasets:[{ data:[], backgroundColor:'#38bdf8' }] }, options:opt });
+        meusGraficos.corr = new Chart(document.getElementById('gr4'), { type:'bar', data: { labels:['D','I','S','C'], datasets:[{ data:[], backgroundColor:['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options:opt });
+        
+        database.ref('resultados_testes').on('value', snap => {
+            dadosLocais = []; const menu = document.getElementById('filtro'); menu.innerHTML = '<option value="g">📊 TURMA</option>';
+            snap.forEach(c => { let d = c.val(); d.key = c.key; dadosLocais.push(d); menu.innerHTML += `<option value="${d.key}">${d.aluno.toUpperCase()}</option>`; });
+            atualizarInterface();
+        });
+    }
+
+    function atualizarInterface() {
+        const sel = document.getElementById('filtro').value;
+        let s = [0,0,0,0,0,0,0], d = [0,0,0,0], c4 = [0,0,0,0], q4 = [0,0,0,0];
+        if (sel === 'g' && dadosLocais.length > 0) {
+            dadosLocais.forEach(r => {
+                for(let i=0; i<7; i++) s[i] += parseFloat(r.sap['q'+i] || 0);
+                d[0]+=parseFloat(r.disc.D); d[1]+=parseFloat(r.disc.I); d[2]+=parseFloat(r.disc.S); d[3]+=parseFloat(r.disc.C);
+                let ms = 0; for(let i=0; i<7; i++) ms += parseFloat(r.sap['q'+i] || 0);
+                const dom = Object.keys(r.disc).reduce((a, b) => r.disc[a] > r.disc[b] ? a : b);
+                const idx = ['D','I','S','C'].indexOf(dom); c4[idx] += (ms/7); q4[idx]++;
+            });
+            s = s.map(v => v/dadosLocais.length); d = d.map(v => v/dadosLocais.length); c4 = c4.map((v, i) => q4[i] > 0 ? v/q4[i] : 0);
+        } else {
+            const r = dadosLocais.find(x => x.key === sel);
+            if(r) { for(let i=0; i<7; i++) s[i] = parseFloat(r.sap['q'+i]); d = [parseFloat(r.disc.D), parseFloat(r.disc.I), parseFloat(r.disc.S), parseFloat(r.disc.C)]; }
+        }
+        meusGraficos.radar.data.datasets[0].data = s; meusGraficos.sap.data.datasets[0].data = s;
+        meusGraficos.disc.data.datasets[0].data = d; meusGraficos.corr.data.datasets[0].data = c4;
+        Object.values(meusGraficos).forEach(g => g.update());
+    }
+
+    function exportar(tipo) {
+        let txt = "Aluno,D,I,S,C\n";
+        dadosLocais.forEach(r => txt += `${r.aluno},${r.disc.D},${r.disc.I},${r.disc.S},${r.disc.C}\n`);
+        const blob = new Blob(["\ufeff" + txt], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+        link.download = `Relatorio_Jorge.csv`; link.click();
+    }
+</script>
+</body>
+</html>
