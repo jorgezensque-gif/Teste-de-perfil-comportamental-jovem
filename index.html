@@ -2,20 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Gestor - Jorge Zensque</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-        .header { background: #1e293b; padding: 20px; border-radius: 10px; border-bottom: 4px solid #38bdf8; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .header { background: #1e293b; padding: 20px; border-radius: 10px; border-bottom: 4px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; font-size: 16px; cursor: pointer; }
-        canvas { max-width: 100%; height: 300px !important; }
-        h1, h2 { margin: 0 0 15px 0; color: #f8fafc; }
-        .sub { color: #38bdf8; font-size: 14px; margin-top: 5px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; }
+        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; }
+        .btn-zerar { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,107 +20,83 @@
 <div class="header">
     <div>
         <h1>PAINEL GESTOR</h1>
-        <div class="sub">Responsável: Jorge Zensque</div>
+        <div style="color: #38bdf8;">Responsável: Jorge Zensque</div>
     </div>
-    <select id="selectAlunos">
-        <option value="">Carregando nomes...</option>
-    </select>
+    <div>
+        <select id="selectAlunos"><option value="">Aguardando testes...</option></select>
+        <button class="btn-zerar" onclick="zerarTudo()">LIMPAR TUDO (TRAVAS/LISTAS)</button>
+    </div>
 </div>
 
 <div class="grid">
-    <div class="card">
-        <h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2>
-        <canvas id="chartRadar"></canvas>
-    </div>
-    <div class="card">
-        <h2>2. PERFIL COMPORTAMENTAL (DISC)</h2>
-        <canvas id="chartDisc"></canvas>
-    </div>
+    <div class="card"><h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
+    <div class="card"><h2>2. PERFIL COMPORTAMENTAL (DISC)</h2><canvas id="chartDisc"></canvas></div>
 </div>
 
 <script>
-    // 1. Configuração do Firebase (A mesma que você já usa)
-    const firebaseConfig = {
-        databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
+    const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(config);
     const db = firebase.database();
-
-    // 2. Variáveis dos Gráficos
     let radarChart, discChart;
 
-    // 3. FUNÇÃO MÁGICA: Carregar Nomes do Firebase para o Menu
+    // Monitora a pasta 'resultados' para preencher o menu
     db.ref('resultados').on('value', (snapshot) => {
         const select = document.getElementById('selectAlunos');
+        const dados = snapshot.val();
         select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
         
-        const dados = snapshot.val();
         if (dados) {
-            // Pega todos os nomes únicos que existem no banco de dados
             const nomesUnicos = [...new Set(Object.values(dados).map(d => d.nome))];
-            
             nomesUnicos.forEach(nome => {
                 const opt = document.createElement('option');
-                opt.value = nome;
-                opt.text = nome;
+                opt.value = nome; opt.text = nome;
                 select.appendChild(opt);
             });
-            console.log("Alunos carregados com sucesso!");
-        } else {
-            select.innerHTML = '<option value="">Nenhum dado encontrado</option>';
         }
     });
 
-    // 4. Lógica para atualizar os gráficos ao selecionar um nome
-    document.getElementById('selectAlunos').addEventListener('change', (e) => {
-        const nomeEscolhido = e.target.value;
-        if (!nomeEscolhido) return;
+    // FUNÇÃO PARA LIMPAR TUDO NO BANCO DE DADOS
+    function zerarTudo() {
+        if(confirm("Jorge, deseja apagar os resultados, as listas e as TRAVAS?")) {
+            db.ref('resultados').remove();
+            db.ref('lista_chaves').remove();
+            db.ref('travas').remove(); // Limpa a pasta 'travas' do print
+            alert("Banco de dados limpo com sucesso!");
+            location.reload();
+        }
+    }
 
-        db.ref('resultados').orderByChild('nome').equalTo(nomeEscolhido).once('value', (snapshot) => {
+    document.getElementById('selectAlunos').addEventListener('change', (e) => {
+        const nome = e.target.value;
+        if (!nome) return;
+        db.ref('resultados').orderByChild('nome').equalTo(nome).once('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // Pega o envio mais recente do aluno escolhido
-                const keys = Object.keys(data);
-                const result = data[keys[keys.length - 1]];
-                
+                const result = Object.values(data).pop();
                 atualizarGraficos(result.pontosDISC, result.pontosSAP);
             }
         });
     });
 
     function atualizarGraficos(disc, sap) {
-        // Gráfico Radar (SAP)
         if (radarChart) radarChart.destroy();
-        const ctxRadar = document.getElementById('chartRadar').getContext('2d');
-        radarChart = new Chart(ctxRadar, {
+        if (discChart) discChart.destroy();
+
+        radarChart = new Chart(document.getElementById('chartRadar'), {
             type: 'radar',
             data: {
-                labels: ['Protagonismo', 'Resp.', 'Comun.', 'Ética', 'Prob.', 'Equipe', 'Aprender'],
-                datasets: [{
-                    label: 'Pontuação SAP',
-                    data: sap,
-                    backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                    borderColor: '#38bdf8',
-                    pointBackgroundColor: '#38bdf8'
-                }]
+                labels: ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Ética', 'Prob.', 'Equipe', 'Aprender'],
+                datasets: [{ label: 'SAP', data: sap, borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.2)' }]
             },
-            options: { scales: { r: { beginAtZero: true, max: 5, grid: { color: '#334155' } } } }
+            options: { scales: { r: { beginAtZero: true, max: 5 } } }
         });
 
-        // Gráfico DISC
-        if (discChart) discChart.destroy();
-        const ctxDisc = document.getElementById('chartDisc').getContext('2d');
-        discChart = new Chart(ctxDisc, {
+        discChart = new Chart(document.getElementById('chartDisc'), {
             type: 'bar',
             data: {
                 labels: ['D', 'I', 'S', 'C'],
-                datasets: [{
-                    label: 'Perfil DISC',
-                    data: [disc.D, disc.I, disc.S, disc.C],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6']
-                }]
-            },
-            options: { scales: { y: { beginAtZero: true } } }
+                datasets: [{ label: 'DISC', data: [disc.D, disc.I, disc.S, disc.C], backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'] }]
+            }
         });
     }
 </script>
