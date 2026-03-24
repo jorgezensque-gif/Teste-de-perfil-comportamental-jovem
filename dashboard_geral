@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>DASHBOARD COLETIVO - JORGE</title>
+    <script>
+        (function() {
+            const SENHA_MESTRA = "JORGE2026";
+            if (sessionStorage.getItem("logado") !== "true") {
+                if (prompt("SENHA DO GESTOR:") === SENHA_MESTRA) { sessionStorage.setItem("logado", "true"); }
+                else { window.location.href = "https://google.com"; }
+            }
+        })();
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; height: 450px; margin-bottom: 20px; }
+        h3 { color: #1e293b; text-align: center; }
+    </style>
+</head>
+<body onload="carregarColetivo()">
+    <h1 style="text-align:center;">MAPEAMENTO COLETIVO DE TURMA</h1>
+    <div id="cont" style="background:#3b82f6; padding:10px; border-radius:8px; text-align:center; font-weight:bold; margin-bottom:20px;"></div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px;">
+        <div class="card"><h3>Perfil Médio DISC</h3><canvas id="cDISC"></canvas></div>
+        <div class="card"><h3>Equilíbrio Radar SAP</h3><canvas id="cRadar"></canvas></div>
+    </div>
+
+<script>
+    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let dC, rC;
+
+    function carregarColetivo() {
+        dC = new Chart(document.getElementById('cDISC'), { type:'bar', data:{ labels:['D','I','S','C'], datasets:[{ data:[], backgroundColor:['#ef4444','#facc15','#22c55e','#3b82f6'] }] }, options:{ responsive:true, maintainAspectRatio:false } });
+        rC = new Chart(document.getElementById('cRadar'), { type:'radar', data:{ labels:['P','R','C','E','Pr','Eq','A'], datasets:[{ label:'Turma', data:[], backgroundColor:'rgba(59,130,246,0.4)', borderColor:'#3b82f6', fill:true }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ r:{ min:0, max:5 } } } });
+
+        db.ref('resultados_testes').on('value', snap => {
+            let n=0; let d=[0,0,0,0], s=[0,0,0,0,0,0,0];
+            snap.forEach(c => { 
+                const r = c.val(); n++; 
+                d[0]+=parseFloat(r.disc.D); d[1]+=parseFloat(r.disc.I); d[2]+=parseFloat(r.disc.S); d[3]+=parseFloat(r.disc.C);
+                for(let i=0; i<7; i++) s[i]+=parseFloat(r.sap['q'+i]);
+            });
+            if(n > 0) {
+                document.getElementById('cont').innerText = `TOTAL: ${n} JOVENS`;
+                dC.data.datasets[0].data = d.map(v=>v/n); rC.data.datasets[0].data = s.map(v=>v/n);
+                dC.update(); rC.update();
+            }
+        });
+    }
+</script>
+</body>
+</html>
