@@ -2,91 +2,80 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Gestor - Jorge Zensque</title>
+    <title>Painel Gestor - Fundação Pescar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background-color: #111827; color: white; font-family: sans-serif; padding: 20px; }
+        body { background-color: #0f172a; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border-top: 4px solid #ef4444; }
         .header-admin { border: 2px dashed #38bdf8; padding: 15px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; }
         .header-admin input { flex: 1; padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; }
-        .btn-wpp { background-color: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .painel-box { background-color: #1f2937; border-radius: 15px; padding: 20px; border-top: 4px solid #ef4444; }
-        .controles { display: flex; gap: 10px; }
-        .btn-acao { padding: 8px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; color: white; }
-        .btn-excel { background-color: #22c55e; }
-        .btn-zerar { background-color: #ef4444; }
-        select { background: #111827; color: white; padding: 5px 15px; border-radius: 5px; border: 1px solid #38bdf8; }
+        select { background: #111827; color: white; padding: 8px; border-radius: 5px; border: 1px solid #38bdf8; min-width: 150px; }
         .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .card-chart { background-color: #111827; padding: 15px; border-radius: 10px; height: 350px; }
+        .card-chart { background: #111827; padding: 15px; border-radius: 10px; height: 300px; }
+        .btn-green { background: #22c55e; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-red { background: #ef4444; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header-admin">
         <input type="text" id="nomeAluno" placeholder="Nome do Aluno">
-        <button class="btn-wpp" onclick="gerarLink()">GERAR E DISPARAR WHATSAPP</button>
+        <button class="btn-green" onclick="gerarLink()">GERAR E DISPARAR WHATSAPP</button>
     </div>
 
-    <div class="painel-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <h2 style="margin:0;">PAINEL GESTOR</h2>
                 <small>Responsável: Jorge Zensque</small>
             </div>
-            <div class="controles">
-                <select id="selectTurma" onchange="carregarResultadoAluno(this.value)">
-                    <option value="">📊 TURMA</option>
+            <div style="display:flex; gap:10px;">
+                <select id="selectTurma" onchange="mostrarResultado(this.value)">
+                    <option value="">📊 CARREGANDO TURMA...</option>
                 </select>
-                <button class="btn-acao btn-excel" onclick="baixarExcel()">📊 EXCEL</button>
-                <button class="btn-acao btn-zerar" onclick="zerarBanco()">ZERAR</button>
+                <button class="btn-green" onclick="baixarExcel()">📊 EXCEL</button>
+                <button class="btn-red" onclick="zerarDados()">ZERAR</button>
             </div>
         </div>
 
         <div class="grid-charts">
-            <div class="card-chart"><h3>1. Autoavaliação SAP (Radar)</h3><canvas id="radarSap"></canvas></div>
+            <div class="card-chart"><h3>1. Autoavaliação SAP</h3><canvas id="radarSap"></canvas></div>
             <div class="card-chart"><h3>2. Perfil (DISC)</h3><canvas id="barDisc"></canvas></div>
             <div class="card-chart"><h3>3. Técnico (SAP)</h3><canvas id="barSapTecnico"></canvas></div>
-            <div class="card-chart"><h3>4. Equilíbrio: DISC vs SAP</h3><canvas id="barEquilibrio"></canvas></div>
+            <div class="card-chart"><h3>4. Equilíbrio</h3><canvas id="barEquilibrio"></canvas></div>
         </div>
     </div>
 
 <script>
-    // Configuração do seu Firebase
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let charts = {};
-
-    // FUNÇÃO PARA CARREGAR OS NOMES NO BOTÃO "TURMA"
-    function atualizarListaTurma() {
-        db.ref('resultados').on('value', (snapshot) => {
+    // ESSA FUNÇÃO BUSCA OS NOMES NO BANCO E COLOCA NO BOTÃO "TURMA"
+    function carregarAlunos() {
+        db.ref('resultados').on('value', (snap) => {
             const select = document.getElementById('selectTurma');
-            select.innerHTML = '<option value="">📊 TURMA (Selecione Aluno)</option>';
+            select.innerHTML = '<option value="">📊 SELECIONE UM ALUNO</option>';
             
-            snapshot.forEach((child) => {
-                const aluno = child.val();
-                let option = document.createElement('option');
-                option.value = child.key; // O ID do aluno no banco
-                option.textContent = aluno.nome || child.key;
-                select.appendChild(option);
+            snap.forEach((alunoSnap) => {
+                const id = alunoSnap.key;
+                const nome = alunoSnap.val().nome || id;
+                let opt = document.createElement('option');
+                opt.value = id;
+                opt.innerHTML = nome;
+                select.appendChild(opt);
             });
         });
     }
 
-    // FUNÇÃO QUE MOSTRA OS DADOS DO ALUNO NOS GRÁFICOS
-    function carregarResultadoAluno(alunoId) {
-        if(!alunoId) return;
-        
-        db.ref('resultados/' + alunoId).once('value', (snapshot) => {
-            const dados = snapshot.val();
-            if(dados) {
-                // Aqui o código processa os dados e preenche os gráficos
-                console.log("Carregando dados de:", dados.nome);
-                atualizarGraficoRadar(dados.sap_radar); 
-                atualizarGraficoBarras(dados.disc_pontos);
-            }
+    function mostrarResultado(id) {
+        if(!id) return;
+        db.ref('resultados/' + id).once('value', (snap) => {
+            const r = snap.val();
+            // Lógica para desenhar os gráficos com r.sap_1, r.disc_1, etc.
+            console.log("Mostrando dados de:", r.nome);
         });
     }
 
@@ -97,15 +86,11 @@
         window.open(`https://api.whatsapp.com/send?text=Olá, faça seu teste aqui: ${link}`);
     }
 
-    function zerarBanco() {
-        if(confirm("Deseja apagar todos os dados da turma?")) {
-            db.ref('resultados').remove();
-            alert("Dados zerados!");
-            location.reload();
-        }
+    function zerarDados() {
+        if(confirm("Apagar tudo?")) { db.ref('resultados').remove(); location.reload(); }
     }
 
-    window.onload = atualizarListaTurma;
+    window.onload = carregarAlunos;
 </script>
 </body>
 </html>
