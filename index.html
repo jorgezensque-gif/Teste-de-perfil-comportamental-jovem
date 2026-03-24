@@ -3,41 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico Socioemocional 2026</title>
+    <title>Sistema Integrado - Jorge 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #facc15; }
         body { background: var(--dark); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
-        .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 30px 0 15px; padding-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .card { background: #1a2233; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
-        .enunciado-disc { color: var(--accent); font-weight: bold; margin-bottom: 10px; display: block; }
-        .opcoes-disc { display: grid; grid-template-columns: 1fr; gap: 8px; }
-        .item-disc { background: #2d3748; padding: 12px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; }
-        input[type="radio"] { margin-right: 15px; transform: scale(1.2); accent-color: var(--blue); }
-        .btn-enviar { width: 100%; padding: 20px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 30px; }
+        .container { max-width: 1000px; margin: auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 20px; }
         .hidden { display: none; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 20px 0; padding-bottom: 5px; font-weight: bold; }
+        .pergunta { background: #1a2233; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-verde { background: #22c55e; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #334155; text-align: left; }
+        th { background: var(--blue); color: black; }
+        canvas { max-height: 280px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status">Verificando acesso...</div>
+    <div id="status">Carregando...</div>
+
     <div id="tela-bloqueio" class="hidden">
-        <h1 style="color:var(--accent); text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
+        <div class="card" style="text-align: center;">
+            <h1 style="color:var(--accent);">⚠️ LINK UTILIZADO</h1>
+            <p>Diagnóstico enviado. Jorge, clique abaixo para ver o Dashboard Geral.</p>
+            <button class="btn" style="background: #475569; color: white;" onclick="acessarPainel()">ABRIR DASHBOARD GERAL</button>
+        </div>
     </div>
 
-    <div id="tela-teste" class="hidden">
+    <div id="tela-quiz" class="hidden">
         <h2 style="text-align:center;">DIAGNÓSTICO 2026</h2>
-
-        <div class="secao-titulo">PARTE 1: SAP (AUTOAVALIAÇÃO)</div>
+        <div class="secao-titulo">AUTOAVALIAÇÃO SAP</div>
         <div id="sap-container"></div>
-
-        <div class="secao-titulo">PARTE 2: PERFIL COMPORTAMENTAL (DISC)</div>
+        <div class="secao-titulo">PERFIL DISC</div>
         <div id="disc-container"></div>
+        <button class="btn btn-verde" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
+    </div>
 
-        <button class="btn-enviar" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
+    <div id="tela-dashboard" class="hidden">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: var(--blue);">📊 DASHBOARD GERAL (GRUPO)</h2>
+            <button onclick="window.location.reload()">Sair</button>
+        </div>
+
+        <div class="grid">
+            <div class="card"><h3>Perfil Médio DISC</h3><canvas id="chartGeralDisc"></canvas></div>
+            <div class="card"><h3>Média Competências SAP</h3><canvas id="chartGeralSap"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>Lista de Jovens e Resultados</h3>
+            <table id="tabela">
+                <thead><tr><th>Nome/Link</th><th>Data</th><th>Ação</th></tr></thead>
+                <tbody id="corpo-tabela"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -45,86 +71,98 @@
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const urlParams = new URLSearchParams(window.location.search);
-    const linkID = urlParams.get('id');
+    const linkID = new URLSearchParams(window.location.search).get('id');
 
-    // 7 COMPETÊNCIAS SAP
-    const saps = [
-        { t: "1-SER PROTAGONISTA", d: "Se conscientiza de sua identidade, autônomo e construtor do destino." },
-        { t: "2-SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, prazos, regras e higiene pessoal." },
-        { t: "3-COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Capacidade de compreender o outro e se expressar." },
-        { t: "4-SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, princípios, honestidade e respeito." },
-        { t: "5-RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas, pensar alternativas e decidir." },
-        { t: "6-TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e colocar o grupo acima do pessoal." },
-        { t: "7-APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos." }
+    // CONFIGURAÇÕES DO QUIZ (SAP E DISC)
+    const saps = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
+    const discPerguntas = [
+        {q: "Na convivência social você é:", opts: ["Animado", "Aventureiro", "Analítico", "Adaptável"]},
+        {q: "Sua principal força é ser:", opts: ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"]},
+        {q: "Em um grupo você se mostra:", opts: ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"]},
+        {q: "Para convencer os outros, você é:", opts: ["Convincente", "Competitivo", "Considerado", "Controlado"]},
+        {q: "Ao enfrentar o novo, você age como:", opts: ["Estimulante", "Ousado", "Respeitoso", "Reservado"]},
+        {q: "As pessoas te veem como alguém:", opts: ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"]},
+        {q: "No seu trabalho ou estudo, você é:", opts: ["Promotor", "Positivo", "Planejador", "Paciente"]},
+        {q: "Sob pressão ou imprevistos, você é:", opts: ["Espontâneo", "Seguro", "Pontual", "Tímido"]},
+        {q: "Sua visão de mundo é:", opts: ["Otimista", "Franco", "Ordeiro", "Cortês"]},
+        {q: "Em momentos alegres, você é:", opts: ["Engraçado", "Vigoroso", "Fiel", "Amigável"]},
+        {q: "Com outras pessoas, você busca ser:", opts: ["Encantador", "Audaz", "Minucioso", "Diplomático"]},
+        {q: "Sua melhor qualidade é ser:", opts: ["Alegre", "Confiante", "Culto", "Tolerante"]},
+        {q: "Sua mente funciona de forma:", opts: ["Inspirador", "Independente", "Idealista", "Inofensivo"]},
+        {q: "Suas opiniões são expostas de forma:", opts: ["Demonstrativo", "Decisivo", "Profundo", "Irônico"]},
+        {q: "Ao mudar de ambiente, você é:", opts: ["Misturável", "Impaciente", "Músico", "Mediador"]},
+        {q: "Sua vibração natural é:", opts: ["Vivo", "Obstinado", "Pensativo", "Condescendente"]}
     ];
 
-    // 16 PERGUNTAS DISC COM ENUNCIADOS
-    const discDados = [
-        { q: "Como você se descreve em situações sociais?", opts: ["Animado", "Aventureiro", "Analítico", "Adaptável"] },
-        { q: "Qual característica é mais forte em você?", opts: ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"] },
-        { q: "Como você age em um grupo?", opts: ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"] },
-        { q: "Ao tentar convencer alguém, você é:", opts: ["Convincente", "Competitivo", "Considerado", "Controlado"] },
-        { q: "Em novos desafios, você se sente:", opts: ["Estimulante", "Ousado", "Respeitoso", "Reservado"] },
-        { q: "Como os outros te percebem?", opts: ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"] },
-        { q: "Sua postura no trabalho/estudo é:", opts: ["Promotor", "Positivo", "Planejador", "Paciente"] },
-        { q: "Como você lida com imprevistos?", opts: ["Espontâneo", "Seguro", "Pontual", "Tímido"] },
-        { q: "Sua atitude perante a vida é:", opts: ["Otimista", "Franco", "Ordeiro", "Cortês"] },
-        { q: "Em momentos de descontração, você é:", opts: ["Engraçado", "Vigoroso", "Fiel", "Amigável"] },
-        { q: "Ao lidar com pessoas, você busca ser:", opts: ["Encantador", "Audaz", "Minucioso", "Diplomático"] },
-        { q: "Sua maior qualidade é ser:", opts: ["Alegre", "Confiante", "Culto", "Tolerante"] },
-        { q: "Sua forma de pensar é:", opts: ["Inspirador", "Independente", "Idealista", "Inofensivo"] },
-        { q: "Como você expressa suas opiniões?", opts: ["Demonstrativo", "Decisivo", "Profundo", "Irônico"] },
-        { q: "Como você se adapta ao ambiente?", opts: ["Misturável", "Impaciente", "Músico", "Mediador"] },
-        { q: "Sua energia diária é:", opts: ["Vivo", "Obstinado", "Pensativo", "Condescendente"] }
-    ];
-
-    const sapDiv = document.getElementById('sap-container');
+    // Renderizar Quiz
     saps.forEach((s, i) => {
-        sapDiv.innerHTML += `<div class="card"><strong>${s.t}</strong><br><small>${s.d}</small><div style="display:flex; justify-content:space-between; margin-top:10px;">${[1,2,3,4,5].map(n => `<div>${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}</div></div>`;
+        document.getElementById('sap-container').innerHTML += `<div class="pergunta"><strong>${i+1}. ${s}</strong><div style="display:flex; justify-content:space-between; margin-top:10px;">${[1,2,3,4,5].map(n => `<div>${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}</div></div>`;
+    });
+    discPerguntas.forEach((d, i) => {
+        document.getElementById('disc-container').innerHTML += `<div class="pergunta" style="border-left-color:var(--blue)"><span>${i+1}. ${d.q}</span><div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">${d.opts.map((opt, idx) => `<label><input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${opt}</label>`).join('')}</div></div>`;
     });
 
-    const discDiv = document.getElementById('disc-container');
-    discDados.forEach((item, i) => {
-        discDiv.innerHTML += `
-            <div class="card" style="border-left-color: var(--blue);">
-                <span class="enunciado-disc">${i+1}. ${item.q}</span>
-                <div class="opcoes-disc">
-                    ${item.opts.map((palavra, idx) => `
-                        <label class="item-disc">
-                            <input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${palavra}
-                        </label>
-                    `).join('')}
-                </div>
-            </div>`;
-    });
-
-    if (linkID) {
+    // Controle de Telas
+    if (!linkID) document.getElementById('status').innerText = "Erro: Link sem ID.";
+    else {
         db.ref('travas/' + linkID).once('value', snap => {
             document.getElementById('status').classList.add('hidden');
             if (snap.exists()) document.getElementById('tela-bloqueio').classList.remove('hidden');
-            else document.getElementById('tela-teste').classList.remove('hidden');
+            else document.getElementById('tela-quiz').classList.remove('hidden');
         });
     }
 
     function enviarTudo() {
-        let dados = { link_id: linkID, data: new Date().toLocaleString() };
+        let res = { link_id: linkID, data: new Date().toLocaleString() };
         for(let i=0; i<7; i++) {
             const v = document.querySelector(`input[name="sap${i}"]:checked`)?.value;
-            if(!v) return alert("Responda todo o SAP!");
-            dados[`sap_${i+1}`] = v;
+            if(!v) return alert("Complete o SAP!");
+            res[`sap_${i+1}`] = v;
         }
         for(let i=0; i<16; i++) {
             const v = document.querySelector(`input[name="disc${i}"]:checked`)?.value;
-            if(!v) return alert("Responda todo o DISC!");
-            dados[`disc_${i+1}`] = v;
+            if(!v) return alert("Complete o DISC!");
+            res[`disc_${i+1}`] = v;
         }
-        db.ref('resultados/' + linkID).set(dados).then(() => {
-            db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
-                alert("Enviado!");
-                window.location.reload();
-            });
+        db.ref('resultados/' + linkID).set(res).then(() => {
+            db.ref('travas/' + linkID).set({ status: 'ok' }).then(() => window.location.reload());
         });
+    }
+
+    // DASHBOARD
+    function acessarPainel() {
+        if(prompt("Senha:") === "123") {
+            document.getElementById('tela-bloqueio').classList.add('hidden');
+            document.getElementById('tela-dashboard').classList.remove('hidden');
+            carregarDashboardGeral();
+        }
+    }
+
+    let c1, c2;
+    function carregarDashboardGeral() {
+        db.ref('resultados').on('value', snap => {
+            const dados = snap.val(); if(!dados) return;
+            let discT = {D:0,I:0,S:0,C:0}, sapS = [0,0,0,0,0,0,0], qtd = 0;
+            const tbody = document.getElementById('corpo-tabela'); tbody.innerHTML = "";
+            
+            Object.keys(dados).forEach(key => {
+                const r = dados[key]; qtd++;
+                for(let i=1; i<=16; i++) if(r[`disc_${i}`]) discT[r[`disc_${i}`]]++;
+                for(let i=1; i<=7; i++) sapS[i-1] += parseFloat(r[`sap_${i}`]);
+                tbody.innerHTML += `<tr><td>${r.link_id}</td><td>${r.data}</td><td><button onclick="remover('${key}')">Excluir</button></td></tr>`;
+            });
+
+            if(c1) c1.destroy(); if(c2) c2.destroy();
+            c1 = new Chart(document.getElementById('chartGeralDisc'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{label:'Total', data:[discT.D, discT.I, discT.S, discT.C], backgroundColor:['#ef4444','#facc15','#22c55e','#38bdf8']}]}});
+            c2 = new Chart(document.getElementById('chartGeralSap'), { type: 'radar', data: { labels: saps, datasets: [{label:'Grupo', data: sapS.map(s => s/qtd), backgroundColor:'rgba(56,189,248,0.3)', borderColor:'#38bdf8'}]}, options: {scales:{r:{min:0,max:5}}}});
+        });
+    }
+
+    function remover(id) {
+        if(confirm("Jorge, confirma excluir?")) {
+            db.ref('resultados/'+id).remove();
+            db.ref('travas/'+id).remove();
+        }
     }
 </script>
 </body>
