@@ -8,77 +8,88 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
         .container { max-width: 650px; margin: 20px auto; padding: 20px; }
         .header { text-align: center; border-bottom: 2px solid var(--blue); padding-bottom: 10px; margin-bottom: 20px; }
         .question-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--blue); }
         .btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .hidden { display: none; }
-        .rating-row { display: flex; justify-content: space-between; padding: 10px 0; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; margin-bottom: 15px; }
+        .rating-row { display: flex; justify-content: space-between; padding: 15px 0; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="app" class="container">
+<div class="container">
     <div class="header">
         <h2>DIAGNÓSTICO 2026</h2>
-        <p id="status-link">Verificando link...</p>
+        <p id="status">Verificando link...</p>
     </div>
 
-    <div id="tela-bloqueio" class="hidden" style="text-align:center; padding:50px 0;">
+    <div id="tela-bloqueio" class="hidden" style="text-align:center;">
         <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
-        <p>Este teste já foi enviado com sucesso. Se precisar refazer, solicite um novo link ao Jorge.</p>
+        <p>Este teste já foi enviado. Solicite um novo link ao Jorge.</p>
     </div>
 
-    <div id="tela-teste">
+    <div id="tela-inicio">
         <div class="question-card">
             <input type="text" id="nomeAluno" placeholder="Seu Nome Completo">
-            <p style="font-size: 0.9em; color: #94a3b8;">Responda com atenção. Cada link é único.</p>
-            <button class="btn" onclick="iniciar()">COMEÇAR</button>
+            <button class="btn" style="margin-top:15px;" onclick="irParaTeste()">INICIAR TESTE</button>
         </div>
+    </div>
+
+    <div id="tela-perguntas" class="hidden">
+        <div id="area-perguntas"></div>
+        <button class="btn" style="background:#22c55e;" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
     </div>
 </div>
 
 <script>
-    // 1. Configuração do seu Banco de Dados
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. Identifica quem é o aluno pelo link
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
 
-    // 3. TRAVA DE SEGURANÇA: Verifica se já existe um resultado para este ID
+    // VERIFICAÇÃO DE USO ÚNICO
     if (linkID) {
         db.ref('resultados_testes').orderByChild('link_id').equalTo(linkID).once('value', snap => {
             if (snap.exists()) {
-                // Se o ID já foi usado, esconde o teste e mostra a trava
-                document.getElementById('tela-teste').classList.add('hidden');
+                document.getElementById('tela-inicio').classList.add('hidden');
                 document.getElementById('tela-bloqueio').classList.remove('hidden');
-                document.getElementById('status-link').innerText = "Acesso Negado";
+                document.getElementById('status').innerText = "Acesso Negado";
             } else {
-                document.getElementById('status-link').innerText = "Link Autorizado";
+                document.getElementById('status').innerText = "Link Autorizado";
             }
         });
-    } else {
-        document.getElementById('status-link').innerText = "Acesso Geral";
     }
 
-    function iniciar() {
-        const nome = document.getElementById('nomeAluno').value;
-        if (!nome) return alert("Por favor, digite seu nome!");
-        alert("Teste Iniciado para: " + nome + ". (Aqui entrariam as perguntas)");
+    const perguntas = ["SER PROTAGONISTA", "SER RESPONSÁVEL", "COMUNICAR-SE", "ÉTICA E CIDADANIA"];
+
+    function irParaTeste() {
+        if (!document.getElementById('nomeAluno').value) return alert("Digite seu nome!");
+        document.getElementById('tela-inicio').classList.add('hidden');
+        document.getElementById('tela-perguntas').classList.remove('hidden');
         
-        // Simulação de envio para testar a trava
-        // Quando o aluno clica em enviar no teste real, ele salva o 'link_id'
-        /* db.ref('resultados_testes').push({
+        const area = document.getElementById('area-perguntas');
+        perguntas.forEach((p, i) => {
+            area.innerHTML += `<div class="question-card"><b>${p}</b><div class="rating-row">
+                ${[1,2,3,4,5].map(n => `<label><input type="radio" name="p${i}" value="${n}"> ${n}</label>`).join('')}
+            </div></div>`;
+        });
+    }
+
+    function enviarTudo() {
+        const nome = document.getElementById('nomeAluno').value;
+        db.ref('resultados_testes').push({
             aluno: nome,
-            link_id: linkID,
+            link_id: linkID || "sem-id",
             data: new Date().toLocaleString()
-        }).then(() => { window.location.reload(); });
-        */
+        }).then(() => {
+            alert("Enviado com sucesso!");
+            window.location.reload();
+        });
     }
 </script>
 </body>
