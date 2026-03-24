@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico Socioemocional 2026</title>
+    <title>Diagnóstico 2026</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { width: 90%; max-width: 500px; background: var(--card); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #334155; }
-        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 90%; max-width: 450px; background: var(--card); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
+        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .hidden { display: none; }
         input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
     </style>
@@ -18,60 +18,58 @@
 <body>
 
 <div class="container">
-    <h2 id="status-msg">Validando link...</h2>
+    <h2 id="status">Verificando...</h2>
     
     <div id="area-teste" class="hidden">
-        <p>Informe seu nome para começar:</p>
-        <input type="text" id="nomeAluno" placeholder="Seu Nome Completo">
-        <button class="btn" onclick="salvarERecarregar()">INICIAR E TRAVAR LINK</button>
+        <p>Olá! Digite seu nome completo:</p>
+        <input type="text" id="nomeAluno" placeholder="Nome Completo">
+        <button class="btn" onclick="enviarEBloquear()">ENVIAR E FINALIZAR</button>
     </div>
 
     <div id="area-bloqueio" class="hidden">
-        <h1 style="color:var(--accent);">⚠️ ACESSO NEGADO</h1>
-        <p>Este link (ID: <span id="display-id"></span>) já foi utilizado para enviar uma resposta.</p>
+        <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
+        <p>Este teste já foi respondido. Se precisar refazer, peça um novo link ao Jorge.</p>
     </div>
 </div>
 
 <script>
-    // Configuração do Banco
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Captura o ID da URL
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
-    document.getElementById('display-id').innerText = linkID || "Nenhum";
 
     if (!linkID) {
-        document.getElementById('status-msg').innerText = "Link inválido ou ausente.";
+        document.getElementById('status').innerText = "❌ Link Inválido";
     } else {
-        // VERIFICAÇÃO REAL NO BANCO DE DADOS
-        db.ref('resultados_testes').orderByChild('link_id').equalTo(linkID).once('value', snap => {
+        // CHECAGEM DIRETA PELO NOME DO ID
+        db.ref('links_travados/' + linkID).once('value', snap => {
             if (snap.exists()) {
-                // Link já existe no banco -> Bloqueia
-                document.getElementById('status-msg').classList.add('hidden');
+                document.getElementById('status').classList.add('hidden');
                 document.getElementById('area-bloqueio').classList.remove('hidden');
             } else {
-                // Link novo -> Libera
-                document.getElementById('status-msg').innerText = "Link Autorizado";
+                document.getElementById('status').innerText = "Link Autorizado";
                 document.getElementById('area-teste').classList.remove('hidden');
             }
         });
     }
 
-    function salvarERecarregar() {
+    function enviarEBloquear() {
         const nome = document.getElementById('nomeAluno').value;
         if (!nome) return alert("Digite seu nome!");
 
-        // Salva o ID junto com o resultado
-        db.ref('resultados_testes').push({
+        // SALVA COM O ID COMO CHAVE (ISSO TRAVA O LINK)
+        db.ref('links_travados/' + linkID).set({
             aluno: nome,
-            link_id: linkID,
-            data: new Date().toLocaleString()
+            data: new Date().toLocaleString(),
+            status: "usado"
         }).then(() => {
-            alert("Resposta enviada! Este link agora será desativado.");
-            window.location.reload(); // Recarrega para cair na tela de bloqueio
+            // Também salva nos seus resultados gerais
+            db.ref('resultados_testes').push({ aluno: nome, link_id: linkID });
+            
+            alert("Sucesso! Link travado.");
+            window.location.reload();
         });
     }
 </script>
