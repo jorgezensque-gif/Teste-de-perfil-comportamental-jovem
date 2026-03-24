@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Links - Jorge</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h2 { color: #facc15; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 1.1em; }
+        button { width: 100%; padding: 15px; background: #38bdf8; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .link-gerado { background: #0f172a; padding: 15px; margin-top: 20px; border-radius: 8px; border: 1px dashed #38bdf8; word-break: break-all; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Gerador de Links DISC</h2>
+    <p>Digite o nome ou ID do aluno para gerar o link único:</p>
+    <input type="text" id="idAluno" placeholder="Ex: pedro-silva-01">
+    <button onclick="gerarLink()">GERAR LINK E COPIAR</button>
+
+    <div id="resultado" class="link-gerado">
+        <b style="color: #38bdf8;">Link para enviar:</b><br>
+        <span id="linkFinal"></span>
+    </div>
+</div>
+
+<script>
+    // --- TRAVA DE SEGURANÇA (A mesma que usamos nos outros) ---
+    const senhaAcesso = "SUA_SENHA_AQUI"; // <--- Coloque sua senha aqui
+    if (sessionStorage.getItem("acesso_autorizado") !== "true") {
+        const tentativa = prompt("Acesso Restrito. Senha do Jorge:");
+        if (tentativa === senhaAcesso) { sessionStorage.setItem("acesso_autorizado", "true"); } 
+        else { window.location.href = "index.html"; }
+    }
+
+    function gerarLink() {
+        const id = document.getElementById('idAluno').value.trim().toLowerCase().replace(/\s+/g, '-');
+        if (!id) return alert("Digite algo!");
+
+        // URL base da sua Vercel
+        const base = "https://teste-de-perfil-comportamental-jove.vercel.app/";
+        const linkCompleto = base + "?id=" + id;
+
+        document.getElementById('linkFinal').innerText = linkCompleto;
+        document.getElementById('resultado').style.display = 'block';
+
+        // Copia automaticamente para a área de transferência
+        navigator.clipboard.writeText(linkCompleto).then(() => {
+            alert("Link gerado e copiado para sua área de transferência!");
+        });
+    }
+</script>
+</body>
+</html>
