@@ -8,87 +8,70 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; padding-bottom: 50px; }
-        .container { max-width: 650px; margin: 20px auto; padding: 20px; }
-        .header { text-align: center; border-bottom: 2px solid var(--blue); padding-bottom: 10px; margin-bottom: 20px; }
-        .question-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--blue); }
-        .btn { width: 100%; padding: 18px; background: var(--blue); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 500px; background: var(--card); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #334155; }
+        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         .hidden { display: none; }
-        .rating-row { display: flex; justify-content: space-between; padding: 15px 0; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 8px; border: none; box-sizing: border-box; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2>DIAGNÓSTICO 2026</h2>
-        <p id="status">Verificando link...</p>
+    <h2 id="status-msg">Validando link...</h2>
+    
+    <div id="area-teste" class="hidden">
+        <p>Informe seu nome para começar:</p>
+        <input type="text" id="nomeAluno" placeholder="Seu Nome Completo">
+        <button class="btn" onclick="salvarERecarregar()">INICIAR E TRAVAR LINK</button>
     </div>
 
-    <div id="tela-bloqueio" class="hidden" style="text-align:center;">
-        <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
-        <p>Este teste já foi enviado. Solicite um novo link ao Jorge.</p>
-    </div>
-
-    <div id="tela-inicio">
-        <div class="question-card">
-            <input type="text" id="nomeAluno" placeholder="Seu Nome Completo">
-            <button class="btn" style="margin-top:15px;" onclick="irParaTeste()">INICIAR TESTE</button>
-        </div>
-    </div>
-
-    <div id="tela-perguntas" class="hidden">
-        <div id="area-perguntas"></div>
-        <button class="btn" style="background:#22c55e;" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
+    <div id="area-bloqueio" class="hidden">
+        <h1 style="color:var(--accent);">⚠️ ACESSO NEGADO</h1>
+        <p>Este link (ID: <span id="display-id"></span>) já foi utilizado para enviar uma resposta.</p>
     </div>
 </div>
 
 <script>
+    // Configuração do Banco
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Captura o ID da URL
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
+    document.getElementById('display-id').innerText = linkID || "Nenhum";
 
-    // VERIFICAÇÃO DE USO ÚNICO
-    if (linkID) {
+    if (!linkID) {
+        document.getElementById('status-msg').innerText = "Link inválido ou ausente.";
+    } else {
+        // VERIFICAÇÃO REAL NO BANCO DE DADOS
         db.ref('resultados_testes').orderByChild('link_id').equalTo(linkID).once('value', snap => {
             if (snap.exists()) {
-                document.getElementById('tela-inicio').classList.add('hidden');
-                document.getElementById('tela-bloqueio').classList.remove('hidden');
-                document.getElementById('status').innerText = "Acesso Negado";
+                // Link já existe no banco -> Bloqueia
+                document.getElementById('status-msg').classList.add('hidden');
+                document.getElementById('area-bloqueio').classList.remove('hidden');
             } else {
-                document.getElementById('status').innerText = "Link Autorizado";
+                // Link novo -> Libera
+                document.getElementById('status-msg').innerText = "Link Autorizado";
+                document.getElementById('area-teste').classList.remove('hidden');
             }
         });
     }
 
-    const perguntas = ["SER PROTAGONISTA", "SER RESPONSÁVEL", "COMUNICAR-SE", "ÉTICA E CIDADANIA"];
-
-    function irParaTeste() {
-        if (!document.getElementById('nomeAluno').value) return alert("Digite seu nome!");
-        document.getElementById('tela-inicio').classList.add('hidden');
-        document.getElementById('tela-perguntas').classList.remove('hidden');
-        
-        const area = document.getElementById('area-perguntas');
-        perguntas.forEach((p, i) => {
-            area.innerHTML += `<div class="question-card"><b>${p}</b><div class="rating-row">
-                ${[1,2,3,4,5].map(n => `<label><input type="radio" name="p${i}" value="${n}"> ${n}</label>`).join('')}
-            </div></div>`;
-        });
-    }
-
-    function enviarTudo() {
+    function salvarERecarregar() {
         const nome = document.getElementById('nomeAluno').value;
+        if (!nome) return alert("Digite seu nome!");
+
+        // Salva o ID junto com o resultado
         db.ref('resultados_testes').push({
             aluno: nome,
-            link_id: linkID || "sem-id",
+            link_id: linkID,
             data: new Date().toLocaleString()
         }).then(() => {
-            alert("Enviado com sucesso!");
-            window.location.reload();
+            alert("Resposta enviada! Este link agora será desativado.");
+            window.location.reload(); // Recarrega para cair na tela de bloqueio
         });
     }
 </script>
