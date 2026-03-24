@@ -2,80 +2,39 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico 2026</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <title>Gerador de Links - Jorge</title>
     <style>
-        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; }
-        body { background: var(--dark); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 90%; max-width: 450px; background: var(--card); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
-        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .hidden { display: none; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #1e293b; padding: 30px; border-radius: 15px; text-align: center; width: 400px; border: 1px solid #334155; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #38bdf8; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #resultado { margin-top: 20px; padding: 15px; border: 1px dashed #38bdf8; border-radius: 8px; display: none; font-size: 14px; word-break: break-all; }
     </style>
 </head>
 <body>
-
-<div class="container" id="main-box">
-    <h2 id="status">Verificando...</h2>
-    
-    <div id="area-form" class="hidden">
-        <p>Olá! Digite seu nome para começar:</p>
-        <input type="text" id="nomeAluno" placeholder="Nome Completo">
-        <button class="btn" onclick="enviarFinal()">FINALIZAR TESTE</button>
+    <div class="container">
+        <h2>Gerador de Links - Jorge</h2>
+        <input type="text" id="nomeAluno" placeholder="Nome do aluno">
+        <button onclick="gerar()">GERAR LINK E COPIAR</button>
+        <div id="resultado"></div>
     </div>
 
-    <div id="area-bloqueio" class="hidden">
-        <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
-        <p>Este teste já foi respondido. Solicite um novo link ao Jorge.</p>
-    </div>
-</div>
+    <script>
+        function gerar() {
+            const nome = document.getElementById('nomeAluno').value.trim();
+            if (!nome) return alert("Digite o nome!");
 
-<script>
-    const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+            // Transforma "Maria Leopoldina" em "maria-leopoldina"
+            const id = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+            const link = `https://teste-de-perfil-comportamental-jove.vercel.app/?id=${id}`;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const linkID = urlParams.get('id');
+            const resDiv = document.getElementById('resultado');
+            resDiv.style.display = 'block';
+            resDiv.innerText = link;
 
-    if (!linkID) {
-        document.getElementById('status').innerText = "❌ Link Inválido";
-    } else {
-        // BUSCA A TRAVA NA PASTA CORRETA
-        db.ref('links_travados/' + linkID).once('value', snap => {
-            if (snap.exists()) {
-                document.getElementById('status').classList.add('hidden');
-                document.getElementById('area-bloqueio').classList.remove('hidden');
-            } else {
-                document.getElementById('status').innerText = "Bem-vindo!";
-                document.getElementById('area-form').classList.remove('hidden');
-            }
-        });
-    }
-
-    function enviarFinal() {
-        const nome = document.getElementById('nomeAluno').value;
-        if (!nome) return alert("Digite seu nome!");
-
-        // 1. Cria a trava (impede o reuso do link)
-        db.ref('links_travados/' + linkID).set({
-            aluno: nome,
-            data: new Date().toLocaleString(),
-            usado: true
-        }).then(() => {
-            // 2. Salva o resultado para você ver no dashboard
-            db.ref('resultados_testes').push({
-                aluno: nome,
-                link_id: linkID,
-                data: new Date().toLocaleString()
-            });
-
-            alert("Teste enviado com sucesso!");
-            window.location.reload(); // Recarrega para ativar o bloqueio na hora
-        });
-    }
-</script>
+            navigator.clipboard.writeText(link);
+            alert("Link de " + nome + " copiado!");
+        }
+    </script>
 </body>
 </html>
