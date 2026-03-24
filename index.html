@@ -13,9 +13,9 @@
         .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 30px 0 15px; padding-bottom: 5px; text-transform: uppercase; font-weight: bold; }
         .card { background: #1a2233; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
         .opcoes-disc { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
-        .item-disc { background: #2d3748; padding: 10px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; }
+        .item-disc { background: #2d3748; padding: 12px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; border: 1px solid transparent; }
         .item-disc:hover { background: #4a5568; }
-        input[type="radio"] { margin-right: 10px; accent-color: var(--blue); }
+        input[type="radio"] { margin-right: 15px; transform: scale(1.2); accent-color: var(--blue); }
         .btn-enviar { width: 100%; padding: 20px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 30px; }
         .hidden { display: none; }
     </style>
@@ -26,8 +26,8 @@
     <div id="status">Validando acesso...</div>
 
     <div id="tela-bloqueio" class="hidden">
-        <h1 style="color:var(--accent); text-align: center;">⚠️ ACESSO NEGADO</h1>
-        <p style="text-align: center;">Este diagnóstico já foi realizado por este link.</p>
+        <h1 style="color:var(--accent); text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
+        <p style="text-align: center;">Este diagnóstico já foi realizado. Peça um novo link ao Jorge.</p>
     </div>
 
     <div id="tela-teste" class="hidden">
@@ -37,7 +37,7 @@
         <div id="sap-container"></div>
 
         <div class="secao-titulo">PARTE 2: PERFIL DISC</div>
-        <p style="font-size: 0.9em; color: #94a3b8; margin-bottom: 20px;">Selecione a palavra que <b>mais combina</b> com você em cada linha:</p>
+        <p style="color: #94a3b8; margin-bottom: 20px;">Marque a palavra que <b>MAIS COMBINA</b> com você:</p>
         <div id="disc-container"></div>
 
         <button class="btn-enviar" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
@@ -52,18 +52,18 @@
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
 
-    // 7 COMPETÊNCIAS DO PDF
+    // 7 COMPETÊNCIAS DO SEU PDF
     const saps = [
-        { t: "1. SER PROTAGONISTA", d: "Identidade, autônomo, solidário e construtor do seu destino." },
-        { t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, cumpre prazos, regras e higiene pessoal." },
-        { t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressão clara, objetiva e capacidade de ouvir." },
-        { t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, respeito às diferenças e honestidade." },
-        { t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas, pensar em alternativas e decidir." },
-        { t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e colocar o grupo acima do pessoal." },
-        { t: "7. APRENDER A APRENDER", d: "Buscar e aplicar novos conhecimentos no dia a dia." }
+        { t: "1. SER PROTAGONISTA", d: "Identidade, autonomia e construção do destino." },
+        { t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, prazos e higiene pessoal." },
+        { t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressão clara e saber ouvir." },
+        { t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, honestidade e respeito." },
+        { t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas e tomar decisões." },
+        { t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaboração e foco no grupo." },
+        { t: "7. APRENDER A APRENDER", d: "Buscar e aplicar novos conhecimentos." }
     ];
 
-    // 16 PERGUNTAS DISC
+    // AS 16 PERGUNTAS DO TESTE DISC
     const discPerguntas = [
         ["Animado", "Aventureiro", "Analítico", "Adaptável"],
         ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"],
@@ -83,35 +83,35 @@
         ["Vivo", "Obstinado", "Pensativo", "Condescendente"]
     ];
 
-    // Renderizar SAP
+    // Montar SAP
     const sapDiv = document.getElementById('sap-container');
     saps.forEach((s, i) => {
         sapDiv.innerHTML += `
             <div class="card">
                 <strong>${s.t}</strong><br><small>${s.d}</small>
-                <div style="display:flex; justify-content:space-between; margin-top:10px;">
+                <div style="display:flex; justify-content:space-between; margin-top:15px;">
                     ${[1,2,3,4,5].map(n => `<div>${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}
                 </div>
             </div>`;
     });
 
-    // Renderizar DISC
+    // Montar DISC
     const discDiv = document.getElementById('disc-container');
     discPerguntas.forEach((p, i) => {
         discDiv.innerHTML += `
             <div class="card" style="border-left-color: var(--blue);">
-                <strong>Pergunta ${i+1}:</strong>
+                <strong>Linha ${i+1}:</strong>
                 <div class="opcoes-disc">
-                    ${p.map((opt, idx) => `
+                    ${p.map((palavra, idx) => `
                         <label class="item-disc">
-                            <input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${opt}
+                            <input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${palavra}
                         </label>
                     `).join('')}
                 </div>
             </div>`;
     });
 
-    // Login
+    // Verificação de Acesso
     if (!linkID) {
         document.getElementById('status').innerText = "❌ Erro: Link inválido.";
     } else {
@@ -127,19 +127,19 @@
         
         for(let i=0; i<7; i++) {
             const v = document.querySelector(`input[name="sap${i}"]:checked`)?.value;
-            if(!v) return alert("Responda todo o SAP!");
+            if(!v) return alert("Jorge, avise ao aluno para responder todas as 7 notas do SAP!");
             dados[`sap_${i+1}`] = v;
         }
 
         for(let i=0; i<16; i++) {
             const v = document.querySelector(`input[name="disc${i}"]:checked`)?.value;
-            if(!v) return alert("Responda todo o DISC!");
+            if(!v) return alert("O aluno esqueceu de marcar alguma das 16 palavras do DISC!");
             dados[`disc_${i+1}`] = v;
         }
 
         db.ref('resultados/' + linkID).set(dados).then(() => {
             db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
-                alert("Diagnóstico enviado!");
+                alert("Diagnóstico enviado com sucesso!");
                 window.location.reload();
             });
         });
