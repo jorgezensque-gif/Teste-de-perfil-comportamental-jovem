@@ -30,7 +30,7 @@
     </div>
     <div class="painel-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div><h2 style="margin:0;">PAINEL GESTOR</h2><small style="color:var(--blue);">Jorge Zensque</small></div>
+            <div><h2 style="margin:0;">PAINEL GESTOR</h2><small style="color:var(--blue);">Responsável: Jorge Zensque</small></div>
             <div style="display: flex; gap: 10px;">
                 <select id="selectTurma" onchange="selecionarAluno(this.value)"><option value="todos">📊 TURMA</option></select>
                 <button class="btn btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
@@ -70,19 +70,25 @@
             type: type,
             data: { labels: labels, datasets: [{ data: data, backgroundColor: color, borderColor: color }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, 
-            scales: type === 'bar' ? { y: { beginAtZero: true } } : { r: { min: 0, max: 5 } } }
+            scales: type === 'bar' ? { y: { beginAtZero: true, grid: { color: '#1e293b' } } } : { r: { min: 0, max: 5, grid: { color: '#334155' } } } }
         });
     }
 
     function atualizarGraficos(filtro) {
         let lista = filtro === 'todos' ? Object.values(dadosAlunos) : [dadosAlunos[filtro]];
         let sap = [0,0,0,0,0,0,0], disc = [0,0,0,0], total = lista.length;
+        
         lista.forEach(r => {
-            if(r.pontosSAP) r.pontosSAP.forEach((v, i) => sap[i] += v);
-            if(r.pontosDISC) { disc[0]+=r.pontosDISC.D; disc[1]+=r.pontosDISC.I; disc[2]+=r.pontosDISC.S; disc[3]+=r.pontosDISC.C; }
+            if(r.pontosSAP) r.pontosSAP.forEach((v, i) => sap[i] += Number(v));
+            if(r.pontosDISC) { 
+                disc[0] += Number(r.pontosDISC.D || 0); disc[1] += Number(r.pontosDISC.I || 0); 
+                disc[2] += Number(r.pontosDISC.S || 0); disc[3] += Number(r.pontosDISC.C || 0); 
+            }
         });
+
         const mSap = sap.map(v => total > 0 ? (v/total).toFixed(1) : 0);
         const mDisc = disc.map(v => total > 0 ? (v/total).toFixed(1) : 0);
+
         render('radarSap', 'radar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
         render('barDisc', 'bar', ['D','I','S','C'], mDisc, '#ef4444');
         render('barSapTecnico', 'bar', ['P','R','C','E','Pr','Eq','A'], mSap, '#38bdf8');
@@ -90,7 +96,7 @@
     }
 
     function selecionarAluno(id) { atualizarGraficos(id); }
-    function zerarDados() { if(confirm("Apagar tudo?")) db.ref('resultados').remove(); }
+    function zerarDados() { if(confirm("Jorge, apagar todos os dados?")) db.ref('resultados').remove(); }
     function exportarExcel() {
         const ws = XLSX.utils.json_to_sheet(Object.values(dadosAlunos));
         const wb = XLSX.utils.book_new();
