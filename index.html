@@ -9,40 +9,26 @@
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --accent: #facc15; --green: #25d366; }
         body { background: var(--dark); color: white; font-family: sans-serif; padding: 0; margin: 0; overflow-x: hidden; }
-        
-        /* ENUNCIADO FIXO NO TOPO */
         .header-fixo { position: sticky; top: 0; background: var(--dark); z-index: 1000; padding: 15px; border-bottom: 2px solid var(--blue); text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        
         .container { max-width: 650px; margin: 20px auto; padding: 0 15px 100px 15px; }
         .step { display: none; }
         .active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
         h3 { color: var(--accent); margin: 5px 0; text-transform: uppercase; font-size: 1.2em; }
         .instrucao { color: #94a3b8; font-size: 0.9em; font-weight: bold; }
-        
         .question-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--blue); }
         .pergunta-texto { color: var(--accent); font-weight: bold; margin-bottom: 15px; display: block; font-size: 1.05em; }
-        
         .evidencias { font-size: 0.85em; color: #cbd5e1; background: #1a2232; padding: 12px; border-radius: 8px; margin-bottom: 15px; white-space: pre-line; }
         .rating-row { display: flex; justify-content: space-between; background: #0f172a; padding: 15px; border-radius: 10px; }
         .rating-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1; }
         .rating-item input { width: 25px; height: 25px; cursor: pointer; accent-color: var(--blue); }
-        
         .disc-opt { display: block; background: #0f172a; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #475569; cursor: pointer; }
         .disc-opt input { margin-right: 10px; transform: scale(1.2); }
-        
         .btn { width: 100%; padding: 20px; background: var(--blue); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1em; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        #msg-bloqueio { display: none; text-align: center; padding: 100px 20px; }
         .wa-btn { position: fixed; bottom: 20px; right: 20px; background: var(--green); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
-
-<div id="msg-bloqueio">
-    <h1 style="color:var(--accent);">⚠️ LINK EXPIRADO</h1>
-    <p>Jorge informa: Este teste já foi realizado. Caso precise de um novo acesso, entre em contato.</p>
-</div>
 
 <div id="conteudo-teste">
     <div class="header-fixo">
@@ -77,21 +63,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // PEGA O ID APENAS SE EXISTIR, MAS NÃO BLOQUEIA MAIS
     const urlParams = new URLSearchParams(window.location.search);
-    const linkID = urlParams.get('id');
-
-    // Lógica de Link Único (A Chave morre ao usar)
-    if (linkID) {
-        db.ref('links_usados/' + linkID).once('value', snap => {
-            if (snap.exists()) {
-                document.getElementById('conteudo-teste').style.display = 'none';
-                document.getElementById('msg-bloqueio').style.display = 'block';
-            }
-        });
-    } else {
-        alert("Atenção: Você precisa de um link individual do Jorge para acessar.");
-        document.getElementById('conteudo-teste').style.display = 'none';
-    }
+    const linkID = urlParams.get('id') || "acesso-direto";
 
     const sapData = [
         { t: "1. SER PROTAGONISTA", e: "• Referência no grupo\n• Respeito mútuo\n• Projeto de Vida\n• Oferece ajuda" },
@@ -111,7 +85,7 @@
         { q: "5. Em uma conversa, você tende a ser:", d: "Objetivo no ponto", i: "Expressivo e animado", s: "Bom ouvinte", c: "Questionador e técnico" },
         { q: "6. Seu estilo de trabalho ideal é:", d: "Independente e veloz", i: "Sociável e criativo", s: "Leal e constante", c: "Disciplinado e perfeito" },
         { q: "7. O que mais te motiva?", d: "Vencer e competir", i: "Ser reconhecido", s: "Ajudar e conciliar", c: "Seguir normas exatas" },
-        { q: "8. Como você reage a mudanças?", d: "Aceito e comando", i: "Fico otimista", s: "Prefiro a rotina", c: "Analiso os impactos" },
+        { q: "8. Como você reage a mudanças?", d: "Accepto e comando", i: "Fico otimista", s: "Prefiro a rotina", c: "Analiso os impactos" },
         { q: "9. Em uma reunião de equipe, você:", d: "Diz o que fazer", i: "Anima o grupo", s: "Busca o consenso", c: "Anota os detalhes" },
         { q: "10. Qual sua maior característica?", d: "Coragem para arriscar", i: "Poder de inspirar", s: "Paciência sob pressão", c: "Raciocínio lógico" },
         { q: "11. Diante de um erro, você:", d: "Conserta e segue", i: "Motiva a equipe", s: "Preocupa-se com o clima", c: "Busca a causa técnica" },
@@ -162,10 +136,13 @@
             if(r) dRes[r.value]++;
         }
         db.ref('resultados_testes').push({ aluno: nome, sap: sapRes, disc: dRes, link_id: linkID, data: new Date().toLocaleString() })
-        .then(() => db.ref('links_usados/' + linkID).set(true))
         .then(() => {
-            alert("Sucesso, Jorge! Dados enviados e link bloqueado.");
-            location.reload(); 
+            document.getElementById('conteudo-teste').innerHTML = `
+                <div style="text-align:center; padding:100px 20px;">
+                    <h1 style="color:var(--accent);">✅ ENVIADO!</h1>
+                    <p>Obrigado, ${nome}. Seus dados foram salvos.</p>
+                </div>
+            `;
         });
     }
 </script>
