@@ -3,64 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Integrado - Jorge 2026</title>
+    <title>Sistema Pescar 2026 - Jorge</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #facc15; }
         body { background: var(--dark); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
+        .container { max-width: 900px; margin: auto; }
         .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 20px; }
         .hidden { display: none; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 20px 0; padding-bottom: 5px; font-weight: bold; }
-        .pergunta { background: #1a2233; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        .btn-verde { background: #22c55e; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 25px 0 15px; padding-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        .pergunta { background: #1a2233; padding: 15px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-enviar { background: #22c55e; color: white; }
+        .btn-wpp { background: #25d366; color: white; margin-top: 10px; }
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        canvas { background: #1a2233; border-radius: 10px; padding: 10px; max-height: 300px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border: 1px solid #334155; text-align: left; }
         th { background: var(--blue); color: black; }
-        canvas { max-height: 280px; }
+        input[type="text"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status">Carregando...</div>
+    <div id="status">Iniciando sistema...</div>
 
     <div id="tela-bloqueio" class="hidden">
         <div class="card" style="text-align: center;">
-            <h1 style="color:var(--accent);">⚠️ LINK UTILIZADO</h1>
-            <p>Diagnóstico enviado. Jorge, clique abaixo para ver o Dashboard Geral.</p>
-            <button class="btn" style="background: #475569; color: white;" onclick="acessarPainel()">ABRIR DASHBOARD GERAL</button>
+            <h1 style="color:var(--accent);">⚠️ LINK JÁ UTILIZADO</h1>
+            <p>Este diagnóstico já foi enviado e o link expirou.</p>
+            <p>Jorge, use o botão abaixo para gerenciar os resultados.</p>
+            <button class="btn" style="background: #475569; color: white;" onclick="abrirPainel()">GERENCIAR SISTEMA (JORGE)</button>
         </div>
     </div>
 
     <div id="tela-quiz" class="hidden">
-        <h2 style="text-align:center;">DIAGNÓSTICO 2026</h2>
-        <div class="secao-titulo">AUTOAVALIAÇÃO SAP</div>
+        <h2 style="text-align:center;">FUNDAÇÃO PESCAR - DIAGNÓSTICO 2026</h2>
         <div id="sap-container"></div>
-        <div class="secao-titulo">PERFIL DISC</div>
         <div id="disc-container"></div>
-        <button class="btn btn-verde" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
+        <button class="btn btn-enviar" onclick="enviarTudo()">FINALIZAR E ENVIAR</button>
     </div>
 
     <div id="tela-dashboard" class="hidden">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h2 style="color: var(--blue);">📊 DASHBOARD GERAL (GRUPO)</h2>
-            <button onclick="window.location.reload()">Sair</button>
+        <h2 style="color: var(--blue);">📊 PAINEL DE CONTROLE - JORGE</h2>
+        
+        <div class="card" style="border-color: #25d366;">
+            <h3>📲 Gerar Link e Enviar p/ WhatsApp</h3>
+            <input type="text" id="nomeAluno" placeholder="Nome do Aluno (ex: Maria Leopoldina)">
+            <button class="btn btn-wpp" onclick="gerarLinkWpp()">GERAR LINK E ABRIR WHATSAPP</button>
         </div>
 
-        <div class="grid">
-            <div class="card"><h3>Perfil Médio DISC</h3><canvas id="chartGeralDisc"></canvas></div>
-            <div class="card"><h3>Média Competências SAP</h3><canvas id="chartGeralSap"></canvas></div>
+        <div class="grid-charts">
+            <div class="card"><h3>Perfil Comportamental (DISC)</h3><canvas id="chartGeralDisc"></canvas></div>
+            <div class="card"><h3>Média de Competências (SAP)</h3><canvas id="chartGeralSap"></canvas></div>
         </div>
 
         <div class="card">
-            <h3>Lista de Jovens e Resultados</h3>
-            <table id="tabela">
-                <thead><tr><th>Nome/Link</th><th>Data</th><th>Ação</th></tr></thead>
+            <h3>Gestão de Respostas (Excluir para liberar link)</h3>
+            <table>
+                <thead><tr><th>Aluno/ID</th><th>Data de Envio</th><th>Ação</th></tr></thead>
                 <tbody id="corpo-tabela"></tbody>
             </table>
         </div>
@@ -68,47 +72,56 @@
 </div>
 
 <script>
+    // CONFIGURAÇÃO DO SEU BANCO DE DADOS
     const firebaseConfig = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const linkID = new URLSearchParams(window.location.search).get('id');
 
-    // CONFIGURAÇÕES DO QUIZ (SAP E DISC)
+    // DADOS DO QUIZ (SAP E DISC)
     const saps = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
     const discPerguntas = [
-        {q: "Na convivência social você é:", opts: ["Animado", "Aventureiro", "Analítico", "Adaptável"]},
-        {q: "Sua principal força é ser:", opts: ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"]},
-        {q: "Em um grupo você se mostra:", opts: ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"]},
+        {q: "Em situações sociais, descreve-se como:", opts: ["Animado", "Aventureiro", "Analítico", "Adaptável"]},
+        {q: "Sua força principal é:", opts: ["Brincalhão", "Persuasivo", "Persistente", "Pacífico"]},
+        {q: "Como age em grupo:", opts: ["Sociável", "Decidido", "Auto-sacrifício", "Submisso"]},
         {q: "Para convencer os outros, você é:", opts: ["Convincente", "Competitivo", "Considerado", "Controlado"]},
-        {q: "Ao enfrentar o novo, você age como:", opts: ["Estimulante", "Ousado", "Respeitoso", "Reservado"]},
-        {q: "As pessoas te veem como alguém:", opts: ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"]},
-        {q: "No seu trabalho ou estudo, você é:", opts: ["Promotor", "Positivo", "Planejador", "Paciente"]},
-        {q: "Sob pressão ou imprevistos, você é:", opts: ["Espontâneo", "Seguro", "Pontual", "Tímido"]},
-        {q: "Sua visão de mundo é:", opts: ["Otimista", "Franco", "Ordeiro", "Cortês"]},
+        {q: "Perante desafios, sente-se:", opts: ["Estimulante", "Ousado", "Respeitoso", "Reservado"]},
+        {q: "As pessoas vêem-no como:", opts: ["Espirituoso", "Auto-confiante", "Sensível", "Satisfeito"]},
+        {q: "No trabalho ou estudo, você é:", opts: ["Promotor", "Positivo", "Planejador", "Paciente"]},
+        {q: "Com imprevistos, você é:", opts: ["Espontâneo", "Seguro", "Pontual", "Tímido"]},
+        {q: "Sua atitude na vida é:", opts: ["Otimista", "Franco", "Ordeiro", "Cortês"]},
         {q: "Em momentos alegres, você é:", opts: ["Engraçado", "Vigoroso", "Fiel", "Amigável"]},
-        {q: "Com outras pessoas, você busca ser:", opts: ["Encantador", "Audaz", "Minucioso", "Diplomático"]},
+        {q: "Ao lidar com outros, busca ser:", opts: ["Encantador", "Audaz", "Minucioso", "Diplomático"]},
         {q: "Sua melhor qualidade é ser:", opts: ["Alegre", "Confiante", "Culto", "Tolerante"]},
-        {q: "Sua mente funciona de forma:", opts: ["Inspirador", "Independente", "Idealista", "Inofensivo"]},
-        {q: "Suas opiniões são expostas de forma:", opts: ["Demonstrativo", "Decisivo", "Profundo", "Irônico"]},
+        {q: "Sua forma de pensar é:", opts: ["Inspirador", "Independente", "Idealista", "Inofensivo"]},
+        {q: "Expressa opiniões de forma:", opts: ["Demonstrativo", "Decisivo", "Profundo", "Irônico"]},
         {q: "Ao mudar de ambiente, você é:", opts: ["Misturável", "Impaciente", "Músico", "Mediador"]},
-        {q: "Sua vibração natural é:", opts: ["Vivo", "Obstinado", "Pensativo", "Condescendente"]}
+        {q: "Sua energia diária é:", opts: ["Vivo", "Obstinado", "Pensativo", "Condescendente"]}
     ];
 
-    // Renderizar Quiz
+    // GERAÇÃO DOS CAMPOS NA TELA
+    const sCont = document.getElementById('sap-container');
+    sCont.innerHTML = '<div class="secao-titulo">PARTE 1: SAP</div>';
     saps.forEach((s, i) => {
-        document.getElementById('sap-container').innerHTML += `<div class="pergunta"><strong>${i+1}. ${s}</strong><div style="display:flex; justify-content:space-between; margin-top:10px;">${[1,2,3,4,5].map(n => `<div>${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}</div></div>`;
+        sCont.innerHTML += `<div class="pergunta"><strong>${i+1}. ${s}</strong><div style="display:flex; justify-content:space-between; margin-top:10px;">${[1,2,3,4,5].map(n => `<div>${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}</div></div>`;
     });
+    const dCont = document.getElementById('disc-container');
+    dCont.innerHTML = '<div class="secao-titulo">PARTE 2: DISC</div>';
     discPerguntas.forEach((d, i) => {
-        document.getElementById('disc-container').innerHTML += `<div class="pergunta" style="border-left-color:var(--blue)"><span>${i+1}. ${d.q}</span><div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; margin-top:10px;">${d.opts.map((opt, idx) => `<label><input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${opt}</label>`).join('')}</div></div>`;
+        dCont.innerHTML += `<div class="pergunta" style="border-left-color:var(--blue)"><span>${i+1}. ${d.q}</span><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px;">${d.opts.map((opt, idx) => `<label><input type="radio" name="disc${i}" value="${['I','D','C','S'][idx]}"> ${opt}</label>`).join('')}</div></div>`;
     });
 
-    // Controle de Telas
-    if (!linkID) document.getElementById('status').innerText = "Erro: Link sem ID.";
-    else {
+    // LÓGICA DE TRAVA E EXPIRAÇÃO
+    if (!linkID) {
+        document.getElementById('status').innerHTML = "<h1>❌ Erro: Acesse usando um link de aluno.</h1>";
+    } else {
         db.ref('travas/' + linkID).once('value', snap => {
             document.getElementById('status').classList.add('hidden');
-            if (snap.exists()) document.getElementById('tela-bloqueio').classList.remove('hidden');
-            else document.getElementById('tela-quiz').classList.remove('hidden');
+            if (snap.exists()) {
+                document.getElementById('tela-bloqueio').classList.remove('hidden');
+            } else {
+                document.getElementById('tela-quiz').classList.remove('hidden');
+            }
         });
     }
 
@@ -116,50 +129,70 @@
         let res = { link_id: linkID, data: new Date().toLocaleString() };
         for(let i=0; i<7; i++) {
             const v = document.querySelector(`input[name="sap${i}"]:checked`)?.value;
-            if(!v) return alert("Complete o SAP!");
+            if(!v) return alert("Por favor, responda todas as perguntas do SAP!");
             res[`sap_${i+1}`] = v;
         }
         for(let i=0; i<16; i++) {
             const v = document.querySelector(`input[name="disc${i}"]:checked`)?.value;
-            if(!v) return alert("Complete o DISC!");
+            if(!v) return alert("Por favor, responda todas as perguntas do DISC!");
             res[`disc_${i+1}`] = v;
         }
+        // Salva resultado e cria a trava
         db.ref('resultados/' + linkID).set(res).then(() => {
-            db.ref('travas/' + linkID).set({ status: 'ok' }).then(() => window.location.reload());
+            db.ref('travas/' + linkID).set({ status: 'respondido' }).then(() => {
+                alert("Diagnóstico enviado com sucesso!");
+                window.location.reload();
+            });
         });
     }
 
-    // DASHBOARD
-    function acessarPainel() {
-        if(prompt("Senha:") === "123") {
+    // FUNÇÕES DO PAINEL DO JORGE
+    function abrirPainel() {
+        if(prompt("Senha do Responsável (Jorge):") === "123") {
             document.getElementById('tela-bloqueio').classList.add('hidden');
             document.getElementById('tela-dashboard').classList.remove('hidden');
-            carregarDashboardGeral();
+            carregarDadosDashboard();
         }
     }
 
-    let c1, c2;
-    function carregarDashboardGeral() {
+    function gerarLinkWpp() {
+        const nome = document.getElementById('nomeAluno').value;
+        if(!nome) return alert("Digite o nome do aluno!");
+        const linkBase = window.location.href.split('?')[0];
+        const linkFinal = `${linkBase}?id=${encodeURIComponent(nome)}`;
+        const msg = encodeURIComponent(`Olá ${nome}, aqui está o seu link individual para o Diagnóstico Pescar 2026. Lembre-se que o link expira após o envio: ${linkFinal}`);
+        window.open(`https://api.whatsapp.com/send?text=${msg}`);
+    }
+
+    let chart1, chart2;
+    function carregarDadosDashboard() {
         db.ref('resultados').on('value', snap => {
             const dados = snap.val(); if(!dados) return;
-            let discT = {D:0,I:0,S:0,C:0}, sapS = [0,0,0,0,0,0,0], qtd = 0;
+            let discT = {D:0,I:0,S:0,C:0}, sapSomas = [0,0,0,0,0,0,0], totalAlunos = 0;
             const tbody = document.getElementById('corpo-tabela'); tbody.innerHTML = "";
             
-            Object.keys(dados).forEach(key => {
-                const r = dados[key]; qtd++;
+            Object.keys(dados).forEach(id => {
+                const r = dados[id]; totalAlunos++;
                 for(let i=1; i<=16; i++) if(r[`disc_${i}`]) discT[r[`disc_${i}`]]++;
-                for(let i=1; i<=7; i++) sapS[i-1] += parseFloat(r[`sap_${i}`]);
-                tbody.innerHTML += `<tr><td>${r.link_id}</td><td>${r.data}</td><td><button onclick="remover('${key}')">Excluir</button></td></tr>`;
+                for(let i=1; i<=7; i++) sapSomas[i-1] += parseFloat(r[`sap_${i}`]);
+                tbody.innerHTML += `<tr><td>${r.link_id}</td><td>${r.data}</td><td><button onclick="removerResposta('${id}')" style="color:red">Excluir</button></td></tr>`;
             });
 
-            if(c1) c1.destroy(); if(c2) c2.destroy();
-            c1 = new Chart(document.getElementById('chartGeralDisc'), { type: 'bar', data: { labels: ['D','I','S','C'], datasets: [{label:'Total', data:[discT.D, discT.I, discT.S, discT.C], backgroundColor:['#ef4444','#facc15','#22c55e','#38bdf8']}]}});
-            c2 = new Chart(document.getElementById('chartGeralSap'), { type: 'radar', data: { labels: saps, datasets: [{label:'Grupo', data: sapS.map(s => s/qtd), backgroundColor:'rgba(56,189,248,0.3)', borderColor:'#38bdf8'}]}, options: {scales:{r:{min:0,max:5}}}});
+            if(chart1) chart1.destroy(); if(chart2) chart2.destroy();
+            chart1 = new Chart(document.getElementById('chartGeralDisc'), {
+                type: 'bar',
+                data: { labels: ['D','I','S','C'], datasets: [{label:'Total de Escolhas', data:[discT.D, discT.I, discT.S, discT.C], backgroundColor:['#ef4444','#facc15','#22c55e','#38bdf8']}]}
+            });
+            chart2 = new Chart(document.getElementById('chartGeralSap'), {
+                type: 'radar',
+                data: { labels: saps, datasets: [{label:'Média do Grupo', data: sapSomas.map(s => s/totalAlunos), backgroundColor:'rgba(56,189,248,0.3)', borderColor:'#38bdf8'}]},
+                options: { scales: { r: { min:0, max:5 } } }
+            });
         });
     }
 
-    function remover(id) {
-        if(confirm("Jorge, confirma excluir?")) {
+    function removerResposta(id) {
+        if(confirm("Jorge, deseja excluir esta resposta? O link deste aluno voltará a funcionar.")) {
             db.ref('resultados/'+id).remove();
             db.ref('travas/'+id).remove();
         }
