@@ -7,58 +7,42 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f1f5f9; }
-        body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; }
-        .pergunta { margin-bottom: 30px; padding: 20px; background: #1a2233; border-radius: 10px; }
-        .opcoes { display: flex; justify-content: space-between; margin-top: 15px; }
-        .radio-group { text-align: center; cursor: pointer; }
-        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--blue); }
-        .btn { width: 100%; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        :root { --blue: #38bdf8; --dark: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #facc15; }
+        body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { width: 100%; max-width: 700px; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #334155; margin: auto; }
+        .secao-titulo { color: var(--blue); border-bottom: 2px solid var(--blue); margin: 30px 0 15px; padding-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .pergunta-card { background: #1a2233; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .escala { display: flex; justify-content: space-between; margin-top: 15px; }
+        .nota { text-align: center; font-size: 14px; }
+        input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--blue); }
+        .btn-enviar { width: 100%; padding: 20px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 30px; }
         .hidden { display: none; }
-        h2 { color: #facc15; text-align: center; border-bottom: 2px solid var(--blue); padding-bottom: 10px; }
-        .titulo-secao { color: var(--blue); margin-top: 40px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="status">Verificando link...</div>
+    <div id="status">Validando acesso...</div>
 
     <div id="tela-bloqueio" class="hidden">
-        <h1 style="color:#facc15; text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
-        <p style="text-align: center;">Este teste já foi respondido e enviado. Se precisar refazer, solicite um novo link ao Jorge.</p>
+        <h1 style="color:var(--accent); text-align: center;">⚠️ LINK JÁ UTILIZADO</h1>
+        <p style="text-align: center;">Este diagnóstico já foi enviado. Se houver erro, fale com o Jorge.</p>
     </div>
 
     <div id="tela-teste" class="hidden">
-        <h2>DIAGNÓSTICO 2026</h2>
+        <h2 style="text-align:center;">DIAGNÓSTICO 2026</h2>
+
+        <div class="secao-titulo">PARTE 1: AUTOAVALIAÇÃO SAP</div>
+        <p style="font-size: 0.9em; color: #94a3b8;">Avalie-se de 1 a 5 para cada competência abaixo:</p>
+
+        <div id="perguntas-sap"></div>
+
+        <div class="secao-titulo">PARTE 2: PERFIL COMPORTAMENTAL (DISC)</div>
+        <p style="font-size: 0.9em; color: #94a3b8;">Escolha a opção que melhor descreve você:</p>
         
-        <div class="titulo-secao">1. COMPETÊNCIAS (SAP)</div>
-        <p>Avalie-se de 1 a 5 para cada item:</p>
+        <div id="perguntas-disc"></div>
 
-        <div class="pergunta">
-            <p><strong>1. SER PROTAGONISTA:</strong> Referência no grupo, respeito mútuo, projeto de vida e oferece ajuda.</p>
-            <div class="opcoes">
-                <div class="radio-group">1<br><input type="radio" name="sap1" value="1"></div>
-                <div class="radio-group">2<br><input type="radio" name="sap1" value="2"></div>
-                <div class="radio-group">3<br><input type="radio" name="sap1" value="3"></div>
-                <div class="radio-group">4<br><input type="radio" name="sap1" value="4"></div>
-                <div class="radio-group">5<br><input type="radio" name="sap1" value="5"></div>
-            </div>
-        </div>
-
-        <div class="pergunta">
-            <p><strong>2. SER RESPONSÁVEL:</strong> Cumpre prazos, pontualidade, higiene pessoal e cumpre regras.</p>
-            <div class="opcoes">
-                <div class="radio-group">1<br><input type="radio" name="sap2" value="1"></div>
-                <div class="radio-group">2<br><input type="radio" name="sap2" value="2"></div>
-                <div class="radio-group">3<br><input type="radio" name="sap2" value="3"></div>
-                <div class="radio-group">4<br><input type="radio" name="sap2" value="4"></div>
-                <div class="radio-group">5<br><input type="radio" name="sap2" value="5"></div>
-            </div>
-        </div>
-
-        <button class="btn" onclick="enviarResposta()">FINALIZAR E ENVIAR</button>
+        <button class="btn-enviar" onclick="enviarTudo()">FINALIZAR E ENVIAR DIAGNÓSTICO</button>
     </div>
 </div>
 
@@ -70,9 +54,48 @@
     const urlParams = new URLSearchParams(window.location.search);
     const linkID = urlParams.get('id');
 
-    // VERIFICA SE O LINK EXISTE E SE JÁ FOI USADO
+    // Dados das 7 Competências SAP do PDF
+    const saps = [
+        { t: "1. SER PROTAGONISTA", d: "Identidade, autônomo, solidário e construtor do seu destino." },
+        { t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, cumpre prazos, regras e higiene pessoal." },
+        { t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressão clara, objetiva e capacidade de ouvir." },
+        { t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores, respeito às diferenças, honestidade e deveres." },
+        { t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar problemas, pensar em alternativas e tomar decisões." },
+        { t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar, partilhar e colocar o grupo acima do pessoal." },
+        { t: "7. APRENDER A APRENDER", d: "Buscar, compreender e construir novos conhecimentos." }
+    ];
+
+    // Gerar campos SAP
+    const sapDiv = document.getElementById('perguntas-sap');
+    saps.forEach((s, i) => {
+        sapDiv.innerHTML += `
+            <div class="pergunta-card">
+                <strong>${s.t}</strong><br><small>${s.d}</small>
+                <div class="escala">
+                    ${[1,2,3,4,5].map(n => `<div class="nota">${n}<br><input type="radio" name="sap${i}" value="${n}"></div>`).join('')}
+                </div>
+            </div>`;
+    });
+
+    // Gerar 16 campos DISC
+    const discDiv = document.getElementById('perguntas-disc');
+    for(let i=1; i<=16; i++) {
+        discDiv.innerHTML += `
+            <div class="pergunta-card" style="border-left-color: var(--blue);">
+                <strong>Pergunta DISC #${i}</strong>
+                <select id="disc${i}" style="width:100%; margin-top:10px; padding:10px; border-radius:5px;">
+                    <option value="">Selecione uma opção...</option>
+                    <option value="D">Dominância (Direto, Decidido)</option>
+                    <option value="I">Influência (Otimista, Comunicativo)</option>
+                    <option value="S">Estabilidade (Paciente, Amigável)</option>
+                    <option value="C">Conformidade (Preciso, Analítico)</option>
+                </select>
+            </div>`;
+    }
+
+    // Controle de Acesso
     if (!linkID) {
-        document.getElementById('status').innerHTML = "<h1>❌ Link Inválido</h1>";
+        document.getElementById('status').innerText = "❌ Link Inválido!";
     } else {
         db.ref('travas/' + linkID).once('value', snap => {
             document.getElementById('status').classList.add('hidden');
@@ -84,23 +107,26 @@
         });
     }
 
-    function enviarResposta() {
-        // Coleta os dados (exemplo simplificado de 2 perguntas)
-        const s1 = document.querySelector('input[name="sap1"]:checked')?.value;
-        const s2 = document.querySelector('input[name="sap2"]:checked')?.value;
+    function enviarTudo() {
+        let respostas = { data: new Date().toLocaleString(), link: linkID };
+        
+        // Coleta SAP
+        for(let i=0; i<7; i++) {
+            const val = document.querySelector(`input[name="sap${i}"]:checked`)?.value;
+            if(!val) return alert("Responda todas as 7 competências SAP!");
+            respostas[`sap_${i+1}`] = val;
+        }
 
-        if (!s1 || !s2) return alert("Responda todas as perguntas!");
+        // Coleta DISC
+        for(let i=1; i<=16; i++) {
+            const val = document.getElementById(`disc${i}`).value;
+            if(!val) return alert("Responda as 16 perguntas do DISC!");
+            respostas[`disc_${i}`] = val;
+        }
 
-        // 1. Grava o resultado do teste
-        db.ref('resultados/' + linkID).set({
-            aluno: linkID,
-            sap1: s1,
-            sap2: s2,
-            data: new Date().toLocaleString()
-        }).then(() => {
-            // 2. Grava a trava para ninguém usar o link de novo
+        db.ref('resultados/' + linkID).set(respostas).then(() => {
             db.ref('travas/' + linkID).set({ status: "usado" }).then(() => {
-                alert("Resposta enviada com sucesso!");
+                alert("Enviado com sucesso!");
                 window.location.reload();
             });
         });
