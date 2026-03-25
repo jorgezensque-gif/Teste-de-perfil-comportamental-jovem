@@ -12,16 +12,16 @@
         .barra-comando input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
         .btn-whatsapp { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; height: 350px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; }
-        .btn-zerar { background: #ef4444; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
+        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 300px; }
+        .btn-zerar { background: #ef4444; border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="barra-comando">
-        <input type="text" id="nomeNovo" placeholder="Nome do Aluno...">
+        <input type="text" id="nomeNovo" placeholder="Digite o nome completo do aluno aqui...">
         <button class="btn-whatsapp" onclick="registrarEEnviar()">GERAR E DISPARAR WHATSAPP</button>
     </div>
 
@@ -31,14 +31,14 @@
             <div style="color: #38bdf8; font-weight: bold;">Responsável: Jorge Zensque</div>
         </div>
         <div style="display:flex; gap:10px;">
-            <select id="selectAlunos"><option value="">Carregando...</option></select>
+            <select id="selectAlunos"><option value="">Carregando alunos...</option></select>
             <button class="btn-zerar" onclick="zerarTudo()">ZERAR BANCO</button>
         </div>
     </div>
 
     <div class="grid">
-        <div class="card"><h2>SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
-        <div class="card"><h2>DISC</h2><canvas id="chartDisc"></canvas></div>
+        <div class="card"><h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
+        <div class="card"><h2>2. PERFIL COMPORTAMENTAL (DISC)</h2><canvas id="chartDisc"></canvas></div>
     </div>
 
 <script>
@@ -48,17 +48,24 @@
     let radarChart, discChart;
 
     function registrarEEnviar() {
-        const nome = document.getElementById('nomeNovo').value;
-        if(!nome) return alert("Digite o nome!");
+        const nome = document.getElementById('nomeNovo').value.trim();
+        if(!nome) return alert("Jorge, digite o nome do aluno!");
         
-        // Cria o registro com status "Aguardando"
-        db.ref('resultados/' + nome).set({ nome: nome, status: "Aguardando", pontosSAP: [0,0,0,0,0,0,0], pontosDISC: {D:0,I:0,S:0,C:0} });
+        // CRIAÇÃO BLINDADA: Usa o nome como chave direta para evitar IDs aleatórios
+        db.ref('resultados/' + nome).set({
+            nome: nome,
+            status: "Aguardando",
+            pontosSAP: [0,0,0,0,0,0,0],
+            pontosDISC: {D:0,I:0,S:0,C:0}
+        });
         
         const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?nome=${encodeURIComponent(nome)}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Olá " + nome + ", faça seu teste: " + link)}`, '_blank');
+        const msg = `Olá ${nome}, aqui está o link para sua avaliação: ${link}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
         document.getElementById('nomeNovo').value = "";
     }
 
+    // Escuta mudanças no banco para atualizar a lista do Jorge
     db.ref('resultados').on('value', snap => {
         const select = document.getElementById('selectAlunos');
         select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
@@ -69,10 +76,12 @@
         }
     });
 
-    function zerarTudo() { if(confirm("Apagar tudo?")) db.ref('/').remove(); }
+    function zerarTudo() { if(confirm("Jorge, deseja apagar TODOS os dados?")) db.ref('/').remove(); }
 
     document.getElementById('selectAlunos').addEventListener('change', e => {
-        db.ref('resultados/' + e.target.value).once('value', snap => {
+        const nomeSel = e.target.value;
+        if(!nomeSel) return;
+        db.ref('resultados/' + nomeSel).once('value', snap => {
             const r = snap.val();
             if(r) plotar(r.pontosDISC, r.pontosSAP);
         });
@@ -83,7 +92,7 @@
         if(discChart) discChart.destroy();
         radarChart = new Chart(document.getElementById('chartRadar'), {
             type: 'radar',
-            data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{label:'SAP', data:sap, borderColor:'#38bdf8'}]},
+            data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{label:'SAP', data:sap, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.2)'}]},
             options: { scales: { r: { beginAtZero: true, max: 5 } } }
         });
         discChart = new Chart(document.getElementById('chartDisc'), {
