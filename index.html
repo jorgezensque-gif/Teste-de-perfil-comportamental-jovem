@@ -12,7 +12,7 @@
         .barra-comando input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
         .btn-whatsapp { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; height: 350px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; }
         .btn-zerar { background: #ef4444; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
@@ -21,7 +21,7 @@
 <body>
 
     <div class="barra-comando">
-        <input type="text" id="nomeNovo" placeholder="Nome do Aluno para novo teste...">
+        <input type="text" id="nomeNovo" placeholder="Nome do Aluno...">
         <button class="btn-whatsapp" onclick="registrarEEnviar()">GERAR E DISPARAR WHATSAPP</button>
     </div>
 
@@ -32,7 +32,7 @@
         </div>
         <div style="display:flex; gap:10px;">
             <select id="selectAlunos"><option value="">Carregando...</option></select>
-            <button class="btn-zerar" onclick="zerarTudo()">ZERAR</button>
+            <button class="btn-zerar" onclick="zerarTudo()">ZERAR BANCO</button>
         </div>
     </div>
 
@@ -51,16 +51,14 @@
         const nome = document.getElementById('nomeNovo').value;
         if(!nome) return alert("Digite o nome!");
         
-        // 1. Já cria o registro vazio no banco com o nome
-        db.ref('resultados/' + nome).set({ nome: nome, status: "Pendente" });
+        // Cria o registro com status "Aguardando"
+        db.ref('resultados/' + nome).set({ nome: nome, status: "Aguardando", pontosSAP: [0,0,0,0,0,0,0], pontosDISC: {D:0,I:0,S:0,C:0} });
         
-        // 2. Abre o WhatsApp com o link que leva o nome
         const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?nome=${encodeURIComponent(nome)}`;
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Olá " + nome + ", faça seu teste: " + link)}`, '_blank');
         document.getElementById('nomeNovo').value = "";
     }
 
-    // Atualiza a lista de alunos automaticamente
     db.ref('resultados').on('value', snap => {
         const select = document.getElementById('selectAlunos');
         select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
@@ -76,8 +74,7 @@
     document.getElementById('selectAlunos').addEventListener('change', e => {
         db.ref('resultados/' + e.target.value).once('value', snap => {
             const r = snap.val();
-            if(r && r.pontosDISC) plotar(r.pontosDISC, r.pontosSAP);
-            else alert("Este aluno ainda não respondeu!");
+            if(r) plotar(r.pontosDISC, r.pontosSAP);
         });
     });
 
