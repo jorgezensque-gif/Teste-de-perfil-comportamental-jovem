@@ -7,123 +7,91 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        
-        /* TELA DE LOGIN */
-        #tela-login { text-align: center; background: #1e293b; padding: 40px; border-radius: 15px; border: 2px solid #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
-        input { padding: 12px; border-radius: 8px; border: none; width: 200px; margin-bottom: 15px; font-size: 16px; text-align: center; }
-        .btn-login { background: #38bdf8; color: #0f172a; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
-        /* CONTEÚDO DO PAINEL (ESCONDIDO) */
-        #conteudo-painel { display: none; width: 100%; padding: 20px; box-sizing: border-box; }
-        .header { background: #1e293b; padding: 20px; border-radius: 10px; border-bottom: 4px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; width: 100%; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; }
+        body { background: #0f172a; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        .barra-comando { background: #000; padding: 15px; border: 2px dashed #38bdf8; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; }
+        .barra-comando input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
+        .btn-whatsapp { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; }
-        .btn-zerar { background: #ef4444; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+        .btn-zerar { background: #ef4444; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="tela-login">
-        <h2 style="color: #38bdf8;">Acesso Restrito</h2>
-        <p>Jorge, digite sua senha:</p>
-        <input type="password" id="senhaInput" placeholder="Sua senha aqui..."><br>
-        <button class="btn-login" onclick="verificarSenha()">ENTRAR NO PAINEL</button>
+    <div class="barra-comando">
+        <input type="text" id="nomeNovo" placeholder="Nome do Aluno para novo teste...">
+        <button class="btn-whatsapp" onclick="registrarEEnviar()">GERAR E DISPARAR WHATSAPP</button>
     </div>
 
-    <div id="conteudo-painel">
-        <div class="header">
-            <div>
-                <h1>PAINEL GESTOR</h1>
-                <div style="color: #38bdf8; font-weight: bold;">Responsável: Jorge Zensque</div>
-            </div>
-            <div>
-                <select id="selectAlunos"><option value="">Carregando...</option></select>
-                <button class="btn-zerar" onclick="zerarTudo()">LIMPAR BANCO</button>
-            </div>
+    <div class="header">
+        <div>
+            <h1>PAINEL GESTOR</h1>
+            <div style="color: #38bdf8; font-weight: bold;">Responsável: Jorge Zensque</div>
         </div>
+        <div style="display:flex; gap:10px;">
+            <select id="selectAlunos"><option value="">Carregando...</option></select>
+            <button class="btn-zerar" onclick="zerarTudo()">ZERAR</button>
+        </div>
+    </div>
 
-        <div class="grid">
-            <div class="card"><h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
-            <div class="card"><h2>2. PERFIL COMPORTAMENTAL (DISC)</h2><canvas id="chartDisc"></canvas></div>
-        </div>
+    <div class="grid">
+        <div class="card"><h2>SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
+        <div class="card"><h2>DISC</h2><canvas id="chartDisc"></canvas></div>
     </div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
     const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(config);
     const db = firebase.database();
     let radarChart, discChart;
 
-    // FUNÇÃO DE LOGIN
-    function verificarSenha() {
-        const pass = document.getElementById('senhaInput').value;
-        if (pass === "pitukinha") {
-            document.getElementById('tela-login').style.display = 'none';
-            document.getElementById('conteudo-painel').style.display = 'block';
-            document.body.style.alignItems = 'flex-start'; // Ajusta o layout após entrar
-            iniciarPainel();
-        } else {
-            alert("Senha incorreta!");
+    function registrarEEnviar() {
+        const nome = document.getElementById('nomeNovo').value;
+        if(!nome) return alert("Digite o nome!");
+        
+        // 1. Já cria o registro vazio no banco com o nome
+        db.ref('resultados/' + nome).set({ nome: nome, status: "Pendente" });
+        
+        // 2. Abre o WhatsApp com o link que leva o nome
+        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?nome=${encodeURIComponent(nome)}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent("Olá " + nome + ", faça seu teste: " + link)}`, '_blank');
+        document.getElementById('nomeNovo').value = "";
+    }
+
+    // Atualiza a lista de alunos automaticamente
+    db.ref('resultados').on('value', snap => {
+        const select = document.getElementById('selectAlunos');
+        select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
+        if(snap.val()) {
+            Object.keys(snap.val()).forEach(nome => {
+                select.add(new Option(nome, nome));
+            });
         }
-    }
+    });
 
-    function iniciarPainel() {
-        db.ref('resultados').on('value', (snapshot) => {
-            const select = document.getElementById('selectAlunos');
-            const dados = snapshot.val();
-            select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
-            if (dados) {
-                const nomesUnicos = [...new Set(Object.values(dados).map(d => d.nome))];
-                nomesUnicos.forEach(nome => {
-                    const opt = document.createElement('option');
-                    opt.value = nome; opt.text = nome;
-                    select.appendChild(opt);
-                });
-            }
-        });
-    }
+    function zerarTudo() { if(confirm("Apagar tudo?")) db.ref('/').remove(); }
 
-    function zerarTudo() {
-        if(confirm("Jorge, confirma a limpeza total?")) {
-            db.ref('/').remove();
-            location.reload();
-        }
-    }
-
-    document.getElementById('selectAlunos').addEventListener('change', (e) => {
-        const nome = e.target.value;
-        if (!nome) return;
-        db.ref('resultados').orderByChild('nome').equalTo(nome).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const result = Object.values(data).pop();
-                atualizarGraficos(result.pontosDISC, result.pontosSAP);
-            }
+    document.getElementById('selectAlunos').addEventListener('change', e => {
+        db.ref('resultados/' + e.target.value).once('value', snap => {
+            const r = snap.val();
+            if(r && r.pontosDISC) plotar(r.pontosDISC, r.pontosSAP);
+            else alert("Este aluno ainda não respondeu!");
         });
     });
 
-    function atualizarGraficos(disc, sap) {
-        if (radarChart) radarChart.destroy();
-        if (discChart) discChart.destroy();
-
+    function plotar(disc, sap) {
+        if(radarChart) radarChart.destroy();
+        if(discChart) discChart.destroy();
         radarChart = new Chart(document.getElementById('chartRadar'), {
             type: 'radar',
-            data: {
-                labels: ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Ética', 'Prob.', 'Equipe', 'Aprender'],
-                datasets: [{ label: 'SAP', data: sap, borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.2)' }]
-            },
+            data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{label:'SAP', data:sap, borderColor:'#38bdf8'}]},
             options: { scales: { r: { beginAtZero: true, max: 5 } } }
         });
-
         discChart = new Chart(document.getElementById('chartDisc'), {
             type: 'bar',
-            data: {
-                labels: ['D', 'I', 'S', 'C'],
-                datasets: [{ label: 'DISC', data: [disc.D, disc.I, disc.S, disc.C], backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'] }]
-            }
+            data: { labels: ['D','I','S','C'], datasets: [{label:'DISC', data:[disc.D, disc.I, disc.S, disc.C], backgroundColor:['#ef4444','#f59e0b','#10b981','#3b82f6']}]}
         });
     }
 </script>
