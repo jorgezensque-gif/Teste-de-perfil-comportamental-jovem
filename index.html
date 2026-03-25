@@ -3,110 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação DISC & SAP - Pescar</title>
+    <title>Painel Gestor - Jorge Zensque</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 5px solid #38bdf8; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        .btn { background: #334155; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; text-align: left; font-size: 16px; transition: 0.2s; }
-        .btn:hover { background: #38bdf8; color: #0f172a; font-weight: bold; }
-        .progresso { height: 8px; background: #0f172a; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
-        .barra { height: 100%; background: #22c55e; width: 0%; transition: 0.3s; }
-        h2 { font-size: 20px; margin-bottom: 20px; }
+        /* Estilo da trava de segurança */
+        #bloqueio { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        
+        body { background: #0f172a; color: white; font-family: sans-serif; padding: 20px; visibility: hidden; } /* Esconde tudo até acertar a senha */
+        .header { background: #1e293b; padding: 20px; border-radius: 10px; border-bottom: 4px solid #38bdf8; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 250px; font-size: 16px; }
+        .btn-zerar { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        h1, h2 { margin: 0; color: #f8fafc; }
+        .sub-jorge { color: #38bdf8; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="box" id="quiz-container">
-        <div class="progresso"><div class="barra" id="barra"></div></div>
-        <h2 id="pergunta">Carregando...</h2>
-        <div id="opcoes"></div>
+
+<div id="bloqueio">
+    <h2 style="color: #38bdf8;">Validando Acesso...</h2>
+</div>
+
+<div class="header">
+    <div>
+        <h1>PAINEL GESTOR</h1>
+        <div class="sub-jorge">Responsável: Jorge Zensque</div>
     </div>
+    <div>
+        <select id="selectAlunos"><option value="">Carregando alunos...</option></select>
+        <button class="btn-zerar" onclick="zerarTudo()">LIMPAR BANCO</button>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card"><h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
+    <div class="card"><h2>2. PERFIL COMPORTAMENTAL (DISC)</h2><canvas id="chartDisc"></canvas></div>
+</div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
-    const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(config);
-    const db = firebase.database();
-
-    // CAPTURA DE NOME SEM ERRO
-    let nomeAluno = new URLSearchParams(window.location.search).get('nome');
-    
-    // Se não houver nome no link, pergunta ao aluno
-    while (!nomeAluno || nomeAluno.trim() === "") {
-        nomeAluno = prompt("Por favor, digite seu nome completo para começar a avaliação:");
-    }
-
-    const lista = [
-        // --- DISC (8 PERGUNTAS) ---
-        { q: "1. Como prefere atuar em projetos?", o: ["Liderar a equipe", "Motivar os colegas", "Manter a calma", "Cuidar dos detalhes"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "2. Qual sua prioridade?", o: ["Vencer e bater metas", "Ser aceito e popular", "Ter segurança e harmonia", "Seguir processos"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "3. Numa conversa, você é:", o: ["Direto e objetivo", "Entusiasmado", "Bom ouvinte", "Preciso e técnico"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "4. Reação a desafios:", o: ["Determinação", "Otimismo", "Cautela", "Análise"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "5. O que mais incomoda?", o: ["Falta de poder", "Isolamento", "Mudanças bruscas", "Desorganização"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "6. Como toma decisões?", o: ["Rápido e focado", "Intuitivo", "Pensando no grupo", "Baseado em dados"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "7. Sob pressão, você fica:", o: ["Autoritário", "Agitado", "Calado/Passivo", "Perfeccionista"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "8. Como as pessoas te definem?", o: ["Decidido", "Comunicativo", "Confiável", "Disciplinado"], v: ["D","I","S","C"], t: "DISC" },
-        
-        // --- SAP (7 COMPETÊNCIAS DO PDF PESCAR) ---
-        { q: "9. PROTAGONISMO: Você se sente construtor do seu destino?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 0 },
-        { q: "10. RESPONSABILIDADE: Você cumpre regras e horários?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 1 },
-        { q: "11. COMUNICAÇÃO: Você se expressa de forma clara?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 2 },
-        { q: "12. ÉTICA: Você respeita as diferenças e o próximo?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 3 },
-        { q: "13. PROBLEMAS: Você mantém a calma e resolve conflitos?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 4 },
-        { q: "14. EQUIPE: Você ajuda o grupo antes de pensar em si?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 5 },
-        { q: "15. APRENDER: Você busca novos conhecimentos sempre?", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 6 }
-    ];
-
-    let index = 0;
-    let disc = { D:0, I:0, S:0, C:0 };
-    let sap = [0,0,0,0,0,0,0];
-
-    function mostrar() {
-        if (index >= lista.length) {
-            finalizar();
-            return;
-        }
-        const p = lista[index];
-        document.getElementById('pergunta').innerText = p.q;
-        document.getElementById('barra').style.width = (index / lista.length * 100) + "%";
-        
-        const div = document.getElementById('opcoes');
-        div.innerHTML = "";
-        
-        p.o.forEach((txt, i) => {
-            const b = document.createElement('button');
-            b.className = "btn";
-            b.innerText = txt;
-            b.onclick = () => {
-                if (p.t === "DISC") disc[p.v[i]]++;
-                else sap[p.s] = p.v[i];
-                index++;
-                mostrar();
-            };
-            div.appendChild(b);
-        });
-    }
-
-    function finalizar() {
-        const dadosFinal = {
-            nome: nomeAluno,
-            data: new Date().toLocaleString(),
-            pontosDISC: disc,
-            pontosSAP: sap
-        };
-
-        db.ref('resultados').push(dadosFinal).then(() => {
-            document.getElementById('quiz-container').innerHTML = `
-                <h1 style="color: #22c55e;">✅ Concluído!</h1>
-                <p>Obrigado, ${nomeAluno}. Seus resultados já estão no painel do Jorge.</p>
-            `;
-        }).catch(err => {
-            alert("Erro ao salvar! Verifique a internet.");
-        });
-    }
-
-    mostrar();
-</script>
-</body>
-</html>
+    // --- TRAVA DE SEGURANÇA ---
+    const senhaAcesso = prompt("Digite a senha do Gestor:");
+    if (senhaAcesso === "pitukinha") {
+        document.body.style.visibility = "visible";
+        document.getElementById("bloqueio").style.display = "none";
+    } else {
+        alert("Senha incorreta, Jorge!");
+        window
