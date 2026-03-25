@@ -2,22 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Avaliação DISC & SAP Oficial</title>
+    <title>Avaliação DISC & SAP</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; border-top: 5px solid #38bdf8; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn { background: #334155; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; text-align: left; font-size: 16px; transition: 0.2s; }
-        .btn:hover { background: #38bdf8; color: #0f172a; font-weight: bold; }
-        .progresso { height: 8px; background: #0f172a; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
-        .barra { height: 100%; background: #22c55e; width: 0%; transition: 0.3s; }
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .container { background: #1e293b; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; border-top: 5px solid #38bdf8; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; background: #334155; color: white; border: none; border-radius: 8px; cursor: pointer; text-align: left; font-size: 16px; }
+        .btn:hover { background: #38bdf8; color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div class="progresso"><div class="barra" id="barra"></div></div>
-        <h2 id="pergunta"></h2>
+    <div class="container" id="box">
+        <h2 id="pergunta">Carregando...</h2>
         <div id="opcoes"></div>
     </div>
 
@@ -25,58 +22,58 @@
     const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
     firebase.initializeApp(config);
     const db = firebase.database();
+    const nome = new URLSearchParams(window.location.search).get('nome');
 
-    const nome = new URLSearchParams(window.location.search).get('nome') || "Jorge_S_A_P";
-    
-    const lista = [
-        // --- DISC ---
-        { q: "1. Como prefere atuar em projetos?", o: ["Liderar", "Motivar", "Paciência", "Técnica"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "2. Qual sua prioridade?", o: ["Metas", "Pessoas", "Segurança", "Regras"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "3. Na conversa, você é:", o: ["Direto", "Entusiasmado", "Ouvinte", "Preciso"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "4. Reação a desafios:", o: ["Determinação", "Otimismo", "Cautela", "Análise"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "5. O que incomoda?", o: ["Falta de poder", "Isolamento", "Mudança", "Desordem"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "6. Como decide?", o: ["Rápido", "Intuição", "Grupo", "Dados"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "7. Sob pressão:", o: ["Autoritário", "Agitado", "Calado", "Crítico"], v: ["D","I","S","C"], t: "DISC" },
-        { q: "8. Como te veem?", o: ["Decidido", "Alegre", "Fiel", "Sério"], v: ["D","I","S","C"], t: "DISC" },
-        
-        // --- SAP (BASEADO NO SEU PDF PESCAR) ---
-        { q: "9. Ser Protagonista: Você se reconhece como construtor do seu destino? [cite: 9, 10]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 0 },
-        { q: "10. Responsabilidade: Você cumpre regras, tarefas e prazos? [cite: 27, 32]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 1 },
-        { q: "11. Comunicação: Expressa-se de forma clara e objetiva? [cite: 46, 49]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 2 },
-        { q: "12. Ética e Cidadania: Respeita as diferenças e os direitos humanos? [cite: 65, 66]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 3 },
-        { q: "13. Situações-Problema: Pensa antes de agir e resolve conflitos? [cite: 82, 87]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 4 },
-        { q: "14. Trabalho em Equipe: Coloca o interesse do grupo acima do seu? [cite: 98, 100]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 5 },
-        { q: "15. Aprender a Aprender: Busca novos conhecimentos e tira lições da vida? [cite: 117, 118]", o: ["1 - Baixo", "2", "3", "4", "5 - Alto"], v: [1,2,3,4,5], t: "SAP", s: 6 }
+    // Validação de acesso único e segurança
+    db.ref('resultados/' + nome).once('value', snap => {
+        if (!snap.exists()) {
+            document.body.innerHTML = "<h1>❌ Link inválido ou expirado.</h1>";
+        } else if (snap.val().status === "Finalizado") {
+            document.body.innerHTML = "<h1>❌ Esta avaliação já foi concluída.</h1>";
+        } else {
+            iniciar();
+        }
+    });
+
+    const perguntas = [
+        { q: "Como prefere atuar em projetos?", o: ["Liderar","Motivar","Paciência","Técnica"], v: ["D","I","S","C"], t: "D" },
+        { q: "Sua principal força é:", o: ["Resultados","Relacionamento","Harmonia","Qualidade"], v: ["D","I","S","C"], t: "D" },
+        { q: "Protagonismo (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:0 },
+        { q: "Responsabilidade (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:1 },
+        { q: "Comunicação (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:2 },
+        { q: "Ética (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:3 },
+        { q: "Resolução de Problemas (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:4 },
+        { q: "Trabalho em Equipe (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:5 },
+        { q: "Desejo de Aprender (1 a 5)", o: ["1","2","3","4","5"], v:[1,2,3,4,5], t:"S", s:6 }
     ];
 
-    let index = 0;
-    let disc = { D:0, I:0, S:0, C:0 };
-    let sap = [0,0,0,0,0,0,0];
+    let atual = 0, d_pt = {D:0,I:0,S:0,C:0}, s_pt = [0,0,0,0,0,0,0];
 
-    function mostrar() {
-        if (index >= lista.length) {
-            db.ref('resultados').push({ nome, pontosDISC: disc, pontosSAP: sap }).then(() => {
-                document.body.innerHTML = "<div class='box'><h1>✅ Concluído!</h1><p>Jorge, os dados oficiais do SAP foram enviados!</p></div>";
-            });
-            return;
-        }
-        const p = lista[index];
+    function iniciar() {
+        if(atual >= perguntas.length) return finalizar();
+        const p = perguntas[atual];
         document.getElementById('pergunta').innerText = p.q;
-        document.getElementById('barra').style.width = (index / lista.length * 100) + "%";
-        
         const div = document.getElementById('opcoes'); div.innerHTML = "";
-        p.o.forEach((txt, i) => {
-            const b = document.createElement('button');
-            b.className = "btn"; b.innerText = txt;
+        p.o.forEach((txt, idx) => {
+            const b = document.createElement('button'); b.className = "btn"; b.innerText = txt;
             b.onclick = () => {
-                if (p.t === "DISC") disc[p.v[i]]++;
-                else sap[p.s] = p.v[i];
-                index++; mostrar();
+                if(p.t === "D") d_pt[p.v[idx]]++; else s_pt[p.s] = p.v[idx];
+                atual++; iniciar();
             };
             div.appendChild(b);
         });
     }
-    mostrar();
+
+    function finalizar() {
+        // GRAVAÇÃO BLINDADA: Atualiza o registro do Jorge com os pontos finais
+        db.ref('resultados/' + nome).update({
+            pontosDISC: d_pt,
+            pontosSAP: s_pt,
+            status: "Finalizado"
+        }).then(() => {
+            document.getElementById('box').innerHTML = "<h1>✅ Concluído!</h1><p>Jorge já pode ver seus resultados no painel.</p>";
+        });
+    }
 </script>
 </body>
 </html>
