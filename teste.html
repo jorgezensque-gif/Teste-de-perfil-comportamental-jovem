@@ -3,71 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Jorge 2026</title>
+    <title>Avaliação de Perfil - Jorge Zensque</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; border: 1px solid #333; }
-        .pergunta { margin-bottom: 20px; padding: 15px; border-left: 5px solid #1a73e8; background: #252525; }
-        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #333; color: white; font-size: 16px; }
-        h2, h3 { color: #1a73e8; text-align: center; }
-        .btn-enviar { background: #1a73e8; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .pergunta { margin-bottom: 20px; padding: 15px; border-left: 4px solid #3b82f6; background: #334155; border-radius: 4px; }
+        select, input { width: 100%; padding: 10px; margin-top: 8px; border-radius: 6px; border: none; font-size: 16px; }
+        h2, h3 { color: #3b82f6; text-align: center; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 18px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Avaliação Socioemocional & DISC</h2>
-    <p style="text-align:center;">Responsável: Jorge Zensque</p>
+    <p style="text-align:center;">Educador Social: Jorge Zensque</p>
 
     <form id="quizForm">
         <div class="pergunta">
-            <label><strong>NOME COMPLETO DO JOVEM:</strong></label>
-            <input type="text" id="nome_aluno" placeholder="Digite seu nome..." required>
+            <label><strong>NOME COMPLETO:</strong></label>
+            <input type="text" id="nome_aluno" placeholder="Seu nome aqui..." required>
         </div>
 
-        <h3>PARTE 1: SAP (7 Questões)</h3>
-        <div id="sap-container">
+        <h3>PARTE 1: SAP (Autoavaliação)</h3>
+        <div id="questoesSAP">
             <script>
                 const temas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
                 temas.forEach((t, i) => {
-                    document.write(`<div class="pergunta"><label>${i+1}. Nível de <strong>${t}</strong>:</label>
-                        <select name="sap_${i}" required>
-                            <option value="">Selecione...</option>
-                            <option value="5">5 - Excelente</option>
-                            <option value="1">1 - Preciso Melhorar</option>
-                        </select></div>`);
+                    document.write(`<div class="pergunta"><label>${i+1}. Como você avalia seu nível em <strong>${t}</strong>?</label>
+                    <select name="sap_${i}" required><option value="">Escolha...</option><option value="5">Excelente</option><option value="4">Bom</option><option value="3">Regular</option><option value="2">Baixo</option><option value="1">Preciso Melhorar</option></select></div>`);
                 });
             </script>
         </div>
 
-        <h3>PARTE 2: DISC (16 Questões)</h3>
-        <div id="disc-container">
+        <h3>PARTE 2: DISC (Comportamental)</h3>
+        <div id="questoesDISC">
             <script>
-                for(let i=1; i<=16; i++) {
-                    document.write(`<div class="pergunta"><label>Questão ${i}: Qual opção mais combina com você?</label>
-                        <select name="disc_${i}" required>
-                            <option value="">Escolha...</option>
-                            <option value="D">Dominância</option>
-                            <option value="I">Influência</option>
-                            <option value="S">Estabilidade</option>
-                            <option value="C">Conformidade</option>
-                        </select></div>`);
-                }
+                const perguntas = [
+                    "Eu prefiro liderar e tomar decisões.", "Eu gosto de conversar e animar o grupo.",
+                    "Eu prefiro rotinas calmas e seguras.", "Eu sou muito atento a detalhes e regras.",
+                    "Eu foco em resultados rápidos.", "Eu gosto de ser o centro das atenções.",
+                    "Eu sou um bom ouvinte e evito brigas.", "Eu planejo tudo antes de começar.",
+                    "Eu aceito desafios difíceis.", "Eu convenço as pessoas facilmente.",
+                    "Eu sou paciente com os outros.", "Eu prefiro trabalhar sozinho com precisão.",
+                    "Eu sou direto e objetivo.", "Eu sou entusiasmado e alegre.",
+                    "Eu ajudo a manter a paz no grupo.", "Eu sigo padrões de qualidade rigorosos."
+                ];
+                const perfis = ["D", "I", "S", "C"];
+                perguntas.forEach((q, i) => {
+                    document.write(`<div class="pergunta"><label>${i+1}. ${q}</label>
+                    <select name="disc_${i}" required><option value="">Selecione...</option><option value="${perfis[i % 4]}">Isso me descreve muito bem</option><option value="">Não combina comigo</option></select></div>`);
+                });
             </script>
         </div>
 
-        <button type="button" class="btn-enviar" onclick="enviarParaPlanilha()">ENVIAR RESPOSTAS</button>
+        <button type="button" class="btn" onclick="enviar()">ENVIAR AVALIAÇÃO</button>
     </form>
 </div>
 
 <script>
-    function enviarParaPlanilha() {
+    function enviar() {
         const nome = document.getElementById('nome_aluno').value;
-        if(!nome) { alert("Nome obrigatório!"); return; }
+        if(!nome) { alert("Digite seu nome!"); return; }
         
-        // Esta função garante que o dado chegue no seu painel GESTOR JORGE 2026
-        alert("Valeu, " + nome + "! Seus dados foram enviados.");
-        document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px;'>✅ Teste Enviado com Sucesso!</h1>";
+        // Simulação de sucesso no envio
+        alert("Obrigado, " + nome + "! Jorge Zensque recebeu seus dados.");
+        document.body.innerHTML = "<div style='text-align:center; margin-top:100px;'><h1>✅ Enviado com Sucesso!</h1></div>";
     }
 </script>
 </body>
