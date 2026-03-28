@@ -9,9 +9,11 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #1c1e21; padding: 20px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e4e6eb; padding-bottom: 20px; margin-bottom: 30px; }
-        .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 40px; }
         .chart-container { background: #fff; padding: 20px; border: 1px solid #e4e6eb; border-radius: 12px; min-height: 350px; }
+        .coletivo { background: #fffde7; border: 2px solid #fbc02d; padding: 25px; border-radius: 15px; }
         h2 { color: #1a73e8; margin: 0; }
+        h3 { color: #f57f17; text-align: center; margin-bottom: 20px; }
         select { padding: 12px; border-radius: 8px; border: 1px solid #ccd0d5; font-size: 16px; cursor: pointer; background: #fff; }
         .title-chart { text-align: center; font-weight: bold; margin-bottom: 10px; color: #4b4b4b; }
     </style>
@@ -25,18 +27,32 @@
             <small>Painel de Inteligência Socioemocional</small>
         </div>
         <select id="selectAluno">
-            <option value="">Carregando dados da planilha...</option>
+            <option value="">Carregando dados...</option>
         </select>
     </div>
 
     <div class="grid-graficos">
         <div class="chart-container">
-            <div class="title-chart">Competências SAP (Radar)</div>
+            <div class="title-chart">Individual: Competências SAP</div>
             <canvas id="radarSAP"></canvas>
         </div>
         <div class="chart-container">
-            <div class="title-chart">Perfil Comportamental DISC</div>
+            <div class="title-chart">Individual: Perfil DISC</div>
             <canvas id="pizzaDISC"></canvas>
+        </div>
+    </div>
+
+    <div class="coletivo">
+        <h3>📊 INTELIGÊNCIA COLETIVA DA TURMA</h3>
+        <div class="grid-graficos">
+            <div class="chart-container">
+                <div class="title-chart">Geral: Média SAP da Turma</div>
+                <canvas id="radarGeralSAP"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="title-chart">Geral: Distribuição DISC</div>
+                <canvas id="colunaGeralDISC"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -44,12 +60,8 @@
 <script>
     // --- SEGURANÇA ---
     const pass = prompt("Acesso Restrito. Digite a senha:");
-    if (pass !== "JORGE2026") {
-        alert("Acesso Negado!");
-        window.location.href = "https://google.com";
-    }
+    if (pass !== "JORGE2026") { window.location.href = "https://google.com"; }
 
-    // --- CONFIGURAÇÃO ---
     const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZ6O-GfmHDaViJQv3cwJlz9heWuG9IKLCntXWE0BdPaZPo3k_bnJgC8KxQjn5LxbgNLvSLsBSNT_d4/pub?output=csv";
     let dadosGlobais = [];
     let charts = {};
@@ -58,83 +70,96 @@
         try {
             const res = await fetch(csvURL);
             const csv = await res.text();
-            // Divide linhas e trata vírgulas dentro de aspas (comum em CSV do Google)
             const linhas = csv.split('\n').map(l => l.split(','));
-            dadosGlobais = linhas.slice(1); 
+            dadosGlobais = linhas.slice(1).filter(l => l[0] && l[0].trim() !== ""); 
 
             const select = document.getElementById('selectAluno');
             select.innerHTML = '<option value="">Selecione um Aluno...</option>';
             
             dadosGlobais.forEach((linha, index) => {
-                if(linha[0] && linha[0].trim() !== "") {
-                    let opt = document.createElement('option');
-                    opt.value = index;
-                    opt.innerHTML = linha[0];
-                    select.appendChild(opt);
-                }
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.innerHTML = linha[0];
+                select.appendChild(opt);
             });
-        } catch (e) {
-            alert("Erro ao conectar com a planilha. Verifique se ela está 'Publicada na Web' como CSV.");
-        }
+
+            gerarGraficosColetivos();
+        } catch (e) { console.error("Erro na carga:", e); }
     }
 
-    document.getElementById('selectAluno').onchange = function() {
-        const idx = this.value;
-        if(idx !== "") {
-            const d = dadosGlobais[idx];
-            atualizarGraficos(d);
-        }
-    };
+    function gerarGraficosColetivos() {
+        // Cálculo da Média SAP da Turma
+        let totaisSAP = [0,0,0,0,0,0,0];
+        let contagemDISC = [0,0,0,0]; // D, I, S, C
 
-    function atualizarGraficos(d) {
-        // --- 1. RADAR SAP ---
-        const ctxRadar = document.getElementById('radarSAP').getContext('2d');
-        if(charts.radar) charts.radar.destroy();
-        charts.radar = new Chart(ctxRadar, {
+        dadosGlobais.forEach(d => {
+            for(let i=0; i<7; i++) totaisSAP[i] += parseFloat(d[i+1] || 0);
+            
+            const disc = d[8] ? d[8].split('-') : [0,0,0,0];
+            let maxIndex = disc.indexOf(Math.max(...disc.map(Number)));
+            if(maxIndex !== -1) contagemDISC[maxIndex]++;
+        });
+
+        const mediasSAP = totaisSAP.map(v => (v / dadosGlobais.length).toFixed(1));
+
+        // Radar Geral SAP
+        new Chart(document.getElementById('radarGeralSAP'), {
             type: 'radar',
             data: {
                 labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
                 datasets: [{
-                    label: d[0],
-                    data: [d[1], d[2], d[3], d[4], d[5], d[6], d[7]],
-                    backgroundColor: 'rgba(26, 115, 232, 0.2)',
-                    borderColor: '#1a73e8',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#1a73e8'
+                    label: 'Média da Turma',
+                    data: mediasSAP,
+                    backgroundColor: 'rgba(245, 127, 23, 0.2)',
+                    borderColor: '#f57f17',
+                    borderWidth: 3
                 }]
             },
             options: { scales: { r: { beginAtZero: true, max: 5 } } }
         });
 
-        // --- 2. PIZZA DISC ---
-        const ctxPizza = document.getElementById('pizzaDISC').getContext('2d');
-        if(charts.pizza) charts.pizza.destroy();
-        
-        // Se a coluna I (DISC) estiver vazia, ele divide igual. 
-        // Se tiver dados tipo 10-40-20-30, ele desenha o perfil real.
-        const discRaw = d[8] ? d[8].split('-') : [25, 25, 25, 25];
-        const discData = discRaw.map(v => parseFloat(v));
+        // Coluna Geral DISC
+        new Chart(document.getElementById('colunaGeralDISC'), {
+            type: 'bar',
+            data: {
+                labels: ["Dominantes", "Influentes", "Estáveis", "Conformes"],
+                datasets: [{
+                    label: 'Quantidade de Jovens',
+                    data: contagemDISC,
+                    backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db']
+                }]
+            }
+        });
+    }
 
-        charts.pizza = new Chart(ctxPizza, {
+    document.getElementById('selectAluno').onchange = function() {
+        const d = dadosGlobais[this.value];
+        if(!d) return;
+
+        // Radar Individual
+        if(charts.radar) charts.radar.destroy();
+        charts.radar = new Chart(document.getElementById('radarSAP'), {
+            type: 'radar',
+            data: {
+                labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                datasets: [{ label: d[0], data: [d[1],d[2],d[3],d[4],d[5],d[6],d[7]], backgroundColor: 'rgba(26, 115, 232, 0.2)', borderColor: '#1a73e8' }]
+            },
+            options: { scales: { r: { beginAtZero: true, max: 5 } } }
+        });
+
+        // Pizza Individual DISC
+        if(charts.pizza) charts.pizza.destroy();
+        const discData = d[8] ? d[8].split('-').map(Number) : [25,25,25,25];
+        charts.pizza = new Chart(document.getElementById('pizzaDISC'), {
             type: 'pie',
             data: {
-                labels: ["Dominância", "Influência", "Estabilidade", "Conformidade"],
-                datasets: [{
-                    data: discData,
-                    backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+                labels: ["D","I","S","C"],
+                datasets: [{ data: discData, backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db'] }]
             }
         });
     }
 
     carregarDados();
 </script>
-
 </body>
 </html>
