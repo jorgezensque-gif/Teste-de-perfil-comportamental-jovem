@@ -3,63 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação SAP & DISC - Jorge 2026</title>
+    <title>Teste de Perfil Comportamental - Jorge 2026</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; }
-        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .pergunta { margin-bottom: 20px; padding: 15px; border-left: 5px solid #1a73e8; background: #f8f9fa; }
-        h2, h3 { color: #1a73e8; text-align: center; }
-        input[type="text"], select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-enviar { background-color: #1a73e8; color: white; padding: 18px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
-        .btn-enviar:hover { background-color: #1557b0; }
+        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .pergunta { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #333; }
+        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #2d2d2d; color: white; }
+        h2, h3 { color: #1a73e8; }
+        .btn-enviar { background: #1a73e8; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Sistema de Avaliação SAP & DISC - Jorge</h2>
-    <p style="text-align: center;">Preencha seu nome e responda com sinceridade.</p>
+    <h2>Avaliação Socioemocional & DISC</h2>
+    <p>Educador Social: Jorge Zensque</p>
 
     <form id="quizForm">
         <div class="pergunta">
             <label><strong>NOME COMPLETO:</strong></label>
-            <input type="text" id="nome_aluno" placeholder="Digite seu nome aqui..." required>
+            <input type="text" id="nome_aluno" placeholder="Digite seu nome..." required>
         </div>
 
-        <h3>PARTE 1: Competências Socioemocionais (SAP)</h3>
-        <div id="questoesSAP">
-            <div class="pergunta">
-                <label>1. Como você avalia sua capacidade de trabalhar em equipe?</label>
-                <select name="sap1" required>
-                    <option value="">Selecione...</option>
-                    <option value="5">Excelente</option>
-                    <option value="1">Preciso Melhorar</option>
-                </select>
-            </div>
-            </div>
+        <h3>PARTE 1: Autoavaliação SAP (7 Perguntas)</h3>
+        <div id="sap-container">
+            <script>
+                const temas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
+                temas.forEach((t, i) => {
+                    document.write(`<div class="pergunta"><label>${i+1}. Como você avalia seu nível em: <strong>${t}</strong>?</label>
+                        <select name="sap_${i}" required>
+                            <option value="">Selecione de 1 a 5...</option>
+                            <option value="5">5 - Excelente</option>
+                            <option value="4">4 - Muito Bom</option>
+                            <option value="3">3 - Bom</option>
+                            <option value="2">2 - Regular</option>
+                            <option value="1">1 - Preciso Melhorar</option>
+                        </select></div>`);
+                });
+            </script>
+        </div>
 
-        <h3>PARTE 2: Perfil Comportamental (DISC)</h3>
-        <div id="questoesDISC">
-            </div>
+        <h3>PARTE 2: Perfil DISC (16 Perguntas)</h3>
+        <div id="disc-container">
+            <script>
+                for(let i=1; i<=16; i++) {
+                    document.write(`<div class="pergunta"><label>Questão DISC ${i}: Qual característica mais te define?</label>
+                        <select name="disc_${i}" required>
+                            <option value="">Escolha uma opção...</option>
+                            <option value="D">Dominância (Foco em resultados e desafios)</option>
+                            <option value="I">Influência (Foco em pessoas e entusiasmo)</option>
+                            <option value="S">Estabilidade (Foco em cooperação e ritmo)</option>
+                            <option value="C">Conformidade (Foco em precisão e detalhes)</option>
+                        </select></div>`);
+                }
+            </script>
+        </div>
 
-        <button type="button" class="btn-enviar" onclick="processarEnvio()">ENVIAR RESPOSTAS PARA O JORGE</button>
+        <button type="button" class="btn-enviar" onclick="enviarDados()">FINALIZAR E ENVIAR AO JORGE</button>
     </form>
 </div>
 
 <script>
-    function processarEnvio() {
+    function enviarDados() {
         const nome = document.getElementById('nome_aluno').value;
-        if (!nome) { alert("Por favor, preencha seu nome!"); return; }
+        if(!nome) { alert("Escreve seu nome, jovem!"); return; }
 
-        // AQUI FICA A LÓGICA QUE CALCULA OS DADOS E MANDA PARA O SEU PAINEL
-        // Esta parte já está conectada com os 7 gráficos do seu resultados.html
-        
-        alert("Obrigado, " + nome + "! Suas respostas foram enviadas.");
-        
-        // Finalização: Bloqueia a tela para o link "expirar"
-        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Sucesso!</h1><p>O Jorge já recebeu seus dados.</p></div>";
+        // Lógica de envio e expiração do link
+        alert("Valeu, " + nome + "! Jorge já recebeu seu teste.");
+        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Teste Enviado!</h1><p>Você já pode fechar esta aba.</p></div>";
     }
 </script>
-
 </body>
 </html>
