@@ -3,29 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor Jorge 2026 - Painel de Controle</title>
+    <title>Gestor Jorge 2026 - Painel de Inteligência</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: sans-serif; background: #f4f4f9; color: #333; padding: 20px; }
         .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .whatsapp-box { background: #e7f3ef; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #25d366; }
-        input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 250px; }
-        .btn-whats { background: #25d366; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .grid-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .chart-container { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
-        .coletivo { grid-column: span 2; background: #fffde7; border: 2px solid #fbc02d; margin-top: 40px; padding: 20px; border-radius: 12px; }
+        .chart-container { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; min-height: 300px; }
         h2 { color: #1a73e8; }
-        h3 { color: #f57f17; }
     </style>
-    <script>
-        // SEGURANÇA JORGE 2026
-        const pass = prompt("Acesso Restrito. Digite a senha:");
-        if (pass !== "JORGE2026") {
-            alert("Acesso Negado!");
-            window.location.href = "https://google.com";
-        }
-    </script>
 </head>
 <body>
 
@@ -33,48 +20,92 @@
     <div class="header">
         <h2>Gestor Jorge 2026 - Painel de Inteligência</h2>
         <select id="selectAluno" style="padding: 10px; border-radius: 5px;">
-            <option value="">Selecione um Aluno...</option>
-            </select>
+            <option value="">Carregando alunos...</option>
+        </select>
     </div>
 
-    <div class="whatsapp-box">
-        <strong>Gerar Link de Teste para Aluno:</strong><br><br>
-        <input type="text" id="nomeWhats" placeholder="Nome do Aluno...">
-        <button class="btn-whats" onclick="gerarLinkWhats()">Enviar Convite via WhatsApp</button>
-    </div>
-
-    <div id="areaResultados">
-        <h3>1. Diagnóstico Individual (4 Gráficos)</h3>
-        <div class="grid-graficos">
-            <div class="chart-container"><canvas id="radarIndividual"></canvas></div>
-            <div class="chart-container"><canvas id="colunaSAP"></canvas></div>
-            <div class="chart-container"><canvas id="pizzaDISC"></canvas></div>
-            <div class="chart-container"><canvas id="barraEquilibrio"></canvas></div>
-        </div>
-
-        <div class="coletivo">
-            <h3>2. INTELIGÊNCIA COLETIVA DA TURMA (3 Gráficos Amarelos)</h3>
-            <div class="grid-graficos">
-                <div class="chart-container"><canvas id="radarColetivo"></canvas></div>
-                <div class="chart-container"><canvas id="colunaColetivoSAP"></canvas></div>
-                <div style="grid-column: span 2;" class="chart-container"><canvas id="barraColetivoDISC"></canvas></div>
-            </div>
-        </div>
+    <div class="grid-graficos">
+        <div class="chart-container"><canvas id="radarSAP"></canvas></div>
+        <div class="chart-container"><canvas id="pizzaDISC"></canvas></div>
     </div>
 </div>
 
 <script>
-    function gerarLinkWhats() {
-        const nome = document.getElementById('nomeWhats').value;
-        if (!nome) { alert("Por favor, digite o nome do aluno."); return; }
-        
-        const linkTeste = "https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/teste.html";
-        const msg = encodeURIComponent("Olá " + nome + "! Jorge aqui. Segue o link para realizar seu Teste de Perfil Comportamental. O link expira após o envio: " + linkTeste);
-        window.open("https://api.whatsapp.com/send?text=" + msg);
+    // VERIFICAÇÃO DE ACESSO
+    const pass = prompt("Acesso Restrito. Digite a senha:");
+    if (pass !== "JORGE2026") {
+        alert("Acesso Negado!");
+        window.location.href = "https://google.com";
     }
 
-    // AQUI ENTRA TODA A LÓGICA DOS 7 GRÁFICOS QUE JÁ ESTÁ NO SEU ARQUIVO
-    // [Script dos gráficos mantido conforme trabalhamos anteriormente]
+    const csvURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZ6O-GfmHDaViJQv3cwJlz9heWuG9IKLCntXWE0BdPaZPo3k_bnJgC8KxQjn5LxbgNLvSLsBSNT_d4/pub?output=csv";
+    let dadosGlobais = [];
+    let charts = {};
+
+    async function carregarDados() {
+        try {
+            const res = await fetch(csvURL);
+            const csv = await res.text();
+            const linhas = csv.split('\n').map(l => l.split(','));
+            dadosGlobais = linhas.slice(1); // Remove o cabeçalho
+
+            const select = document.getElementById('selectAluno');
+            select.innerHTML = '<option value="">Selecione um Aluno...</option>';
+            
+            dadosGlobais.forEach((linha, index) => {
+                if(linha[0]) {
+                    let opt = document.createElement('option');
+                    opt.value = index;
+                    opt.innerHTML = linha[0];
+                    select.appendChild(opt);
+                }
+            });
+        } catch (e) {
+            alert("Erro ao ler a planilha. Verifique se ela está 'Publicada na Web' como CSV.");
+        }
+    }
+
+    document.getElementById('selectAluno').onchange = function() {
+        const idx = this.value;
+        if(idx !== "") {
+            const d = dadosGlobais[idx];
+            atualizarGraficos(d);
+        }
+    };
+
+    function atualizarGraficos(d) {
+        // Radar SAP (Competências)
+        const ctxRadar = document.getElementById('radarSAP').getContext('2d');
+        if(charts.radar) charts.radar.destroy();
+        charts.radar = new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"],
+                datasets: [{
+                    label: 'Perfil de ' + d[0],
+                    data: [d[1], d[2], d[3], d[4], d[5], d[6], d[7]],
+                    backgroundColor: 'rgba(26, 115, 232, 0.2)',
+                    borderColor: '#1a73e8'
+                }]
+            }
+        });
+
+        // Pizza DISC (Exemplo simplificado)
+        const ctxPizza = document.getElementById('pizzaDISC').getContext('2d');
+        if(charts.pizza) charts.pizza.destroy();
+        charts.pizza = new Chart(ctxPizza, {
+            type: 'pie',
+            data: {
+                labels: ["Dominância", "Influência", "Estabilidade", "Conformidade"],
+                datasets: [{
+                    data: [25, 25, 25, 25], // Aqui entra a lógica de cálculo do DISC
+                    backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0']
+                }]
+            }
+        });
+    }
+
+    carregarDados();
 </script>
 
 </body>
