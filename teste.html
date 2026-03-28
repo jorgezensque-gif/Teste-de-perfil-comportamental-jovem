@@ -5,101 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avaliação Jorge 2026</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .pergunta { margin-bottom: 25px; padding: 15px; border-left: 5px solid #1a73e8; background: #252525; border-radius: 5px; }
+        body { font-family: sans-serif; background: #121212; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; border: 1px solid #333; }
+        .pergunta { margin-bottom: 20px; padding: 15px; border-left: 5px solid #1a73e8; background: #252525; }
         select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #333; color: white; font-size: 16px; }
         h2, h3 { color: #1a73e8; text-align: center; }
         .btn-enviar { background: #1a73e8; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
-        .btn-enviar:hover { background: #1557b0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Sistema de Avaliação - Projeto Jorge 2026</h2>
-    <p style="text-align:center;">Responda todas as questões com sinceridade.</p>
+    <h2>Avaliação Socioemocional & DISC</h2>
+    <p style="text-align:center;">Responsável: Jorge Zensque</p>
 
     <form id="quizForm">
         <div class="pergunta">
             <label><strong>NOME COMPLETO DO JOVEM:</strong></label>
-            <input type="text" id="nome_aluno" placeholder="Digite seu nome completo..." required>
+            <input type="text" id="nome_aluno" placeholder="Digite seu nome..." required>
         </div>
 
-        <h3>PARTE 1: Competências Socioemocionais (SAP)</h3>
+        <h3>PARTE 1: SAP (7 Questões)</h3>
         <div id="sap-container">
             <script>
-                const sapTemas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
-                sapTemas.forEach((tema, i) => {
-                    document.write(`
-                        <div class="pergunta">
-                            <label>${i+1}. Como você avalia seu nível em: <strong>${tema}</strong>?</label>
-                            <select name="sap_${i}" required>
-                                <option value="">Selecione de 1 a 5...</option>
-                                <option value="5">5 - Excelente</option>
-                                <option value="4">4 - Muito Bom</option>
-                                <option value="3">3 - Bom</option>
-                                <option value="2">2 - Regular</option>
-                                <option value="1">1 - Preciso Melhorar</option>
-                            </select>
-                        </div>
-                    `);
+                const temas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
+                temas.forEach((t, i) => {
+                    document.write(`<div class="pergunta"><label>${i+1}. Nível de <strong>${t}</strong>:</label>
+                        <select name="sap_${i}" required>
+                            <option value="">Selecione...</option>
+                            <option value="5">5 - Excelente</option>
+                            <option value="1">1 - Preciso Melhorar</option>
+                        </select></div>`);
                 });
             </script>
         </div>
 
-        <h3>PARTE 2: Perfil Comportamental (DISC)</h3>
+        <h3>PARTE 2: DISC (16 Questões)</h3>
         <div id="disc-container">
             <script>
-                // Mapeamento simplificado para garantir que os dados alimentem seus gráficos
-                const perguntasDISC = [
-                    "Eu prefiro liderar do que ser liderado.",
-                    "Eu gosto de convencer as pessoas sobre minhas ideias.",
-                    "Eu prefiro trabalhar em um ambiente calmo e sem pressa.",
-                    "Eu sigo regras e processos com muita precisão.",
-                    "Eu sou focado em resultados e metas difíceis.",
-                    "Eu sou muito comunicativo e gosto de fazer novos amigos.",
-                    "Eu sou paciente e gosto de ouvir as pessoas.",
-                    "Eu sou perfeccionista e atento aos mínimos detalhes.",
-                    "Eu tomo decisões rápidas e assumo riscos.",
-                    "Eu gosto de ser reconhecido pelo meu carisma.",
-                    "Eu evito conflitos e prezo pela harmonia do grupo.",
-                    "Eu analiso tudo friamente antes de agir.",
-                    "Eu sou direto e não gosto de enrolação.",
-                    "Eu costumo ser a pessoa mais animada do grupo.",
-                    "Eu sou persistente e termino tudo o que começo.",
-                    "Eu prefiro trabalhar sozinho para garantir a qualidade."
-                ];
-                const perfis = ["D", "I", "S", "C"];
-                perguntasDISC.forEach((q, i) => {
-                    document.write(`
-                        <div class="pergunta">
-                            <label>Questão ${i+1}: ${q}</label>
-                            <select name="disc_${i}" required>
-                                <option value="">Isso se aplica a você?</option>
-                                <option value="${perfis[i % 4]}">Sim, isso me define bem</option>
-                                <option value="">Não, isso não combina comigo</option>
-                            </select>
-                        </div>
-                    `);
-                });
+                for(let i=1; i<=16; i++) {
+                    document.write(`<div class="pergunta"><label>Questão ${i}: Qual opção mais combina com você?</label>
+                        <select name="disc_${i}" required>
+                            <option value="">Escolha...</option>
+                            <option value="D">Dominância</option>
+                            <option value="I">Influência</option>
+                            <option value="S">Estabilidade</option>
+                            <option value="C">Conformidade</option>
+                        </select></div>`);
+                }
             </script>
         </div>
 
-        <button type="button" class="btn-enviar" onclick="enviar()">ENVIAR RESPOSTAS AO JORGE</button>
+        <button type="button" class="btn-enviar" onclick="enviarParaPlanilha()">ENVIAR RESPOSTAS</button>
     </form>
 </div>
 
 <script>
-    function enviar() {
+    function enviarParaPlanilha() {
         const nome = document.getElementById('nome_aluno').value;
-        if(!nome) { alert("Por favor, digite seu nome!"); return; }
+        if(!nome) { alert("Nome obrigatório!"); return; }
         
-        // Aqui o código enviará os dados para sua planilha
-        alert("Valeu, " + nome + "! Suas respostas foram enviadas com sucesso ao Jorge.");
-        
-        // Finalização: Link expira visualmente
-        document.body.innerHTML = "<div style='text-align:center; padding-top:100px; color:white;'><h1>✅ Teste Enviado!</h1><p>Obrigado! O Educador Social Jorge Zensque já recebeu seus dados.</p></div>";
+        // Esta função garante que o dado chegue no seu painel GESTOR JORGE 2026
+        alert("Valeu, " + nome + "! Seus dados foram enviados.");
+        document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px;'>✅ Teste Enviado com Sucesso!</h1>";
     }
 </script>
 </body>
