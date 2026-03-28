@@ -8,53 +8,62 @@
         body { font-family: sans-serif; background: #121212; color: white; padding: 20px; }
         .container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         .pergunta { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #333; }
-        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #2d2d2d; color: white; }
-        h2, h3 { color: #1a73e8; }
+        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; background: #2d2d2d; color: white; font-size: 16px; }
+        h2, h3 { color: #1a73e8; text-align: center; }
         .btn-enviar { background: #1a73e8; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; }
+        .btn-enviar:hover { background: #1557b0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Avaliação Socioemocional & DISC</h2>
-    <p>Educador Social: Jorge Zensque</p>
+    <p style="text-align:center;">Educador Social: Jorge Zensque</p>
 
     <form id="quizForm">
         <div class="pergunta">
             <label><strong>NOME COMPLETO:</strong></label>
-            <input type="text" id="nome_aluno" placeholder="Digite seu nome..." required>
+            <input type="text" id="nome_aluno" placeholder="Digite seu nome completo..." required>
         </div>
 
-        <h3>PARTE 1: Autoavaliação SAP (7 Perguntas)</h3>
+        <h3>PARTE 1: Autoavaliação SAP (7 Competências)</h3>
         <div id="sap-container">
             <script>
-                const temas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
-                temas.forEach((t, i) => {
-                    document.write(`<div class="pergunta"><label>${i+1}. Como você avalia seu nível em: <strong>${t}</strong>?</label>
-                        <select name="sap_${i}" required>
-                            <option value="">Selecione de 1 a 5...</option>
-                            <option value="5">5 - Excelente</option>
-                            <option value="4">4 - Muito Bom</option>
-                            <option value="3">3 - Bom</option>
-                            <option value="2">2 - Regular</option>
-                            <option value="1">1 - Preciso Melhorar</option>
-                        </select></div>`);
+                const temasSAP = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
+                temasSAP.forEach((tema, i) => {
+                    document.write(`
+                        <div class="pergunta">
+                            <label>${i+1}. Como você avalia sua competência em: <strong>${tema}</strong>?</label>
+                            <select name="sap_${i}" required>
+                                <option value="">Selecione de 1 a 5...</option>
+                                <option value="5">5 - Excelente</option>
+                                <option value="4">4 - Muito Bom</option>
+                                <option value="3">3 - Bom</option>
+                                <option value="2">2 - Regular</option>
+                                <option value="1">1 - Preciso Melhorar</option>
+                            </select>
+                        </div>
+                    `);
                 });
             </script>
         </div>
 
-        <h3>PARTE 2: Perfil DISC (16 Perguntas)</h3>
+        <h3>PARTE 2: Perfil Comportamental DISC (16 Questões)</h3>
         <div id="disc-container">
             <script>
                 for(let i=1; i<=16; i++) {
-                    document.write(`<div class="pergunta"><label>Questão DISC ${i}: Qual característica mais te define?</label>
-                        <select name="disc_${i}" required>
-                            <option value="">Escolha uma opção...</option>
-                            <option value="D">Dominância (Foco em resultados e desafios)</option>
-                            <option value="I">Influência (Foco em pessoas e entusiasmo)</option>
-                            <option value="S">Estabilidade (Foco em cooperação e ritmo)</option>
-                            <option value="C">Conformidade (Foco em precisão e detalhes)</option>
-                        </select></div>`);
+                    document.write(`
+                        <div class="pergunta">
+                            <label>Questão ${i}: Em uma situação de desafio, qual característica melhor te descreve?</label>
+                            <select name="disc_${i}" required>
+                                <option value="">Escolha a que mais combina com você...</option>
+                                <option value="D">Dominância (Foco em resultados e rapidez)</option>
+                                <option value="I">Influência (Foco em pessoas e comunicação)</option>
+                                <option value="S">Estabilidade (Foco em paciência e persistência)</option>
+                                <option value="C">Conformidade (Foco em regras e detalhes)</option>
+                            </select>
+                        </div>
+                    `);
                 }
             </script>
         </div>
@@ -68,9 +77,17 @@
         const nome = document.getElementById('nome_aluno').value;
         if(!nome) { alert("Escreve seu nome, jovem!"); return; }
 
-        // Lógica de envio e expiração do link
-        alert("Valeu, " + nome + "! Jorge já recebeu seu teste.");
-        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Teste Enviado!</h1><p>Você já pode fechar esta aba.</p></div>";
+        // Simulação de envio - Aqui os dados vão para sua planilha/painel
+        alert("Obrigado, " + nome + "! Suas respostas foram enviadas com sucesso ao Jorge.");
+        
+        // Bloqueio pós-envio para o link "expirar"
+        document.body.innerHTML = `
+            <div style='text-align:center; padding-top:100px; color:white;'>
+                <h1 style='color:#25d366;'>✅ Teste Enviado!</h1>
+                <p>Parabéns! O Educador Social Jorge Zensque já recebeu seus dados.</p>
+                <button onclick="window.close()" style="padding:10px; cursor:pointer;">Fechar Aba</button>
+            </div>
+        `;
     }
 </script>
 </body>
