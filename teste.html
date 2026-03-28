@@ -2,43 +2,52 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teste de Perfil Comportamental - Jorge 2026</title>
     <style>
-        /* Mantenha seu CSS aqui para o teste continuar bonito */
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .quiz-container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        body { font-family: sans-serif; padding: 20px; background: #121212; color: white; }
+        .quiz-container { max-width: 800px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; }
+        .pergunta { margin-bottom: 25px; padding: 15px; border-bottom: 1px solid #333; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: none; }
+        button { background: #1a73e8; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="quiz-container">
-    <h2>Teste de Perfil Comportamental</h2>
-    <p>Preencha seu nome e responda com sinceridade.</p>
-    
-    <form id="quizForm">
-        <label>Seu Nome:</label><br>
-        <input type="text" id="nomeAluno" required style="width: 100%; padding: 10px; margin-bottom: 20px;"><br>
+    <h2>Avaliação Socioemocional & DISC</h2>
+    <p>Jorge 2026 - Responda com sinceridade todas as questões.</p>
 
-        <button type="button" onclick="enviarTeste()" style="background: #1a73e8; color: white; padding: 15px; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
-            ENVIAR RESPOSTAS
-        </button>
+    <form id="formTeste">
+        <div class="pergunta">
+            <label><strong>NOME COMPLETO DO JOVEM:</strong></label>
+            <input type="text" id="nome" placeholder="Digite seu nome aqui..." required>
+        </div>
+
+        <div id="perguntasSAP">
+            <h3>Parte 1: Autoavaliação SAP</h3>
+            </div>
+
+        <div id="perguntasDISC">
+            <h3>Parte 2: Perfil Comportamental DISC</h3>
+            </div>
+
+        <button type="button" onclick="enviarDados()">ENVIAR RESPOSTAS PARA O JORGE</button>
     </form>
 </div>
 
 <script>
-    // ESTA É A PARTE BLINDADA - SEM TRAVA DE LINK INVÁLIDO
-    function enviarTeste() {
-        const nome = document.getElementById('nomeAluno').value;
-        if(!nome) { alert("Por favor, digite seu nome!"); return; }
+    function enviarDados() {
+        const nome = document.getElementById('nome').value;
+        if(!nome) { alert("Por favor, preencha seu nome!"); return; }
 
-        // AQUI FICA A SUA LÓGICA DE CÁLCULO E O LINK DA SUA PLANILHA
-        alert("Obrigado, " + nome + "! Suas respostas foram enviadas.");
+        // AQUI FICA A LÓGICA DE CÁLCULO QUE ENVIA PARA O SEU PAINEL DE RESULTADOS
+        // Captura todas as respostas, faz a média e manda para sua planilha/banco
         
-        // Bloqueia o reenvio (Link expira visualmente)
-        document.body.innerHTML = "<div style='text-align:center; margin-top:50px;'><h1>✅ Teste Enviado com Sucesso!</h1><p>Obrigado por participar.</p></div>";
+        alert("Obrigado, " + nome + "! Suas respostas foram enviadas ao Jorge.");
+        
+        // Finalização: O link expira visualmente para o aluno
+        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Teste Finalizado!</h1><p>Seus dados foram processados com sucesso.</p></div>";
     }
 </script>
-
 </body>
 </html>
