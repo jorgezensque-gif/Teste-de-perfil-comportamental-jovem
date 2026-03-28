@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autoavaliação SAP & DISC - Jorge Zensque</title>
+    <title>Autoavaliação Projeto Pescar 2026 - Gestor Jorge</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
         .container { max-width: 800px; margin: auto; background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; }
         h2, h3 { color: #58a6ff; text-align: center; }
-        .secao { background: #21262d; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
-        .comp-titulo { color: #f1c40f; font-weight: bold; display: block; margin-bottom: 5px; }
-        .comp-desc { font-size: 0.85em; color: #8b949e; display: block; margin-bottom: 15px; }
+        .secao { background: #21262d; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #f1c40f; }
+        .comp-titulo { color: #f1c40f; font-weight: bold; display: block; font-size: 1.1em; }
+        .comp-desc { font-size: 0.85em; color: #8b949e; display: block; margin: 10px 0; font-style: italic; }
         input[type="range"] { width: 100%; accent-color: #58a6ff; cursor: pointer; }
-        .nota { text-align: center; font-size: 1.2em; font-weight: bold; color: #58a6ff; }
-        .disc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .disc-item { padding: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 5px; cursor: pointer; text-align: center; }
-        .disc-item.selected { background: #238636; border-color: #2ea043; }
-        button#btnEnviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .nota { text-align: center; font-size: 1.5em; font-weight: bold; color: #58a6ff; margin-top: 10px; }
+        .disc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 15px; }
+        .disc-item { padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .disc-item.selected { background: #238636; border-color: #2ea043; color: white; transform: scale(1.05); }
+        button#btnEnviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -24,39 +24,39 @@
 <div class="container">
     <h2>Avaliação do Jovem - Pescar 2026</h2>
     
-    <div class="secao">
-        <label>Seu Nome Completo:</label>
-        <input type="text" id="nome" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: none;">
+    <div style="margin-bottom: 30px;">
+        <label>Nome Completo do Jovem:</label>
+        <input type="text" id="nome" style="width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: white;">
     </div>
 
-    <h3>PARTE 1: Competências SAP 5.0</h3>
+    <h3>PARTE 1: Competências SAP 5.0 (Autoavaliação)</h3>
     <div id="sap-container"></div>
 
     <h3>PARTE 2: Perfil Comportamental (DISC)</h3>
-    <p style="text-align: center; font-size: 0.9em;">Selecione as palavras que mais combinam com você:</p>
+    <p style="text-align: center; font-size: 0.9em; color: #8b949e;">Selecione as palavras que mais descrevem o seu jeito de ser:</p>
     <div class="disc-grid" id="disc-container"></div>
 
-    <button id="btnEnviar" onclick="enviarDados()">ENVIAR PARA O EDUCADOR JORGE</button>
+    <button id="btnEnviar" onclick="enviarDados()">FINALIZAR E ENVIAR PARA O EDUCADOR JORGE</button>
 </div>
 
 <script>
     const saps = [
-        {t: "1. SER PROTAGONISTA", d: "Conscientizar-se de sua identidade, ser autônomo e construtor do seu destino."},
-        {t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, assiduidade, cumprir prazos e respeitar normas."},
-        {t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressar-se claramente e ter predisposição para ouvir."},
-        {t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores que respeitam as diferenças e direitos humanos."},
-        {t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar desafios, pensar em alternativas e tomar decisões."},
-        {t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e partilhar, colocando o grupo acima do pessoal."},
-        {t: "7. APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos."}
+        {t: "1. SER PROTAGONISTA", d: "Conscientizar-se de sua identidade, ser autônomo, atuante e construtor do seu destino."},
+        {t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, assiduidade, cumprimento de prazos e respeito às normas de convivência."},
+        {t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressar-se com clareza, objetividade e ter predisposição para ouvir o outro."},
+        {t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Possuir valores que respeitam as diferenças e os direitos humanos. Ser honesto e confiável."},
+        {t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Capacidade de entender um desafio, pensar em alternativas e tomar decisões responsáveis."},
+        {t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e partilhar, colocando os interesses do grupo acima dos interesses pessoais."},
+        {t: "7. APRENDER A APRENDER", d: "Habilidade para buscar, compreender e aplicar novos conhecimentos em diferentes espaços."}
     ];
 
     const discPalavras = [
         {p: "Competitivo", t: "D"}, {p: "Comunicativo", t: "I"}, {p: "Paciente", t: "S"}, {p: "Organizado", t: "C"},
         {p: "Decidido", t: "D"}, {p: "Entusiasta", t: "I"}, {p: "Persistente", t: "S"}, {p: "Analítico", t: "C"},
-        {p: "Direto", t: "D"}, {p: "Sociável", t: "I"}, {p: "Calmo", t: "S"}, {p: "Detalhista", t: "C"}
+        {p: "Direto", t: "D"}, {p: "Sociável", t: "I"}, {p: "Calmo", t: "S"}, {p: "Detalhista", t: "C"},
+        {p: "Ousado", t: "D"}, {p: "Otimista", t: "I"}, {p: "Acolhedor", t: "S"}, {p: "Perfeccionista", t: "C"}
     ];
 
-    // Gerar campos SAP
     const sapCont = document.getElementById('sap-container');
     saps.forEach((s, i) => {
         sapCont.innerHTML += `<div class="secao">
@@ -67,9 +67,8 @@
         </div>`;
     });
 
-    // Gerar Botões DISC
     const discCont = document.getElementById('disc-container');
-    discPalavras.forEach((item, i) => {
+    discPalavras.forEach((item) => {
         discCont.innerHTML += `<div class="disc-item" onclick="this.classList.toggle('selected')" data-tipo="${item.t}">${item.p}</div>`;
     });
 
@@ -77,14 +76,15 @@
         const nome = document.getElementById('nome').value;
         if(!nome) return alert("Por favor, digite seu nome!");
 
-        // Calcular DISC
         const selecionados = document.querySelectorAll('.disc-item.selected');
+        if(selecionados.length === 0) return alert("Por favor, selecione algumas palavras no Perfil DISC!");
+
         let d=0, i=0, s=0, c=0;
         selecionados.forEach(el => {
             let t = el.getAttribute('data-tipo');
             if(t==='D') d++; if(t==='I') i++; if(t==='S') s++; if(t==='C') c++;
         });
-        const total = d+i+s+c || 1;
+        const total = d+i+s+c;
         const discString = `${Math.round(d/total*100)}-${Math.round(i/total*100)}-${Math.round(s/total*100)}-${Math.round(c/total*100)}`;
 
         const payload = {
@@ -99,15 +99,14 @@
             disc: discString
         };
 
-        // COLE AQUI SEU LINK DO APPS SCRIPT (O que termina em /exec)
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxoK-XGvXv5p9B7X2p5y9p-X-v-v-v/exec"; 
+        const scriptURL = "SUA_URL_DO_APPS_SCRIPT_AQUI"; 
 
         try {
             await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Sucesso! Jorge já recebeu sua avaliação.");
+            alert("✅ Sucesso! Jorge já recebeu sua avaliação.");
             window.location.reload();
         } catch (e) {
-            alert("Erro ao enviar. Verifique o link do script.");
+            alert("❌ Erro ao enviar. Verifique o link do script.");
         }
     }
 </script>
