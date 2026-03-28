@@ -3,69 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Comportamental - Jorge Zensque</title>
+    <title>Autoavaliação SAP & DISC - Jorge Zensque</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .pergunta { margin-bottom: 25px; padding: 15px; border-left: 5px solid #3b82f6; background: #334155; border-radius: 6px; }
-        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; font-size: 16px; background: #f1f5f9; color: #1e293b; }
-        h2, h3 { color: #3b82f6; text-align: center; }
-        .btn-enviar { background: #3b82f6; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        .btn-enviar:hover { background: #2563eb; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; }
+        h2, h3 { color: #58a6ff; text-align: center; }
+        .secao { background: #21262d; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .comp-titulo { color: #f1c40f; font-weight: bold; display: block; margin-bottom: 5px; }
+        .comp-desc { font-size: 0.85em; color: #8b949e; display: block; margin-bottom: 15px; }
+        input[type="range"] { width: 100%; accent-color: #58a6ff; cursor: pointer; }
+        .nota { text-align: center; font-size: 1.2em; font-weight: bold; color: #58a6ff; }
+        .disc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .disc-item { padding: 10px; background: #0d1117; border: 1px solid #30363d; border-radius: 5px; cursor: pointer; text-align: center; }
+        .disc-item.selected { background: #238636; border-color: #2ea043; }
+        button#btnEnviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Avaliação Socioemocional & DISC</h2>
-    <p style="text-align:center;">Educador Social: <strong>Jorge Zensque</strong></p>
+    <h2>Avaliação do Jovem - Pescar 2026</h2>
+    
+    <div class="secao">
+        <label>Seu Nome Completo:</label>
+        <input type="text" id="nome" style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: none;">
+    </div>
 
-    <form id="quizForm">
-        <div class="pergunta">
-            <label><strong>NOME COMPLETO DO JOVEM:</strong></label>
-            <input type="text" id="nome_usuario" placeholder="Digite seu nome aqui..." required>
-        </div>
+    <h3>PARTE 1: Competências SAP 5.0</h3>
+    <div id="sap-container"></div>
 
-        <h3>PARTE 1: Competências SAP</h3>
-        <div id="sap-area">
-            <script>
-                const sap = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
-                sap.forEach((tema, i) => {
-                    document.write(`<div class="pergunta"><label>${i+1}. Como você avalia seu nível em: <strong>${tema}</strong>?</label>
-                    <select name="sap_${i}" required><option value="">Selecione...</option><option value="5">5 - Excelente</option><option value="4">4 - Muito Bom</option><option value="3">3 - Bom</option><option value="2">2 - Regular</option><option value="1">1 - Preciso Melhorar</option></select></div>`);
-                });
-            </script>
-        </div>
+    <h3>PARTE 2: Perfil Comportamental (DISC)</h3>
+    <p style="text-align: center; font-size: 0.9em;">Selecione as palavras que mais combinam com você:</p>
+    <div class="disc-grid" id="disc-container"></div>
 
-        <h3>PARTE 2: Perfil DISC</h3>
-        <div id="disc-area">
-            <script>
-                const discPerguntas = [
-                    "Eu prefiro liderar do que ser liderado.", "Eu gosto de convencer as pessoas sobre minhas ideias.", "Eu prefiro manter a calma e evitar pressões.", "Eu sou muito atento a detalhes e sigo todas as regras.",
-                    "Eu foco nos resultados e detesto perder tempo.", "Eu sou comunicativo e gosto de animar o ambiente.", "Eu sou paciente e gosto de ajudar os outros.", "Eu sou organizado e gosto de tudo planejado.",
-                    "Eu tomo riscos para atingir meus objetivos.", "Eu uso meu entusiasmo para influenciar os outros.", "Eu sou um bom ouvinte e evito conflitos.", "Eu analiso todos os fatos antes de decidir.",
-                    "Eu sou direto e competitivo.", "Eu gosto de ser o centro das atenções no grupo.", "Eu sou persistente e termino o que começo.", "Eu sou perfeccionista e prezo pela qualidade."
-                ];
-                const tipos = ["D", "I", "S", "C"];
-                discPerguntas.forEach((q, i) => {
-                    document.write(`<div class="pergunta"><label>Questão ${i+1}: ${q}</label>
-                    <select name="disc_${i}" required><option value="">O quanto isso combina com você?</option><option value="${tipos[i % 4]}">Isso me define muito bem</option><option value="">Não combina comigo</option></select></div>`);
-                });
-            </script>
-        </div>
-
-        <button type="button" class="btn-enviar" onclick="enviarDados()">ENVIAR PARA O EDUCADOR JORGE</button>
-    </form>
+    <button id="btnEnviar" onclick="enviarDados()">ENVIAR PARA O EDUCADOR JORGE</button>
 </div>
 
 <script>
-    function enviarDados() {
-        const nome = document.getElementById('nome_usuario').value;
-        if(!nome) { alert("Por favor, preencha o seu nome!"); return; }
-        
-        // Esta função envia os dados e libera o acesso ao seu painel gestor
-        alert("Obrigado, " + nome + "! Suas respostas foram enviadas ao Jorge.");
-        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Sucesso!</h1><p>Jorge Zensque já recebeu sua avaliação.</p></div>";
+    const saps = [
+        {t: "1. SER PROTAGONISTA", d: "Conscientizar-se de sua identidade, ser autônomo e construtor do seu destino."},
+        {t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, assiduidade, cumprir prazos e respeitar normas."},
+        {t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressar-se claramente e ter predisposição para ouvir."},
+        {t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Valores que respeitam as diferenças e direitos humanos."},
+        {t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Enfrentar desafios, pensar em alternativas e tomar decisões."},
+        {t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e partilhar, colocando o grupo acima do pessoal."},
+        {t: "7. APRENDER A APRENDER", d: "Habilidade para buscar e construir novos conhecimentos."}
+    ];
+
+    const discPalavras = [
+        {p: "Competitivo", t: "D"}, {p: "Comunicativo", t: "I"}, {p: "Paciente", t: "S"}, {p: "Organizado", t: "C"},
+        {p: "Decidido", t: "D"}, {p: "Entusiasta", t: "I"}, {p: "Persistente", t: "S"}, {p: "Analítico", t: "C"},
+        {p: "Direto", t: "D"}, {p: "Sociável", t: "I"}, {p: "Calmo", t: "S"}, {p: "Detalhista", t: "C"}
+    ];
+
+    // Gerar campos SAP
+    const sapCont = document.getElementById('sap-container');
+    saps.forEach((s, i) => {
+        sapCont.innerHTML += `<div class="secao">
+            <span class="comp-titulo">${s.t}</span>
+            <span class="comp-desc">${s.d}</span>
+            <input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="document.getElementById('v${i+1}').innerText = this.value">
+            <div class="nota" id="v${i+1}">3</div>
+        </div>`;
+    });
+
+    // Gerar Botões DISC
+    const discCont = document.getElementById('disc-container');
+    discPalavras.forEach((item, i) => {
+        discCont.innerHTML += `<div class="disc-item" onclick="this.classList.toggle('selected')" data-tipo="${item.t}">${item.p}</div>`;
+    });
+
+    async function enviarDados() {
+        const nome = document.getElementById('nome').value;
+        if(!nome) return alert("Por favor, digite seu nome!");
+
+        // Calcular DISC
+        const selecionados = document.querySelectorAll('.disc-item.selected');
+        let d=0, i=0, s=0, c=0;
+        selecionados.forEach(el => {
+            let t = el.getAttribute('data-tipo');
+            if(t==='D') d++; if(t==='I') i++; if(t==='S') s++; if(t==='C') c++;
+        });
+        const total = d+i+s+c || 1;
+        const discString = `${Math.round(d/total*100)}-${Math.round(i/total*100)}-${Math.round(s/total*100)}-${Math.round(c/total*100)}`;
+
+        const payload = {
+            nome: nome,
+            sap1: document.getElementById('sap1').value,
+            sap2: document.getElementById('sap2').value,
+            sap3: document.getElementById('sap3').value,
+            sap4: document.getElementById('sap4').value,
+            sap5: document.getElementById('sap5').value,
+            sap6: document.getElementById('sap6').value,
+            sap7: document.getElementById('sap7').value,
+            disc: discString
+        };
+
+        // COLE AQUI SEU LINK DO APPS SCRIPT (O que termina em /exec)
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxoK-XGvXv5p9B7X2p5y9p-X-v-v-v/exec"; 
+
+        try {
+            await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+            alert("Sucesso! Jorge já recebeu sua avaliação.");
+            window.location.reload();
+        } catch (e) {
+            alert("Erro ao enviar. Verifique o link do script.");
+        }
     }
 </script>
 </body>
