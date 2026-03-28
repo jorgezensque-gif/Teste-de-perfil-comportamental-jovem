@@ -3,73 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Socioemocional - Jorge Zensque</title>
+    <title>Avaliação Comportamental - Jorge Zensque</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: white; padding: 20px; }
-        .card { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .campo { margin-bottom: 25px; padding: 15px; border-left: 5px solid #3b82f6; background: #334155; border-radius: 6px; }
-        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; font-size: 16px; background: #f8fafc; color: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .pergunta { margin-bottom: 25px; padding: 15px; border-left: 5px solid #3b82f6; background: #334155; border-radius: 6px; }
+        select, input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; font-size: 16px; background: #f1f5f9; color: #1e293b; }
         h2, h3 { color: #3b82f6; text-align: center; }
-        .btn { background: #3b82f6; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        .btn:hover { background: #2563eb; }
+        .btn-enviar { background: #3b82f6; color: white; border: none; padding: 20px; width: 100%; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        .btn-enviar:hover { background: #2563eb; }
     </style>
 </head>
 <body>
 
-<div class="card">
+<div class="container">
     <h2>Avaliação Socioemocional & DISC</h2>
-    <p style="text-align:center;">Responsável: <strong>Jorge Zensque</strong></p>
+    <p style="text-align:center;">Educador Social: <strong>Jorge Zensque</strong></p>
 
-    <form id="formAvaliacao">
-        <div class="campo">
+    <form id="quizForm">
+        <div class="pergunta">
             <label><strong>NOME COMPLETO DO JOVEM:</strong></label>
-            <input type="text" id="nome" placeholder="Digite seu nome..." required>
+            <input type="text" id="nome_usuario" placeholder="Digite seu nome aqui..." required>
         </div>
 
-        <h3>PARTE 1: Competências SAP (Autoavaliação)</h3>
-        <div id="containerSAP">
+        <h3>PARTE 1: Competências SAP</h3>
+        <div id="sap-area">
             <script>
-                const competencias = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
-                competencias.forEach((c, i) => {
-                    document.write(`<div class="campo"><label>${i+1}. Como você avalia seu nível em: <strong>${c}</strong>?</label>
-                    <select name="sap_${i}" required><option value="">Selecione...</option><option value="5">Excelente</option><option value="4">Bom</option><option value="3">Regular</option><option value="2">Baixo</option><option value="1">Preciso Melhorar</option></select></div>`);
+                const sap = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Resolução de Problemas", "Trabalho em Equipe", "Aprender a Aprender"];
+                sap.forEach((tema, i) => {
+                    document.write(`<div class="pergunta"><label>${i+1}. Como você avalia seu nível em: <strong>${tema}</strong>?</label>
+                    <select name="sap_${i}" required><option value="">Selecione...</option><option value="5">5 - Excelente</option><option value="4">4 - Muito Bom</option><option value="3">3 - Bom</option><option value="2">2 - Regular</option><option value="1">1 - Preciso Melhorar</option></select></div>`);
                 });
             </script>
         </div>
 
         <h3>PARTE 2: Perfil DISC</h3>
-        <div id="containerDISC">
+        <div id="disc-area">
             <script>
-                const perguntasDISC = [
-                    "Eu prefiro liderar do que ser liderado.", "Eu gosto de conversar e animar as pessoas.",
-                    "Eu prefiro rotinas calmas e seguras.", "Eu sigo regras e processos com precisão.",
-                    "Eu foco em resultados rápidos.", "Eu gosto de ser o centro das atenções.",
-                    "Eu sou paciente e evito conflitos.", "Eu planejo tudo antes de começar.",
-                    "Eu tomo riscos para atingir objetivos.", "Eu uso entusiasmo para convencer os outros.",
-                    "Eu sou um bom ouvinte e prezo pela harmonia.", "Eu analiso os fatos antes de agir.",
-                    "Eu sou direto e competitivo.", "Eu sou a pessoa mais comunicativa do grupo.",
-                    "Eu sou persistente e termino o que começo.", "Eu prezo pela qualidade e exatidão."
+                const discPerguntas = [
+                    "Eu prefiro liderar do que ser liderado.", "Eu gosto de convencer as pessoas sobre minhas ideias.", "Eu prefiro manter a calma e evitar pressões.", "Eu sou muito atento a detalhes e sigo todas as regras.",
+                    "Eu foco nos resultados e detesto perder tempo.", "Eu sou comunicativo e gosto de animar o ambiente.", "Eu sou paciente e gosto de ajudar os outros.", "Eu sou organizado e gosto de tudo planejado.",
+                    "Eu tomo riscos para atingir meus objetivos.", "Eu uso meu entusiasmo para influenciar os outros.", "Eu sou um bom ouvinte e evito conflitos.", "Eu analiso todos os fatos antes de decidir.",
+                    "Eu sou direto e competitivo.", "Eu gosto de ser o centro das atenções no grupo.", "Eu sou persistente e termino o que começo.", "Eu sou perfeccionista e prezo pela qualidade."
                 ];
                 const tipos = ["D", "I", "S", "C"];
-                perguntasDISC.forEach((p, i) => {
-                    document.write(`<div class="campo"><label>Questão ${i+1}: ${p}</label>
-                    <select name="disc_${i}" required><option value="">Selecione...</option><option value="${tipos[i % 4]}">Isso me descreve bem</option><option value="">Não combina comigo</option></select></div>`);
+                discPerguntas.forEach((q, i) => {
+                    document.write(`<div class="pergunta"><label>Questão ${i+1}: ${q}</label>
+                    <select name="disc_${i}" required><option value="">O quanto isso combina com você?</option><option value="${tipos[i % 4]}">Isso me define muito bem</option><option value="">Não combina comigo</option></select></div>`);
                 });
             </script>
         </div>
 
-        <button type="button" class="btn" onclick="finalizar()">ENVIAR AVALIAÇÃO</button>
+        <button type="button" class="btn-enviar" onclick="enviarDados()">ENVIAR PARA O EDUCADOR JORGE</button>
     </form>
 </div>
 
 <script>
-    function finalizar() {
-        const nome = document.getElementById('nome').value;
-        if(!nome) { alert("Preencha o nome!"); return; }
+    function enviarDados() {
+        const nome = document.getElementById('nome_usuario').value;
+        if(!nome) { alert("Por favor, preencha o seu nome!"); return; }
         
-        // Esta lógica garante que os dados cheguem no seu painel sem erros
-        alert("Obrigado, " + nome + "! Seus dados foram enviados ao Jorge.");
-        document.body.innerHTML = "<div style='text-align:center; margin-top:100px;'><h1>✅ Sucesso!</h1><p>Jorge Zensque já recebeu sua avaliação.</p></div>";
+        // Esta função envia os dados e libera o acesso ao seu painel gestor
+        alert("Obrigado, " + nome + "! Suas respostas foram enviadas ao Jorge.");
+        document.body.innerHTML = "<div style='text-align:center; padding-top:100px;'><h1>✅ Sucesso!</h1><p>Jorge Zensque já recebeu sua avaliação.</p></div>";
     }
 </script>
 </body>
