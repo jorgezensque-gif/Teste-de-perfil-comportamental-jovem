@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autoavaliação Projeto Pescar 2026 - Gestor Jorge</title>
+    <title>Autoavaliação SAP & DISC - Projeto Pescar 2026</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; }
+        .container { max-width: 800px; margin: auto; background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2, h3 { color: #58a6ff; text-align: center; }
-        .secao { background: #21262d; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid #f1c40f; }
+        .instrucoes { background: #0d1117; padding: 15px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #f1c40f; font-size: 0.9em; }
+        .secao { background: #21262d; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-bottom: 2px solid #30363d; }
         .comp-titulo { color: #f1c40f; font-weight: bold; display: block; font-size: 1.1em; }
-        .comp-desc { font-size: 0.85em; color: #8b949e; display: block; margin: 10px 0; font-style: italic; }
-        input[type="range"] { width: 100%; accent-color: #58a6ff; cursor: pointer; }
-        .nota { text-align: center; font-size: 1.5em; font-weight: bold; color: #58a6ff; margin-top: 10px; }
-        .disc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 15px; }
-        .disc-item { padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.3s; }
-        .disc-item.selected { background: #238636; border-color: #2ea043; color: white; transform: scale(1.05); }
-        button#btnEnviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .comp-desc { font-size: 0.85em; color: #8b949e; display: block; margin: 10px 0; font-style: italic; line-height: 1.4; }
+        input[type="range"] { width: 100%; accent-color: #58a6ff; cursor: pointer; height: 25px; }
+        .nota { text-align: center; font-size: 1.8em; font-weight: bold; color: #58a6ff; margin-top: 10px; }
+        .disc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+        .disc-item { padding: 15px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.2s; font-size: 0.95em; }
+        .disc-item.selected { background: #238636; border-color: #2ea043; color: white; font-weight: bold; transform: scale(1.03); }
+        button#btnEnviar { width: 100%; padding: 22px; background: #238636; color: white; border: none; border-radius: 12px; font-size: 1.3em; font-weight: bold; cursor: pointer; margin-top: 30px; transition: 0.3s; }
+        button#btnEnviar:hover { background: #2ea043; }
     </style>
 </head>
 <body>
@@ -24,30 +26,35 @@
 <div class="container">
     <h2>Avaliação do Jovem - Pescar 2026</h2>
     
-    <div style="margin-bottom: 30px;">
-        <label>Nome Completo do Jovem:</label>
-        <input type="text" id="nome" style="width: 100%; padding: 12px; margin-top: 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: white;">
+    <div class="instrucoes">
+        <strong>Olá, Jovem!</strong> Preencha esta autoavaliação com sinceridade. 
+        Suas respostas ajudarão no seu desenvolvimento profissional e pessoal.
     </div>
 
-    <h3>PARTE 1: Competências SAP 5.0 (Autoavaliação)</h3>
+    <div style="margin-bottom: 35px;">
+        <label style="display:block; margin-bottom:8px;">Nome Completo:</label>
+        <input type="text" id="nome" placeholder="Digite seu nome aqui..." style="width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; font-size: 16px; box-sizing: border-box;">
+    </div>
+
+    <h3>PARTE 1: Competências SAP 5.0</h3>
     <div id="sap-container"></div>
 
     <h3>PARTE 2: Perfil Comportamental (DISC)</h3>
-    <p style="text-align: center; font-size: 0.9em; color: #8b949e;">Selecione as palavras que mais descrevem o seu jeito de ser:</p>
+    <p style="text-align: center; font-size: 0.95em; color: #8b949e;">Selecione as palavras que mais têm a ver com você (escolha pelo menos 4):</p>
     <div class="disc-grid" id="disc-container"></div>
 
-    <button id="btnEnviar" onclick="enviarDados()">FINALIZAR E ENVIAR PARA O EDUCADOR JORGE</button>
+    <button id="btnEnviar" onclick="enviarDados()">ENVIAR PARA O EDUCADOR JORGE</button>
 </div>
 
 <script>
     const saps = [
-        {t: "1. SER PROTAGONISTA", d: "Conscientizar-se de sua identidade, ser autônomo, atuante e construtor do seu destino."},
+        {t: "1. SER PROTAGONISTA", d: "Conscientizar-se de sua identidade, ser autônomo, solidário e construtor do seu destino."},
         {t: "2. SER RESPONSÁVEL E COMPROMETIDO", d: "Pontualidade, assiduidade, cumprimento de prazos e respeito às normas de convivência."},
-        {t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressar-se com clareza, objetividade e ter predisposição para ouvir o outro."},
-        {t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Possuir valores que respeitam as diferenças e os direitos humanos. Ser honesto e confiável."},
-        {t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Capacidade de entender um desafio, pensar em alternativas e tomar decisões responsáveis."},
-        {t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e partilhar, colocando os interesses do grupo acima dos interesses pessoais."},
-        {t: "7. APRENDER A APRENDER", d: "Habilidade para buscar, compreender e aplicar novos conhecimentos em diferentes espaços."}
+        {t: "3. COMPREENDER CONTEXTOS E COMUNICAR-SE", d: "Expressar-se com clareza, objetividade e saber ouvir o outro com atenção."},
+        {t: "4. SER DEMOCRÁTICO, ÉTICO E CIDADÃO", d: "Respeitar as diferenças e os direitos humanos. Agir com honestidade e confiança."},
+        {t: "5. RESOLVER SITUAÇÕES-PROBLEMA", d: "Capacidade de enfrentar desafios, analisar alternativas e tomar decisões responsáveis."},
+        {t: "6. TRABALHAR E PRODUZIR EM EQUIPE", d: "Colaborar e partilhar, colocando os objetivos do grupo acima dos interesses individuais."},
+        {t: "7. APRENDER A APRENDER", d: "Habilidade para buscar, compreender e aplicar novos conhecimentos na prática."}
     ];
 
     const discPalavras = [
@@ -74,10 +81,10 @@
 
     async function enviarDados() {
         const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Por favor, digite seu nome!");
-
         const selecionados = document.querySelectorAll('.disc-item.selected');
-        if(selecionados.length === 0) return alert("Por favor, selecione algumas palavras no Perfil DISC!");
+        
+        if(!nome) return alert("Por favor, digite seu nome!");
+        if(selecionados.length < 4) return alert("Por favor, selecione pelo menos 4 palavras no Perfil DISC!");
 
         let d=0, i=0, s=0, c=0;
         selecionados.forEach(el => {
@@ -99,14 +106,21 @@
             disc: discString
         };
 
-        const scriptURL = "SUA_URL_DO_APPS_SCRIPT_AQUI"; 
+        // COLE O LINK DO SEU APPS SCRIPT ABAIXO:
+        const scriptURL = "COLE_AQUI_O_LINK_DO_SEU_APPS_SCRIPT"; 
 
         try {
+            document.getElementById('btnEnviar').disabled = true;
+            document.getElementById('btnEnviar').innerText = "Enviando...";
+            
             await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("✅ Sucesso! Jorge já recebeu sua avaliação.");
+            
+            alert("✅ Sucesso! O Educador Jorge já recebeu sua avaliação.");
             window.location.reload();
         } catch (e) {
-            alert("❌ Erro ao enviar. Verifique o link do script.");
+            alert("❌ Erro ao enviar. Verifique sua conexão.");
+            document.getElementById('btnEnviar').disabled = false;
+            document.getElementById('btnEnviar').innerText = "Tentar Novamente";
         }
     }
 </script>
