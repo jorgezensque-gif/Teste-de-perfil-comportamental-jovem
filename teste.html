@@ -7,86 +7,49 @@
     <style>
         body { font-family: sans-serif; background: #0d1117; color: white; padding: 20px; }
         .box { background: #161b22; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; border: 1px solid #30363d; }
-        .item { margin-bottom: 25px; padding: 15px; background: #21262d; border-radius: 8px; }
-        .titulo { color: #f1c40f; font-weight: bold; }
-        input[type="range"] { width: 100%; margin: 10px 0; }
-        .disc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-disc { padding: 10px; border: 1px solid #30363d; background: #0d1117; color: white; cursor: pointer; border-radius: 5px; }
-        .btn-disc.selected { background: #238636; }
-        .btn-enviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .item { margin-bottom: 25px; padding: 15px; background: #21262d; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .titulo { color: #f1c40f; font-weight: bold; display: block; margin-bottom: 5px; }
+        .desc { font-size: 0.8em; color: #8b949e; display: block; margin-bottom: 15px; }
+        input[type="range"] { width: 100%; margin: 10px 0; -webkit-appearance: none; background: #30363d; height: 8px; border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #58a6ff; border-radius: 50%; cursor: pointer; border: 2px solid white; }
+        .nota-box { text-align: center; font-size: 1.5em; font-weight: bold; color: #58a6ff; margin-top: 10px; }
+        .btn-enviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.1em; cursor: pointer; margin-top: 30px; transition: background 0.3s; }
+        .btn-enviar:hover { background: #2ea043; }
+        .disc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-disc { padding: 10px; border: 1px solid #30363d; background: #0d1117; color: white; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+        .btn-disc.selected { background: #238636; border-color: #2ea043; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2 style="text-align: center;">Avaliação Jovem - Jorge Zensque</h2>
-    <input type="text" id="nome" placeholder="Seu Nome Completo" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
+    <h2 style="text-align:center; color:#58a6ff; margin-bottom: 30px;">Avaliação socioemocional</h2>
+    
+    <input type="text" id="nome" placeholder="Seu Nome Completo" style="width: 100%; padding: 12px; margin-bottom: 30px; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
 
-    <h3>SAP 5.0 (Arraste de 1 a 5)</h3>
+    <h3 style="color: #f1c40f; margin-bottom: 20px;">SAP 5.0 (Arraste de 1 a 5)</h3>
     <div id="sap"></div>
 
-    <h3>DISC (Selecione o que combina com você)</h3>
+    <h3 style="color: #f1c40f; margin-top: 40px; margin-bottom: 20px;">Perfil DISC (Selecione o que combina com você)</h3>
+    <p style="font-size: 0.8em; color: #8b949e; margin-bottom: 15px;">Selecione as palavras que mais combinam com você:</p>
     <div class="disc-grid" id="disc"></div>
 
     <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR PARA O PAINEL DO JORGE</button>
 </div>
 
 <script>
-    const perguntas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
+    const saps = [
+        {t: "Ser Protagonista", d: "Autonomia, iniciativa e construção do destino."},
+        {t: "Ser Responsável", d: "Pontualidade, prazos e respeito às normas."},
+        {t: "Comunicar-se", d: "Expressão clara e saber ouvir o outro."},
+        {t: "Ser Ético", d: "Honestidade e respeito aos direitos humanos."},
+        {t: "Resolver Problemas", d: "Enfrentar desafios e tomar decisões."}
+    ];
+
     const sapDiv = document.getElementById('sap');
-    perguntas.forEach((p, i) => {
+    saps.forEach((s, i) => {
         sapDiv.innerHTML += `
             <div class="item">
-                <span class="titulo">${i+1}. ${p}</span>
-                <input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value">
-                <span style="display:block; text-align:center; font-weight:bold; color:#58a6ff;">3</span>
-            </div>`;
-    });
-
-    const palavras = [
-        {p:"Direto", t:"D"}, {p:"Amigável", t:"I"}, {p:"Calmo", t:"S"}, {p:"Lógico", t:"C"},
-        {p:"Focado", t:"D"}, {p:"Alegre", t:"I"}, {p:"Paciente", t:"S"}, {p:"Cuidadoso", t:"C"}
-    ];
-    const discDiv = document.getElementById('disc');
-    palavras.forEach(item => {
-        discDiv.innerHTML += `<button class="btn-disc" onclick="this.classList.toggle('selected')" data-t="${item.t}">${item.p}</button>`;
-    });
-
-    async function enviar() {
-        const nome = document.getElementById('nome').value;
-        const btn = document.getElementById('btn-enviar');
-        if(!nome) return alert("Por favor, digite seu nome!");
-
-        const sel = document.querySelectorAll('.btn-disc.selected');
-        let d=0, i=0, s=0, c=0;
-        sel.forEach(b => { 
-            let t = b.getAttribute('data-t');
-            if(t=='D') d++; if(t=='I') i++; if(t=='S') s++; if(t=='C') c++;
-        });
-        const total = (d+i+s+c) || 1;
-        const discStr = `${Math.round(d/total*100)}-${Math.round(i/total*100)}-${Math.round(s/total*100)}-${Math.round(c/total*100)}`;
-
-        const dados = {
-            nome: nome,
-            sap1: document.getElementById('sap1').value, sap2: document.getElementById('sap2').value,
-            sap3: document.getElementById('sap3').value, sap4: document.getElementById('sap4').value,
-            sap5: document.getElementById('sap5').value, sap6: document.getElementById('sap6').value,
-            sap7: document.getElementById('sap7').value,
-            disc: discStr
-        };
-
-        const URL = "https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec";
-
-        try {
-            btn.innerText = "ENVIANDO...";
-            await fetch(URL, { method: 'POST', body: JSON.stringify(dados) });
-            alert("✅ Enviado com sucesso!");
-            window.location.reload();
-        } catch (e) {
-            alert("Erro ao enviar. Verifique sua conexão.");
-            btn.innerText = "ENVIAR PARA O PAINEL DO JORGE";
-        }
-    }
-</script>
-</body>
-</html>
+                <span class="titulo">${i+1}. ${s.t}</span>
+                <span class="desc">${s.d}</span>
+                <input type="range" id="sap${i+1}" min="1
