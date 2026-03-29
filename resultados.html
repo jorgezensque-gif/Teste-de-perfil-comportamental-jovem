@@ -12,10 +12,11 @@
         .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
         .chart-box { border: 1px solid #eee; border-radius: 10px; padding: 15px; }
         
-        /* BOTÃO DE GERAR LINK - AGORA NO PAINEL ADM */
+        /* BOTÃO DE GERAR LINK - ESTILO BLINDADO */
         .btn-gerar-link {
-            background: #007bff; color: white; padding: 12px 20px; border-radius: 8px;
-            text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px;
+            background: #007bff; color: white; padding: 15px 20px; border-radius: 8px;
+            text-decoration: none; font-weight: bold; display: block; text-align: center;
+            margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,123,255,0.3);
         }
         .btn-gerar-link:hover { background: #0056b3; }
     </style>
@@ -50,23 +51,22 @@
     <div style="background: #fff9db; padding: 20px; border-radius: 10px; border: 1px solid #ffe066;">
         <h3 style="text-align: center; margin-top: 0;">📊 INTELIGÊNCIA COLETIVA DA TURMA</h3>
         <div class="charts-grid">
-            <canvas id="radarGeral"></canvas>
-            <canvas id="barGeral"></canvas>
+            <div class="chart-box"><canvas id="radarGeral"></canvas></div>
+            <div class="chart-box"><canvas id="barGeral"></canvas></div>
         </div>
     </div>
 </div>
 
 <script>
-    // FUNÇÃO PARA VOCÊ MANDAR O LINK PARA A TURMA
+    // FUNÇÃO PARA ENVIAR O LINK CORRETO (SEM ERRO 404)
     function enviarLinkTurma() {
-        // Altere o link abaixo para o link do seu site de resposta (o teste.html)
-        const linkDoTeste = "https://jorgezensque-gif.github.io/teste.html"; 
+        // Link ajustado para o seu repositório real
+        const linkDoTeste = "https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/teste.html"; 
         const mensagem = `Olá Jovens! Aqui é o Educador Social Jorge. 🚀%0A%0APor favor, respondam à Avaliação Socioemocional no link abaixo:%0A${linkDoTeste}`;
         window.open(`https://wa.me/?text=${mensagem}`, '_blank');
     }
 
-    // Os códigos de inicialização dos seus gráficos (Chart.js) continuam aqui...
-    // Mantenha as funções que puxam os dados da sua planilha Google.
+    // Mantenha aqui abaixo os seus scripts de Chart.js e integração com a Planilha
 </script>
 </body>
 </html>
