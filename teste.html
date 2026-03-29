@@ -11,12 +11,12 @@
         .sap-titulo { font-weight: bold; background: #eee; padding: 10px; display: block; margin-bottom: 10px; border-left: 5px solid #0056b3; color: #0056b3; }
         .sap-evidencias { font-size: 0.85em; color: #555; display: block; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px dashed #ccc; }
         
-        /* BOTÕES DE 1 A 5 - ZERO BARRA DESLIZANTE */
+        /* BOTÕES DE 1 A 5 */
         .escala-botoes { display: flex; justify-content: center; gap: 15px; padding: 15px; background: #f9f9f9; border-radius: 5px; }
         .btn-n { width: 55px; height: 55px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; font-size: 1.3em; border-radius: 50%; cursor: pointer; transition: 0.2s; }
-        .btn-n:hover { background: #e6f0ff; }
         .btn-n.ativo { background: #0056b3 !important; color: white !important; transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
+        /* DISC ESCURO */
         .disc-box { background: #161b22; color: white; padding: 25px; border-radius: 10px; margin-top: 40px; }
         .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #30363d; }
         .disc-header { font-weight: bold; color: #f1c40f; text-transform: uppercase; font-size: 0.8em; }
@@ -30,9 +30,9 @@
 <div class="box">
     <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
     
-    <div style="margin-bottom: 30px; background: #e9ecef; padding: 20px; border-radius: 5px;">
+    <div style="margin-bottom: 30px;">
         <label style="font-weight:bold;">NOME DO JOVEM:</label>
-        <input type="text" id="nome" style="width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; box-sizing: border-box;">
+        <input type="text" id="nome" style="width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; width:100%; box-sizing:border-box;">
     </div>
 
     <div id="sap-lista"></div>
@@ -51,12 +51,12 @@
 <script>
     const sapDados = [
         {t: "1- SER PROTAGONISTA", e: "Sou visto como referência construtiva; Respeito e faço-me respeitar; Construo meu Projeto de Vida; Reconheço potenciais e talentos; Observo necessidades e ofereço ajuda."},
-        {t: "2- SER RESPONSÁVEL E COMPROMETIDO", e: "Cumpro tarefas e prazos; Sou pontual e assíduo; Reconheço a importância do trabalho; Cuido da minha apresentação e higiene; Cumpro as regras do contrato de convivência."},
+        {t: "2- SER RESPONSÁVEL E COMPROMETIDO", e: "Cumpro tarefas e prazos; Sou pontual e assíduo; Reconheço a importância do trabalho; Cuido da higiene; Cumpro as regras do contrato."},
         {t: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e: "Postura coerente; Percebo o humor do outro; Faço contribuições construtivas; Expresso-me claramente; Sei esperar minha vez de falar."},
-        {t: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e: "Honesto e ético nas relações; Assumo quando cometo erros; Respeito opiniões diferentes; Atitudes coerentes com o discurso; Conheço meus direitos e deveres."},
-        {t: "5- RESOLVER SITUAÇÕES-PROBLEMA", e: "Resolvo problemas sem fofocas; Penso antes de agir; Não me envergonho de pedir ajuda; Enfrento desafios e incertezas; Sei lidar com meus sentimentos."},
-        {t: "6- TRABALHAR E PRODUZIR EM EQUIPE", e: "Penso no bem-estar do grupo; Busco o consenso coletivo; Assumo o desafio de trabalhar em grupo; Recebo críticas e sugestões; Transmito informações com fidelidade."},
-        {t: "7- APRENDER A APRENDER", e: "Construo novos conhecimentos; Comprometimento com a vida escolar; Tiro lições de situações boas ou ruins; Sou curioso e indago; Utilizo o que aprendi no dia a dia."}
+        {t: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e: "Honesto e ético; Assumo quando cometo erros; Respeito opiniões diferentes; Atitudes coerentes; Conheço meus direitos e deveres."},
+        {t: "5- RESOLVER SITUAÇÕES-PROBLEMA", e: "Resolvo problemas sem fofocas; Penso antes de agir; Não me envergonho de pedir ajuda; Enfrento desafios; Sei lidar com meus sentimentos."},
+        {t: "6- TRABALHAR E PRODUZIR EM EQUIPE", e: "Penso no bem-estar do grupo; Busco o consenso coletivo; Assumo desafios coletivos; Recebo críticas e sugestões; Transmito informações com fidelidade."},
+        {t: "7- APRENDER A APRENDER", e: "Construo novos conhecimentos; Comprometimento escolar; Tiro lições de situações boas ou ruins; Sou curioso; Utilizo o que aprendi no dia a dia."}
     ];
 
     const sapLista = document.getElementById('sap-lista');
@@ -65,21 +65,22 @@
             <div class="sap-item">
                 <span class="sap-titulo">${item.t}</span>
                 <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
-                <div class="escala-botoes" data-sap="${i+1}">
-                    <button class="btn-n" onclick="setNota(this, 1)">1</button>
-                    <button class="btn-n" onclick="setNota(this, 2)">2</button>
-                    <button class="btn-n" onclick="setNota(this, 3)">3</button>
-                    <button class="btn-n" onclick="setNota(this, 4)">4</button>
-                    <button class="btn-n" onclick="setNota(this, 5)">5</button>
+                <div class="escala-botoes" id="grupo-sap-${i+1}">
+                    <button class="btn-n" onclick="marcar(this, ${i+1}, 1)">1</button>
+                    <button class="btn-n" onclick="marcar(this, ${i+1}, 2)">2</button>
+                    <button class="btn-n" onclick="marcar(this, ${i+1}, 3)">3</button>
+                    <button class="btn-n" onclick="marcar(this, ${i+1}, 4)">4</button>
+                    <button class="btn-n" onclick="marcar(this, ${i+1}, 5)">5</button>
+                    <input type="hidden" id="sap${i+1}" value="">
                 </div>
             </div>`;
     });
 
-    function setNota(el, valor) {
-        const pai = el.parentElement;
+    function marcar(btn, questao, valor) {
+        const pai = btn.parentElement;
         pai.querySelectorAll('.btn-n').forEach(b => b.classList.remove('ativo'));
-        el.classList.add('ativo');
-        pai.setAttribute('data-valor', valor);
+        btn.classList.add('ativo');
+        document.getElementById('sap' + questao).value = valor;
     }
 
     const discItens = [
@@ -105,7 +106,7 @@
     discItens.forEach((item, i) => {
         discLista.innerHTML += `
             <div class="disc-row">
-                <span style="font-size:0.95em;">${item.f}</span>
+                <span>${item.f}</span>
                 <div style="text-align:center;"><input type="radio" name="m${i}" class="mais" data-t="${item.t}"></div>
                 <div style="text-align:center;"><input type="radio" name="l${i}" class="menos" data-t="${item.t}"></div>
             </div>`;
@@ -113,13 +114,13 @@
 
     async function enviar() {
         const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Preencha seu nome!");
+        if(!nome) return alert("Preencha o nome!");
 
-        let saps = {};
+        const saps = {};
         for(let i=1; i<=7; i++) {
-            let v = document.querySelector(`[data-sap="${i}"]`).getAttribute('data-valor');
-            if(!v) return alert("Escolha uma nota para todas as questões do SAP!");
-            saps[`sap${i}`] = v;
+            const val = document.getElementById('sap'+i).value;
+            if(!val) return alert("Responda a questão " + i + " do SAP!");
+            saps['sap'+i] = val;
         }
 
         let d = {D:0, I:0, S:0, C:0};
@@ -127,13 +128,23 @@
         document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
 
         const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
-        const URL = "https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec";
         
+        const btn = document.getElementById('btn-enviar');
+        btn.innerText = "ENVIANDO...";
+        btn.disabled = true;
+
         try {
-            await fetch(URL, { method: 'POST', body: JSON.stringify(dados) });
-            alert("✅ Avaliação enviada ao Jorge!");
+            await fetch("https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec", {
+                method: "POST",
+                body: JSON.stringify(dados)
+            });
+            alert("✅ Sucesso!");
             window.location.reload();
-        } catch (e) { alert("Erro ao enviar."); }
+        } catch (e) {
+            alert("Erro de conexão!");
+            btn.innerText = "TENTAR NOVAMENTE";
+            btn.disabled = false;
+        }
     }
 </script>
 </body>
