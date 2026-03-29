@@ -33,9 +33,9 @@
 
     <div class="disc-box">
         <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
-        <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) se parece com você em cada linha.</p>
+        <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você em cada linha.</p>
         <div class="disc-row disc-header">
-            <span>Frase de Comportamento</span>
+            <span>Frase</span>
             <span style="text-align:center;">MAIS (+)</span>
             <span style="text-align:center;">MENOS (-)</span>
         </div>
@@ -46,9 +46,10 @@
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbyHHscPDi3fZ55Hp6YvjZqciHhBJNzUIgoXCcCG_Trghhz71EdpsSSG8tXpveLxCtdb/exec";
+    // URL DA SUA IMPLANTAÇÃO VERSÃO 7
+    const URL_API = "https://script.google.com/macros/s/AKfycbxQccfoHu9MljD4004szE1OKc2HZPq0j05wkXSSVACUf_opL9qVdY8gDUVA6ZyhmPa8/exec";
 
-    // Textos originais mantidos integralmente
+    // AS 7 COMPETÊNCIAS ORIGINAIS QUE VOCÊ DEFINIU
     const sapDados = [
         {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
         {t:"2- SER RESPONSÁVEL E COMPROMETIDO", e:"Pontual, cumpre prazos e regras, higiene pessoal."},
@@ -59,14 +60,18 @@
         {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições."}
     ];
 
-    // Gera os botões de 1 a 5 (ajustado conforme sua ordem)
+    // GERA A LISTA COM ESCALA DE 1 A 5 (AGORA CORRETO NO CÓDIGO)
     sapDados.forEach((item, i) => {
         document.getElementById('sap-lista').innerHTML += `
             <div class="sap-item">
                 <span class="sap-titulo">${item.t}</span>
                 <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
                 <div class="escala-botoes">
-                    ${[1,2,3,4,5].map(n => `<button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, ${n})">${n}</button>`).join('')}
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 1)">1</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 2)">2</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 3)">3</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 4)">4</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 5)">5</button>
                     <input type="hidden" id="sap${i+1}">
                 </div>
             </div>`;
@@ -117,7 +122,7 @@
             if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
         }
 
-        btn.innerText = "ENVIANDO AO JORGE...";
+        btn.innerText = "ENVIANDO...";
         btn.disabled = true;
 
         let d = {D:0, I:0, S:0, C:0};
@@ -127,9 +132,8 @@
         const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
         
         try {
-            // mode: "no-cors" evita o erro de conexão bloqueada
             await fetch(URL_API, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
-            alert("✅ Recebido com sucesso! Obrigado."); 
+            alert("✅ Recebido com sucesso!"); 
             window.location.reload();
         } catch (e) { 
             alert("Erro de conexão. Tente novamente."); 
