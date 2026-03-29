@@ -7,7 +7,7 @@
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
         .box { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; border-top: 10px solid #0056b3; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-wa { background: #25d366; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: block; text-align: center; margin-bottom: 20px; font-size: 1.1em; }
+        .btn-wa { background: #25d366; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: block; text-align: center; margin-bottom: 20px; }
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
         .card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; min-height: 350px; }
         canvas { max-height: 300px !important; width: 100% !important; }
@@ -23,36 +23,28 @@
 <body>
 <div class="box">
     <h2 style="text-align:center; color: #0056b3;">PAINEL DE CONTROLE - GESTOR JORGE</h2>
-    
     <a href="#" id="linkWA" class="btn-wa" target="_blank">📲 ENVIAR LINK DO QUIZ VIA WHATSAPP</a>
-
     <div class="controles">
         <select id="selectJovem" onchange="atualizarGraficosIndividuais()">
             <option value="">Selecione um jovem...</option>
         </select>
         <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar Dados</button>
     </div>
-
     <div class="dashboard">
         <div class="card"><h3>Individual: SAP (Escala 1 a 5)</h3><canvas id="chartSapInd"></canvas></div>
         <div class="card"><h3>Individual: Perfil DISC</h3><canvas id="chartDiscInd"></canvas></div>
         <div class="card"><h3>Turma: Média SAP</h3><canvas id="chartSapGeral"></canvas></div>
-        <div class="card"><h3>Turma: Perfil Geral (D-I-S-C)</h3><canvas id="chartDiscGeral"></canvas></div>
+        <div class="card"><h3>Turma: Perfil Geral</h3><canvas id="chartDiscGeral"></canvas></div>
     </div>
-
     <table>
         <thead><tr><th>Nome</th><th>Valores SAP</th><th>DISC</th><th>Ação</th></tr></thead>
         <tbody id="corpoTabela"></tbody>
     </table>
 </div>
-
 <script>
-    // URL DA SUA IMPLANTAÇÃO VERSÃO 8
-    const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
-    
-    // Configura o Link do WhatsApp automaticamente
+    const URL_API = "https://script.google.com/macros/s/AKfycbzDkllLQnuVSAM8JL3nJPl6MKp7venklpiha5kF00Psn2mj3prHcKwJ7gH2WoNyRH-G/exec";
     const urlQuiz = window.location.href.replace("resultados.html", "teste.html");
-    document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Por favor, preencha sua autoavaliação do Projeto Pescar aqui: " + urlQuiz;
+    document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha sua autoavaliação aqui: " + urlQuiz;
 
     let dadosGlobais = [];
     let charts = {};
@@ -61,54 +53,25 @@
         try {
             const res = await fetch(URL_API);
             dadosGlobais = await res.json();
-            
             const select = document.getElementById('selectJovem');
             const tabela = document.getElementById('corpoTabela');
             select.innerHTML = '<option value="">Selecione um jovem...</option>';
             tabela.innerHTML = "";
-
             dadosGlobais.forEach((item, index) => {
                 select.innerHTML += `<option value="${index}">${item.nome}</option>`;
-                tabela.innerHTML += `<tr>
-                    <td>${item.nome}</td>
-                    <td>${item.sap}</td>
-                    <td>${item.disc}</td>
-                    <td><button class="btn-delete" onclick="excluirInd('${item.nome}')">Excluir</button></td>
-                </tr>`;
+                tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.sap}</td><td>${item.disc}</td><td><button class="btn-delete" onclick="excluirInd('${item.nome}')">Excluir</button></td></tr>`;
             });
             renderizarGraficosGerais();
-        } catch (e) { 
-            console.log("Erro ao buscar dados ou planilha vazia.");
-        }
+        } catch (e) { console.log("Erro ao buscar dados."); }
     }
 
     function desenhar(id, type, labels, data, label) {
         if (charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
-        
-        // ESCALA TRAVADA EM 5
-        const options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: (type === 'radar' || type === 'bar') ? {
-                r: { min: 0, max: 5, ticks: { stepSize: 1 } },
-                y: { min: 0, max: 5, ticks: { stepSize: 1 } }
-            } : {}
-        };
-
         charts[id] = new Chart(ctx, {
             type: type,
-            data: { 
-                labels: labels, 
-                datasets: [{ 
-                    label: label, 
-                    data: data, 
-                    backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.3)', 
-                    borderColor: '#0056b3', 
-                    borderWidth: 2 
-                }] 
-            },
-            options: options
+            data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.3)', borderColor: '#0056b3', borderWidth: 2 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: (type === 'radar' || type === 'bar') ? { r: { min: 0, max: 5 }, y: { min: 0, max: 5 } } : {} }
         });
     }
 
@@ -132,12 +95,11 @@
     }
 
     async function excluirInd(n) { 
-        if(confirm("Deseja apagar permanentemente os dados de "+n+"?")) { 
+        if(confirm("Deseja apagar os dados de "+n+"?")) { 
             await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
             setTimeout(carregarDados, 1500); 
         } 
     }
-
     carregarDados();
 </script>
 </body>
