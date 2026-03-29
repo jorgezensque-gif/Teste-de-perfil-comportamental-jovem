@@ -1,104 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Gestor - Jorge Zensque</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Autoavaliação Pescar 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
-        .barra-comando { background: #000; padding: 15px; border: 2px dashed #38bdf8; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; }
-        .barra-comando input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
-        .btn-whatsapp { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        select { background: #334155; color: white; border: 2px solid #38bdf8; padding: 10px; border-radius: 8px; width: 300px; }
-        .btn-zerar { background: #ef4444; border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; color: #333; }
+        .box { background: white; padding: 25px; border-radius: 8px; max-width: 850px; margin: auto; border-top: 10px solid #0056b3; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sap-item { margin-bottom: 25px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .sap-titulo { font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; }
+        .sap-evidencias { font-size: 0.85em; color: #666; display: block; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .escala-botoes { display: flex; justify-content: center; gap: 10px; }
+        .btn-n { width: 45px; height: 45px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; border-radius: 50%; cursor: pointer; transition: 0.2s; }
+        .btn-n.ativo { background: #0056b3; color: white; transform: scale(1.1); }
+        .disc-box { background: #161b22; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; }
+        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 0.9em; align-items: center; }
+        .disc-header { color: #f1c40f; font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
+        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
+        .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
+<div class="box">
+    <h2 style="text-align:center;">Autoavaliação SAP Jovem 5.0</h2>
+    <input type="text" id="nome" placeholder="NOME COMPLETO DO JOVEM" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+    
+    <div id="sap-lista"></div>
 
-    <div class="barra-comando">
-        <input type="text" id="nomeNovo" placeholder="Digite o nome completo do aluno aqui...">
-        <button class="btn-whatsapp" onclick="registrarEEnviar()">GERAR E DISPARAR WHATSAPP</button>
+    <div class="disc-box">
+        <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
+        <div class="disc-row disc-header"><span>Frases</span><span style="text-align:center;">MAIS(+)</span><span style="text-align:center;">MENOS(-)</span></div>
+        <div id="disc-lista"></div>
     </div>
-
-    <div class="header">
-        <div>
-            <h1>PAINEL GESTOR</h1>
-            <div style="color: #38bdf8; font-weight: bold;">Responsável: Jorge Zensque</div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <select id="selectAlunos"><option value="">Carregando alunos...</option></select>
-            <button class="btn-zerar" onclick="zerarTudo()">ZERAR BANCO</button>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card"><h2>1. AUTOAVALIAÇÃO SAP (RADAR)</h2><canvas id="chartRadar"></canvas></div>
-        <div class="card"><h2>2. PERFIL COMPORTAMENTAL (DISC)</h2><canvas id="chartDisc"></canvas></div>
-    </div>
+    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AVALIAÇÃO</button>
+</div>
 
 <script>
-    const config = { databaseURL: "https://perfil-jovem--disc-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(config);
-    const db = firebase.database();
-    let radarChart, discChart;
+    const URL_API = "https://script.google.com/macros/s/AKfycbwwwi-8ZVUYTdmg3Pu1eU4ueK5HV1L7zJBni9b8qwT22w7f-O8CTB8c6OsbtMm73NE-/exec";
 
-    function registrarEEnviar() {
-        const nome = document.getElementById('nomeNovo').value.trim();
-        if(!nome) return alert("Jorge, digite o nome do aluno!");
-        
-        // CRIAÇÃO BLINDADA: Usa o nome como chave direta para evitar IDs aleatórios
-        db.ref('resultados/' + nome).set({
-            nome: nome,
-            status: "Aguardando",
-            pontosSAP: [0,0,0,0,0,0,0],
-            pontosDISC: {D:0,I:0,S:0,C:0}
-        });
-        
-        const link = `https://teste-de-perfil-comportamental-jove.vercel.app/teste.html?nome=${encodeURIComponent(nome)}`;
-        const msg = `Olá ${nome}, aqui está o link para sua avaliação: ${link}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-        document.getElementById('nomeNovo').value = "";
+    const sapDados = [
+        {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
+        {t:"2- SER RESPONSÁVEL E COMPROMETIDO", e:"Pontual, cumpre prazos e regras, higiene."},
+        {t:"3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e:"Clareza, respeita a vez de falar, postura."},
+        {t:"4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e:"Honesto, assume erros, respeita opiniões."},
+        {t:"5- RESOLVER SITUAÇÕES-PROBLEMA", e:"Enfrenta desafios, sem fofoca, lida com sentimentos."},
+        {t:"6- TRABALHAR E PRODUZIR EM EQUIPE", e:"Bem-estar do grupo, consenso, recebe críticas."},
+        {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições."}
+    ];
+
+    sapDados.forEach((item, i) => {
+        document.getElementById('sap-lista').innerHTML += `
+            <div class="sap-item">
+                <span class="sap-titulo">${item.t}</span>
+                <span class="sap-evidencias">${item.e}</span>
+                <div class="escala-botoes">
+                    ${[1,2,3,4,5].map(n => `<button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, ${n})">${n}</button>`).join('')}
+                    <input type="hidden" id="sap${i+1}">
+                </div>
+            </div>`;
+    });
+
+    function marcar(btn, q, v) {
+        document.querySelectorAll('.q'+q).forEach(b => b.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        document.getElementById('sap'+q).value = v;
     }
 
-    // Escuta mudanças no banco para atualizar a lista do Jorge
-    db.ref('resultados').on('value', snap => {
-        const select = document.getElementById('selectAlunos');
-        select.innerHTML = '<option value="">-- Selecione o Aluno --</option>';
-        if(snap.val()) {
-            Object.keys(snap.val()).forEach(nome => {
-                select.add(new Option(nome, nome));
-            });
+    const frasesDISC = [
+        {f: "Eu gosto de liderar e tomar decisões rápidas.", t: "D"},
+        {f: "Eu gosto de conversar e animar as pessoas.", t: "I"},
+        {f: "Eu prefiro trabalhar em um ritmo calmo e estável.", t: "S"},
+        {f: "Eu presto muita atenção aos detalhes e regras.", t: "C"},
+        {f: "Eu sou focado em resultados e desafios difíceis.", t: "D"},
+        {f: "Eu sou otimista e gosto de fazer novos amigos.", t: "I"},
+        {f: "Eu sou um bom ouvinte e gosto de ajudar o grupo.", t: "S"},
+        {f: "Eu sou organizado e gosto de tudo planejado.", t: "C"},
+        {f: "Eu falo o que penso, mesmo que seja direto demais.", t: "D"},
+        {f: "Eu uso o entusiasmo para convencer os outros.", t: "I"},
+        {f: "Eu evito conflitos e prefiro a harmonia.", t: "S"},
+        {f: "Eu analiso os fatos antes de dar minha opinião.", t: "C"},
+        {f: "Eu sou independente e gosto de agir por conta própria.", t: "D"},
+        {f: "Eu gosto de ser o centro das atenções em um grupo.", t: "I"},
+        {f: "Eu sou paciente, mesmo em situações repetitivas.", t: "S"},
+        {f: "Eu busco a perfeição em tudo o que eu faço.", t: "C"}
+    ];
+
+    frasesDISC.forEach((item, i) => {
+        document.getElementById('disc-lista').innerHTML += `
+            <div class="disc-row">
+                <span>${item.f}</span>
+                <div style="text-align:center;"><input type="radio" name="linha${i}" class="mais" data-t="${item.t}"></div>
+                <div style="text-align:center;"><input type="radio" name="linha${i}" class="menos" data-t="${item.t}"></div>
+            </div>`;
+    });
+
+    async function enviar() {
+        const nome = document.getElementById('nome').value;
+        if(!nome) return alert("Preencha o seu nome!");
+        
+        let saps = {};
+        for(let i=1; i<=7; i++) {
+            saps['sap'+i] = document.getElementById('sap'+i).value;
+            if(!saps['sap'+i]) return alert("Responda todas as competências SAP!");
         }
-    });
 
-    function zerarTudo() { if(confirm("Jorge, deseja apagar TODOS os dados?")) db.ref('/').remove(); }
+        const btn = document.getElementById('btn-enviar');
+        btn.innerText = "ENVIANDO..."; btn.disabled = true;
 
-    document.getElementById('selectAlunos').addEventListener('change', e => {
-        const nomeSel = e.target.value;
-        if(!nomeSel) return;
-        db.ref('resultados/' + nomeSel).once('value', snap => {
-            const r = snap.val();
-            if(r) plotar(r.pontosDISC, r.pontosSAP);
-        });
-    });
+        let d = {D:0, I:0, S:0, C:0};
+        document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
+        document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
 
-    function plotar(disc, sap) {
-        if(radarChart) radarChart.destroy();
-        if(discChart) discChart.destroy();
-        radarChart = new Chart(document.getElementById('chartRadar'), {
-            type: 'radar',
-            data: { labels: ['P','R','C','E','Pr','Eq','A'], datasets: [{label:'SAP', data:sap, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.2)'}]},
-            options: { scales: { r: { beginAtZero: true, max: 5 } } }
-        });
-        discChart = new Chart(document.getElementById('chartDisc'), {
-            type: 'bar',
-            data: { labels: ['D','I','S','C'], datasets: [{label:'DISC', data:[disc.D, disc.I, disc.S, disc.C], backgroundColor:['#ef4444','#f59e0b','#10b981','#3b82f6']}]}
-        });
+        const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
+        
+        try {
+            await fetch(URL_API, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
+            alert("✅ Enviado com sucesso!"); window.location.reload();
+        } catch (e) { 
+            alert("Erro ao enviar!"); btn.innerText = "TENTAR NOVAMENTE"; btn.disabled = false;
+        }
     }
 </script>
 </body>
