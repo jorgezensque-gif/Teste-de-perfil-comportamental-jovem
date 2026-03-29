@@ -35,10 +35,18 @@
     const perguntas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
     const sapDiv = document.getElementById('sap');
     perguntas.forEach((p, i) => {
-        sapDiv.innerHTML += `<div class="item"><span class="titulo">${i+1}. ${p}</span><input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value"><span style="display:block; text-align:center; font-weight:bold; color:#58a6ff;">3</span></div>`;
+        sapDiv.innerHTML += `
+            <div class="item">
+                <span class="titulo">${i+1}. ${p}</span>
+                <input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value">
+                <span style="display:block; text-align:center; font-weight:bold; color:#58a6ff;">3</span>
+            </div>`;
     });
 
-    const palavras = [{p:"Direto", t:"D"}, {p:"Amigável", t:"I"}, {p:"Calmo", t:"S"}, {p:"Lógico", t:"C"}, {p:"Focado", t:"D"}, {p:"Alegre", t:"I"}, {p:"Paciente", t:"S"}, {p:"Cuidadoso", t:"C"}];
+    const palavras = [
+        {p:"Direto", t:"D"}, {p:"Amigável", t:"I"}, {p:"Calmo", t:"S"}, {p:"Lógico", t:"C"},
+        {p:"Focado", t:"D"}, {p:"Alegre", t:"I"}, {p:"Paciente", t:"S"}, {p:"Cuidadoso", t:"C"}
+    ];
     const discDiv = document.getElementById('disc');
     palavras.forEach(item => {
         discDiv.innerHTML += `<button class="btn-disc" onclick="this.classList.toggle('selected')" data-t="${item.t}">${item.p}</button>`;
@@ -75,7 +83,7 @@
             alert("✅ Enviado com sucesso!");
             window.location.reload();
         } catch (e) {
-            alert("Erro ao enviar.");
+            alert("Erro ao enviar. Verifique sua conexão.");
             btn.innerText = "ENVIAR PARA O PAINEL DO JORGE";
         }
     }
