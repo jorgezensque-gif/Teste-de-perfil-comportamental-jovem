@@ -22,40 +22,30 @@
     </style>
 </head>
 <body>
-
 <audio id="somSucesso" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
-
 <div id="bloqueio" class="box">
     <h2 style="color: #d63031;">⚠️ Teste Já Realizado</h2>
     <p>Olá! Identificamos que você já enviou sua autoavaliação.</p>
     <p>Para evitar erros no painel, o sistema permite apenas um envio por jovem.</p>
     <p><strong>Dúvidas? Fale com o Educador Jorge.</strong></p>
 </div>
-
 <div id="conteudo-quiz" class="box">
     <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
-    
     <div style="margin-bottom:20px;">
         <label style="font-weight:bold;">NOME COMPLETO:</label>
         <input type="text" id="nome" placeholder="Digite seu nome completo" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
     </div>
-
     <div id="sap-lista"></div>
-
     <div class="disc-box">
         <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
         <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você.</p>
         <div id="disc-lista"></div>
     </div>
-
     <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO GESTOR JORGE</button>
 </div>
-
 <script>
-    // URL DA VERSÃO 9 (COM TRAVA DE NOME NA PLANILHA)
-    const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbzDkllLQnuVSAM8JL3nJPl6MKp7venklpiha5kF00Psn2mj3prHcKwJ7gH2WoNyRH-G/exec";
 
-    // TRAVA 1: LOCAL NO NAVEGADOR
     if (localStorage.getItem("pescar_respondido") === "true") {
         document.getElementById("conteudo-quiz").style.display = "none";
         document.getElementById("bloqueio").style.display = "block";
@@ -109,57 +99,3 @@
     ];
 
     frasesDISC.forEach((item, i) => {
-        document.getElementById('disc-lista').innerHTML += `
-            <div class="disc-row">
-                <span>${item.f}</span>
-                <div style="text-align:center;"><input type="radio" name="disc${i}" class="mais" data-t="${item.t}"></div>
-                <div style="text-align:center;"><input type="radio" name="disc${i}" class="menos" data-t="${item.t}"></div>
-            </div>`;
-    });
-
-    async function enviar() {
-        const nome = document.getElementById('nome').value.trim();
-        const btn = document.getElementById('btn-enviar');
-        if(!nome) return alert("Por favor, digite seu nome!");
-        
-        let saps = {};
-        for(let i=1; i<=7; i++) {
-            saps['sap'+i] = document.getElementById('sap'+i).value;
-            if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
-        }
-
-        btn.innerText = "VERIFICANDO DADOS...";
-        btn.disabled = true;
-
-        let d = {D:0, I:0, S:0, C:0};
-        document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
-        document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
-
-        const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
-        
-        try {
-            // USANDO FETCH SEM NO-CORS PARA PODER LER A RESPOSTA "DUPLICADO"
-            const response = await fetch(URL_API, { method: "POST", body: JSON.stringify(dados) });
-            const texto = await response.text();
-
-            if (texto === "DUPLICADO") {
-                alert("❌ ERRO: Já existe um envio com este nome. Se você ainda não enviou, fale com o Jorge.");
-                btn.innerText = "ENVIAR AO GESTOR JORGE";
-                btn.disabled = false;
-            } else {
-                document.getElementById('somSucesso').play();
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                localStorage.setItem("pescar_respondido", "true");
-                alert("✅ Autoavaliação enviada com sucesso!"); 
-                window.location.reload();
-            }
-        } catch (e) { 
-            // Caso de erro de rede ou política de segurança
-            alert("✅ Enviado! Verifique no painel do Jorge se os dados subiram."); 
-            localStorage.setItem("pescar_respondido", "true");
-            window.location.reload();
-        }
-    }
-</script>
-</body>
-</html>
