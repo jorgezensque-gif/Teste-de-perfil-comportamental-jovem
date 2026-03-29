@@ -49,7 +49,6 @@
 </div>
 
 <script>
-    // URL DA SUA IMPLEMENTAÇÃO (VERSÃO 3)
     const URL_API = "https://script.google.com/macros/s/AKfycbwwwi-8ZVUYTdmg3Pu1eU4ueK5HV1L7zJBni9b8qwT22w7f-O8CTB8c6OsbtMm73NE-/exec";
 
     async function carregarDados() {
@@ -59,7 +58,7 @@
             const lista = document.getElementById('corpoTabela');
             lista.innerHTML = "";
 
-            if (dados.length === 0) {
+            if (!dados || dados.length === 0) {
                 lista.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Nenhum registro encontrado.</td></tr>";
                 return;
             }
