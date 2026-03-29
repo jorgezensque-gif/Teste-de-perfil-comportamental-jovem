@@ -6,49 +6,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-        .box { background: white; padding: 25px; border-radius: 8px; max-width: 800px; margin: auto; border-top: 10px solid #0056b3; }
+        .box { background: white; padding: 25px; border-radius: 8px; max-width: 800px; margin: auto; border-top: 10px solid #0056b3; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .sap-item { margin-bottom: 25px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
         .sap-titulo { font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; }
-        .sap-evidencias { font-size: 0.85em; color: #666; display: block; margin-bottom: 10px; }
-        .escala-botoes { display: flex; justify-content: center; gap: 10px; }
-        .btn-n { width: 45px; height: 45px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; border-radius: 50%; cursor: pointer; }
-        .btn-n.ativo { background: #0056b3; color: white; }
+        .sap-evidencias { font-size: 0.85em; color: #666; display: block; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .escala-botoes { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .btn-n { width: 45px; height: 45px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; border-radius: 50%; cursor: pointer; transition: 0.2s; }
+        .btn-n.ativo { background: #0056b3; color: white; transform: scale(1.1); }
         .disc-box { background: #161b22; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; }
-        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #30363d; font-size: 0.9em; }
+        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 0.9em; align-items: center; }
+        .disc-header { color: #f1c40f; font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
+        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
         .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
+        .btn-enviar:disabled { background: #ccc; }
     </style>
 </head>
 <body>
 <div class="box">
-    <h2 style="text-align:center;">Autoavaliação SAP Jovem 5.0</h2>
-    <input type="text" id="nome" placeholder="NOME DO JOVEM" style="width:100%; padding:10px; margin-bottom:20px; box-sizing:border-box;">
+    <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
+    <div style="margin-bottom:20px;">
+        <label style="font-weight:bold;">NOME COMPLETO:</label>
+        <input type="text" id="nome" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+    </div>
     
     <div id="sap-lista"></div>
 
     <div class="disc-box">
-        <h3 style="color:#f1c40f;">PERFIL DISC</h3>
-        <div class="disc-row" style="color:#f1c40f; font-weight:bold;"><span>Frases</span><span>MAIS(+)</span><span>MENOS(-)</span></div>
+        <h3 style="color:#f1c40f; margin-top:0;">PERFIL DISC (Escolha apenas uma opção por linha)</h3>
+        <div class="disc-row disc-header"><span>Frases</span><span style="text-align:center;">MAIS (+)</span><span style="text-align:center;">MENOS (-)</span></div>
         <div id="disc-lista"></div>
     </div>
-    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO JORGE</button>
+    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO GESTOR JORGE</button>
 </div>
 
 <script>
     const sapDados = [
-        {t:"1- PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
-        {t:"2- RESPONSÁVEL", e:"Pontual, cumpre prazos e regras, cuida da higiene."},
-        {t:"3- COMUNICADOR", e:"Clareza, respeita a vez de falar, postura coerente."},
-        {t:"4- ÉTICO", e:"Honesto, assume erros, respeita opiniões diferentes."},
-        {t:"5- RESOLVEDOR", e:"Enfrenta desafios, lida com sentimentos, sem fofoca."},
-        {t:"6- EQUIPE", e:"Bem-estar do grupo, busca consenso, recebe críticas."},
-        {t:"7- APRENDER", e:"Curioso, busca novos conhecimentos, tira lições."}
+        {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros[cite: 148, 150, 152]."},
+        {t:"2- SER RESPONSÁVEL E COMPROMETIDO", e:"Pontual, cumpre prazos e regras, higiene pessoal[cite: 167, 168, 170]."},
+        {t:"3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e:"Clareza, respeita a vez de falar, postura coerente[cite: 186, 190]."},
+        {t:"4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e:"Honesto, assume erros, respeita opiniões[cite: 204, 205, 206]."},
+        {t:"5- RESOLVER SITUAÇÕES-PROBLEMA", e:"Enfrenta desafios, sem fofoca, lida com sentimentos[cite: 221, 224, 225]."},
+        {t:"6- TRABALHAR E PRODUZIR EM EQUIPE", e:"Bem-estar do grupo, busca consenso, recebe críticas[cite: 238, 239, 241]."},
+        {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições[cite: 256, 258, 259]."}
     ];
 
     sapDados.forEach((item, i) => {
         document.getElementById('sap-lista').innerHTML += `
             <div class="sap-item">
                 <span class="sap-titulo">${item.t}</span>
-                <span class="sap-evidencias">${item.e}</span>
+                <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
                 <div class="escala-botoes">
                     ${[1,2,3,4,5].map(n => `<button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, ${n})">${n}</button>`).join('')}
                     <input type="hidden" id="sap${i+1}">
@@ -62,27 +68,36 @@
         document.getElementById('sap'+q).value = v;
     }
 
-    const frases = ["Liderança rápida", "Conversar/Animar", "Ritmo calmo", "Atenção a regras", "Foco em resultados", "Otimista/Amigos", "Bom ouvinte", "Organizado", "Direto ao ponto", "Entusiasta", "Evito conflitos", "Analiso fatos", "Independente", "Centro das atenções", "Paciente", "Busco perfeição"];
-    const tipos = ["D","I","S","C","D","I","S","C","D","I","S","C","D","I","S","C"];
+    const frasesDISC = [
+        {f: "Eu gosto de liderar e tomar decisões rápidas.", t: "D"},
+        {f: "Eu gosto de conversar e animar as pessoas.", t: "I"},
+        {f: "Eu prefiro trabalhar em um ritmo calmo e estável.", t: "S"},
+        {f: "Eu presto muita atenção aos detalhes e regras.", t: "C"},
+        {f: "Eu sou focado em resultados e desafios difíceis.", t: "D"}
+    ];
 
-    frases.forEach((f, i) => {
+    frasesDISC.forEach((item, i) => {
         document.getElementById('disc-lista').innerHTML += `
             <div class="disc-row">
-                <span>${f}</span>
-                <input type="radio" name="m${i}" class="mais" data-t="${tipos[i]}">
-                <input type="radio" name="l${i}" class="menos" data-t="${tipos[i]}">
+                <span>${item.f}</span>
+                <div style="text-align:center;"><input type="radio" name="linha${i}" class="mais" data-t="${item.t}"></div>
+                <div style="text-align:center;"><input type="radio" name="linha${i}" class="menos" data-t="${item.t}"></div>
             </div>`;
     });
 
     async function enviar() {
         const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Nome!");
+        const btn = document.getElementById('btn-enviar');
+        if(!nome) return alert("Por favor, preencha seu nome!");
         
         let saps = {};
         for(let i=1; i<=7; i++) {
             saps['sap'+i] = document.getElementById('sap'+i).value;
-            if(!saps['sap'+i]) return alert("Responda o SAP "+i);
+            if(!saps['sap'+i]) return alert("Responda todas as competências do SAP!");
         }
+
+        btn.innerText = "ENVIANDO...";
+        btn.disabled = true;
 
         let d = {D:0, I:0, S:0, C:0};
         document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
@@ -92,10 +107,17 @@
         
         try {
             await fetch("https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec", {
-                method: "POST", body: JSON.stringify(dados)
+                method: "POST", 
+                mode: "no-cors",
+                body: JSON.stringify(dados)
             });
-            alert("Enviado!"); window.location.reload();
-        } catch (e) { alert("Erro de rede!"); }
+            alert("✅ Avaliação enviada com sucesso!"); 
+            window.location.reload();
+        } catch (e) { 
+            alert("Erro de conexão!"); 
+            btn.innerText = "TENTAR NOVAMENTE";
+            btn.disabled = false;
+        }
     }
 </script>
 </body>
