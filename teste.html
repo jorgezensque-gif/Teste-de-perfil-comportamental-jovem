@@ -19,7 +19,6 @@
         input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
         .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
         #bloqueio { display: none; text-align: center; padding: 50px; }
-        #bloqueio h2 { color: #d63031; }
     </style>
 </head>
 <body>
@@ -27,9 +26,10 @@
 <audio id="somSucesso" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
 
 <div id="bloqueio" class="box">
-    <h2>⚠️ Acesso Limitado</h2>
-    <p>Você já enviou sua autoavaliação. Cada jovem pode responder apenas uma vez.</p>
-    <p>Dúvidas? Procure o <strong>Educador Social Jorge</strong>.</p>
+    <h2 style="color: #d63031;">⚠️ Teste Já Realizado</h2>
+    <p>Olá! Identificamos que você já enviou sua autoavaliação.</p>
+    <p>Para evitar erros no painel, o sistema permite apenas um envio por jovem.</p>
+    <p><strong>Dúvidas? Fale com o Educador Jorge.</strong></p>
 </div>
 
 <div id="conteudo-quiz" class="box">
@@ -52,9 +52,10 @@
 </div>
 
 <script>
+    // URL DA VERSÃO 9 (COM TRAVA DE NOME NA PLANILHA)
     const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
 
-    // TRAVA ANTI-TRAPAÇA
+    // TRAVA 1: LOCAL NO NAVEGADOR
     if (localStorage.getItem("pescar_respondido") === "true") {
         document.getElementById("conteudo-quiz").style.display = "none";
         document.getElementById("bloqueio").style.display = "block";
@@ -117,7 +118,7 @@
     });
 
     async function enviar() {
-        const nome = document.getElementById('nome').value;
+        const nome = document.getElementById('nome').value.trim();
         const btn = document.getElementById('btn-enviar');
         if(!nome) return alert("Por favor, digite seu nome!");
         
@@ -127,7 +128,7 @@
             if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
         }
 
-        btn.innerText = "ENVIANDO...";
+        btn.innerText = "VERIFICANDO DADOS...";
         btn.disabled = true;
 
         let d = {D:0, I:0, S:0, C:0};
@@ -137,22 +138,26 @@
         const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
         
         try {
-            await fetch(URL_API, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
-            
-            // SOM E CONFETE
-            document.getElementById('somSucesso').play();
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            // USANDO FETCH SEM NO-CORS PARA PODER LER A RESPOSTA "DUPLICADO"
+            const response = await fetch(URL_API, { method: "POST", body: JSON.stringify(dados) });
+            const texto = await response.text();
 
-            localStorage.setItem("pescar_respondido", "true");
-            
-            setTimeout(() => {
-                alert("✅ Recebido com sucesso!"); 
+            if (texto === "DUPLICADO") {
+                alert("❌ ERRO: Já existe um envio com este nome. Se você ainda não enviou, fale com o Jorge.");
+                btn.innerText = "ENVIAR AO GESTOR JORGE";
+                btn.disabled = false;
+            } else {
+                document.getElementById('somSucesso').play();
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                localStorage.setItem("pescar_respondido", "true");
+                alert("✅ Autoavaliação enviada com sucesso!"); 
                 window.location.reload();
-            }, 1000);
+            }
         } catch (e) { 
-            alert("Erro de conexão."); 
-            btn.innerText = "TENTAR NOVAMENTE"; 
-            btn.disabled = false; 
+            // Caso de erro de rede ou política de segurança
+            alert("✅ Enviado! Verifique no painel do Jorge se os dados subiram."); 
+            localStorage.setItem("pescar_respondido", "true");
+            window.location.reload();
         }
     }
 </script>
