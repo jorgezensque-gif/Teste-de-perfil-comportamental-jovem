@@ -5,50 +5,55 @@
     <title>Avaliação Pescar 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; padding: 20px; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; padding: 20px; line-height: 1.6; }
         .box { background: white; padding: 30px; border-radius: 8px; max-width: 900px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-top: 10px solid #0056b3; }
         .sap-item { margin-bottom: 30px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background: #fff; }
-        .sap-titulo { font-weight: bold; background: #eee; padding: 10px; display: block; margin-bottom: 10px; border-left: 5px solid #0056b3; }
-        .sap-evidencias { font-size: 0.9em; color: #555; font-style: italic; display: block; margin-bottom: 15px; line-height: 1.4; }
-        .escala-container { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 5px; }
-        .nota-label { font-weight: bold; color: #0056b3; font-size: 1.2em; }
-        .disc-box { background: #161b22; color: white; padding: 20px; border-radius: 10px; margin-top: 40px; }
-        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #30363d; }
-        .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 30px; }
+        .sap-titulo { font-weight: bold; background: #eee; padding: 10px; display: block; margin-bottom: 10px; border-left: 5px solid #0056b3; color: #0056b3; }
+        .sap-evidencias { font-size: 0.85em; color: #555; display: block; margin-bottom: 15px; background: #fdfdfd; padding: 10px; border: 1px dashed #ccc; }
+        .escala-container { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f9f9f9; border-radius: 5px; }
+        .nota-label { font-weight: bold; color: #0056b3; font-size: 1.4em; min-width: 30px; text-align: center; }
+        
+        .disc-box { background: #161b22; color: white; padding: 25px; border-radius: 10px; margin-top: 40px; border: 1px solid #30363d; }
+        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #30363d; }
+        .disc-header { font-weight: bold; color: #f1c40f; text-transform: uppercase; font-size: 0.8em; }
+        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
+        
+        .btn-enviar { width: 100%; padding: 25px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 1.3em; cursor: pointer; margin-top: 40px; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2 style="text-align: center;">Autoavaliação SAP Jovem 5.0</h2>
+    <h2 style="text-align:center; color:#0056b3;">Autoavaliação de Competências - Pescar 2026</h2>
     
-    <div style="margin-bottom: 30px;">
-        <label>NOME DO JOVEM:</label>
-        <input type="text" id="nome" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+    <div style="margin-bottom: 30px; background: #e9ecef; padding: 20px; border-radius: 5px;">
+        <label style="font-weight:bold;">NOME COMPLETO DO JOVEM:</label>
+        <input type="text" id="nome" style="width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; box-sizing: border-box;">
     </div>
 
     <div id="sap-lista"></div>
 
     <div class="disc-box">
-        <h3 style="color: #f1c40f;">PERFIL DISC (16 SITUAÇÕES)</h3>
-        <div class="disc-row" style="font-weight:bold; color:#f1c40f;">
-            <span>Características</span><span>Mais (+)</span><span>Menos (-)</span>
+        <h3 style="color: #f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
+        <p style="font-size: 0.9em; color: #8b949e;">Leia a frase e marque uma opção que <b>MAIS (+)</b> combina com você e uma que <b>MENOS (-)</b> combina.</p>
+        <div class="disc-row disc-header">
+            <span>Frases para Avaliação</span><span>MAIS (+)</span><span>MENOS (-)</span>
         </div>
         <div id="disc-lista"></div>
     </div>
 
-    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR PARA O GESTOR JORGE</button>
+    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">FINALIZAR E ENVIAR AO EDUCADOR JORGE</button>
 </div>
 
 <script>
     const sapDados = [
         {t: "1- SER PROTAGONISTA", e: "Sou visto como referência construtiva; Respeito e faço-me respeitar; Construo meu Projeto de Vida; Reconheço potenciais e talentos; Observo necessidades e ofereço ajuda."},
-        {t: "2- SER RESPONSÁVEL E COMPROMETIDO", e: "Cumpro tarefas e prazos; Sou pontual e assíduo; Reconheço a importância do trabalho; Cuido da higiene; Cumpro as regras do contrato."},
-        {t: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e: "Postura coerente; Percebo o humor do outro; Faço críticas construtivas; Expresso-me claramente; Sei esperar minha vez de falar."},
-        {t: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e: "Honesto e ético; Assumo meus erros; Respeito opiniões diferentes; Atitudes coerentes; Conheço meus direitos e deveres."},
-        {t: "5- RESOLVER SITUAÇÕES-PROBLEMA", e: "Resolvo problemas sem fofocas; Penso antes de agir; Não me envergonho de pedir ajuda; Enfrento desafios; Sei lidar com sentimentos."},
-        {t: "6- TRABALHAR E PRODUZIR EM EQUIPE", e: "Penso no bem-estar do grupo; Busco consenso; Assumo desafios coletivos; Recebo críticas e sugestões; Transmito informações com fidelidade."},
-        {t: "7- APRENDER A APRENDER", e: "Construo novos conhecimentos; Comprometimento escolar; Tiro lições de situações boas ou ruins; Sou curioso; Utilizo o que aprendi no dia a dia."}
+        {t: "2- SER RESPONSÁVEL E COMPROMETIDO", e: "Cumpro tarefas e prazos; Sou pontual e assíduo; Reconheço a importância do trabalho; Cuido da minha apresentação e higiene; Cumpro as regras do contrato de convivência."},
+        {t: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e: "Postura coerente com diferentes ambientes; Percebo o humor do outro e respeito; Faço contribuições construtivas; Expresso-me claramente; Sei esperar minha vez de falar."},
+        {t: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e: "Sou honesto e ético nas relações; Assumo quando cometo erros; Respeito opiniões diferentes; Tenho atitudes coerentes com o discurso; Conheço meus direitos e deveres."},
+        {t: "5- RESOLVER SITUAÇÕES-PROBLEMA", e: "Resolvo problemas sem fofocas; Penso antes de agir; Não me envergonho de pedir ajuda; Enfrento desafios e incertezas; Sei lidar com meus sentimentos."},
+        {t: "6- TRABALHAR E PRODUZIR EM EQUIPE", e: "Penso no bem-estar do grupo; Busco o consenso coletivo; Assumo o desafio de trabalhar em grupo; Recebo críticas e sugestões; Transmito informações com fidelidade."},
+        {t: "7- APRENDER A APRENDER", e: "Construo novos conhecimentos; Comprometimento com a vida escolar; Tiro lições de situações boas ou ruins; Sou curioso e indago; Utilizo o que aprendi no dia a dia."}
     ];
 
     const sapLista = document.getElementById('sap-lista');
@@ -56,10 +61,10 @@
         sapLista.innerHTML += `
             <div class="sap-item">
                 <span class="sap-titulo">${item.t}</span>
-                <span class="sap-evidencias"><strong>Evidências Norteadoras:</strong> ${item.e}</span>
+                <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
                 <div class="escala-container">
                     <span>Discordo (1)</span>
-                    <input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value">
+                    <input type="range" id="sap${i+1}" min="1" max="5" value="3" style="width:60%;" oninput="this.nextElementSibling.innerText = this.value">
                     <span class="nota-label">3</span>
                     <span>Concordo (5)</span>
                 </div>
@@ -67,25 +72,41 @@
     });
 
     const discItens = [
-        {p: "Entusiasta / Sociável", t: "I"}, {p: "Decidido / Competitivo", t: "D"}, {p: "Paciente / Estável", t: "S"}, {p: "Preciso / Analítico", t: "C"},
-        {p: "Autoconfiante / Corajoso", t: "D"}, {p: "Persuasivo", t: "I"}, {p: "Gentil", t: "S"}, {p: "Diplomático", t: "C"},
-        {p: "Ousado / Dominante", t: "D"}, {p: "Alegre / Otimista", t: "I"}, {p: "Leal / Receptivo", t: "S"}, {p: "Sistemático", t: "C"},
-        {p: "Independente", t: "D"}, {p: "Inspirador", t: "I"}, {p: "Calmo", t: "S"}, {p: "Convencional", t: "C"}
+        {f: "Eu gosto de liderar e tomar decisões rápidas.", t: "D"},
+        {f: "Eu gosto de conversar e animar as pessoas.", t: "I"},
+        {f: "Eu prefiro trabalhar em um ritmo calmo e estável.", t: "S"},
+        {f: "Eu presto muita atenção aos detalhes e regras.", t: "C"},
+        {f: "Eu sou focado em resultados e desafios difíceis.", t: "D"},
+        {f: "Eu sou otimista e gosto de fazer novos amigos.", t: "I"},
+        {f: "Eu sou um bom ouvinte e gosto de ajudar o grupo.", t: "S"},
+        {f: "Eu sou organizado e gosto de tudo planejado.", t: "C"},
+        {f: "Eu falo o que penso, mesmo que seja direto demais.", t: "D"},
+        {f: "Eu uso o entusiasmo para convencer os outros.", t: "I"},
+        {f: "Eu evito conflitos e prefiro a harmonia.", t: "S"},
+        {f: "Eu analiso os fatos antes de dar minha opinião.", t: "C"},
+        {f: "Eu sou independente e gosto de agir por conta própria.", t: "D"},
+        {f: "Eu gosto de ser o centro das atenções em um grupo.", t: "I"},
+        {f: "Eu sou paciente, mesmo em situações repetitivas.", t: "S"},
+        {f: "Eu busco a perfeição em tudo o que eu faço.", t: "C"}
     ];
 
     const discLista = document.getElementById('disc-lista');
     discItens.forEach((item, i) => {
         discLista.innerHTML += `
             <div class="disc-row">
-                <span>${item.p}</span>
-                <input type="radio" name="m${i}" class="mais" data-t="${item.t}">
-                <input type="radio" name="l${i}" class="menos" data-t="${item.t}">
+                <span style="font-size:0.95em;">${item.f}</span>
+                <input type="radio" name="mais${i}" class="mais" data-t="${item.t}">
+                <input type="radio" name="menos${i}" class="menos" data-t="${item.t}">
             </div>`;
     });
 
     async function enviar() {
         const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Digite o nome!");
+        const btn = document.getElementById('btn-enviar');
+        if(!nome) return alert("Por favor, preencha seu nome!");
+
+        btn.innerText = "ENVIANDO...";
+        btn.disabled = true;
 
         let s = {D:0, I:0, S:0, C:0};
         document.querySelectorAll('.mais:checked').forEach(r => s[r.dataset.t]++);
@@ -95,4 +116,23 @@
             nome: nome,
             sap1: document.getElementById('sap1').value, sap2: document.getElementById('sap2').value,
             sap3: document.getElementById('sap3').value, sap4: document.getElementById('sap4').value,
-            sap5: document.getElementById('sap5').value,
+            sap5: document.getElementById('sap5').value, sap6: document.getElementById('sap6').value,
+            sap7: document.getElementById('sap7').value,
+            disc: `${s.D}-${s.I}-${s.S}-${s.C}`
+        };
+
+        const URL = "https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec";
+        
+        try {
+            await fetch(URL, { method: 'POST', body: JSON.stringify(dados) });
+            alert("✅ Avaliação enviada com sucesso!");
+            window.location.reload();
+        } catch (e) { 
+            alert("Erro no envio!"); 
+            btn.innerText = "TENTAR NOVAMENTE";
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
