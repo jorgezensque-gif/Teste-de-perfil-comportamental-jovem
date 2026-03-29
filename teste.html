@@ -14,19 +14,22 @@
         .btn-disc { padding: 10px; border: 1px solid #30363d; background: #0d1117; color: white; cursor: pointer; border-radius: 5px; }
         .btn-disc.selected { background: #238636; }
         .btn-enviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-wpp-link { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-align: center; text-decoration: none; }
+        
+        /* ESTILO DO BOTÃO QUE ESTAVA FALTANDO */
+        .btn-wpp-link { 
+            width: 100%; padding: 15px; background: #007bff; color: white; border: none; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 25px; 
+            display: block; text-align: center; text-decoration: none; box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2>Avaliação Jovem - Jorge Zensque</h2>
-    
-    <a href="#" class="btn-wpp-link" onclick="compartilharLink()">ENVIAR LINK PELO WHATSAPP</a>
+    <a href="#" class="btn-wpp-link" onclick="compartilharLink()">🔗 ENVIAR LINK DO TESTE PELO WHATSAPP</a>
 
-    <hr style="border: 0.5px solid #30363d; margin: 25px 0;">
-
-    <input type="text" id="nome" placeholder="Seu Nome Completo" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+    <h2 style="text-align: center;">Avaliação Jovem - Jorge Zensque</h2>
+    <input type="text" id="nome" placeholder="Seu Nome Completo" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
 
     <h3>SAP 5.0 (Arraste de 1 a 5)</h3>
     <div id="sap"></div>
@@ -38,29 +41,37 @@
 </div>
 
 <script>
+    // FUNÇÃO PARA COMPARTILHAR O LINK
+    function compartilharLink() {
+        const linkSite = window.location.href;
+        const msg = `Olá! Aqui é o Educador Jorge. 🚀%0A%0APor favor, preencha sua avaliação socioemocional neste link:%0A${linkSite}`;
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
     const perguntas = ["Protagonismo", "Responsabilidade", "Comunicação", "Ética", "Problemas", "Equipe", "Aprender"];
     const sapDiv = document.getElementById('sap');
     perguntas.forEach((p, i) => {
-        sapDiv.innerHTML += `<div class="item"><span class="titulo">${i+1}. ${p}</span><input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value"><span>3</span></div>`;
+        sapDiv.innerHTML += `
+            <div class="item">
+                <span class="titulo">${i+1}. ${p}</span>
+                <input type="range" id="sap${i+1}" min="1" max="5" value="3" oninput="this.nextElementSibling.innerText = this.value">
+                <span style="display:block; text-align:center; font-weight:bold; color:#58a6ff;">3</span>
+            </div>`;
     });
 
-    const palavras = [{p:"Direto", t:"D"}, {p:"Amigável", t:"I"}, {p:"Calmo", t:"S"}, {p:"Lógico", t:"C"}, {p:"Focado", t:"D"}, {p:"Alegre", t:"I"}, {p:"Paciente", t:"S"}, {p:"Cuidadoso", t:"C"}];
+    const palavras = [
+        {p:"Direto", t:"D"}, {p:"Amigável", t:"I"}, {p:"Calmo", t:"S"}, {p:"Lógico", t:"C"},
+        {p:"Focado", t:"D"}, {p:"Alegre", t:"I"}, {p:"Paciente", t:"S"}, {p:"Cuidadoso", t:"C"}
+    ];
     const discDiv = document.getElementById('disc');
     palavras.forEach(item => {
         discDiv.innerHTML += `<button class="btn-disc" onclick="this.classList.toggle('selected')" data-t="${item.t}">${item.p}</button>`;
     });
 
-    // FUNÇÃO PARA VOCÊ ENVIAR O LINK DO TESTE PARA OS JOVENS
-    function compartilharLink() {
-        const linkSite = window.location.href;
-        const msg = `Olá! Aqui é o Educador Jorge. 🚀%0A%0A Por favor, preencha sua avaliação neste link: %0A${linkSite}`;
-        window.open(`https://wa.me/?text=${msg}`, '_blank');
-    }
-
     async function enviar() {
         const nome = document.getElementById('nome').value;
         const btn = document.getElementById('btn-enviar');
-        if(!nome) return alert("Falta o nome!");
+        if(!nome) return alert("Por favor, digite seu nome!");
 
         const sel = document.querySelectorAll('.btn-disc.selected');
         let d=0, i=0, s=0, c=0;
@@ -85,11 +96,11 @@
         try {
             btn.innerText = "ENVIANDO...";
             await fetch(URL, { method: 'POST', body: JSON.stringify(dados) });
-            alert("Enviado para o Painel ADM com sucesso!");
-            btn.innerText = "ENVIADO ✅";
+            alert("✅ Enviado para o Painel ADM com sucesso!");
+            window.location.reload();
         } catch (e) {
-            alert("Erro ao enviar para o painel.");
-            btn.innerText = "TENTAR NOVAMENTE";
+            alert("Erro ao enviar. Tente novamente.");
+            btn.innerText = "ENVIAR PARA O PAINEL DO JORGE";
         }
     }
 </script>
