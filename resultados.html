@@ -156,4 +156,86 @@
         }
         mostrarSecaoIndividual(true);
         const j = dadosGlobais[idx];
-        document.getElementById('nomeJovemGrafico').innerText = j
+        document.getElementById('nomeJovemGrafico').innerText = j.nome;
+        
+        try {
+            const sapValores = JSON.parse(j.sap);
+            const discValores = j.disc.split('-').map(Number);
+
+            desenhar('chartSapInd', 'radar', ['Protagonismo', 'Comprometido', 'Comunicação', 'Ético', 'Problemas', 'Equipe', 'Futuro'], sapValores, 'Competências SAP');
+            desenhar('chartDiscInd', 'pie', ['Dominância', 'Influência', 'Estabilidade', 'Conformidade'], discValores, 'Perfil DISC');
+        } catch(e) { console.error("Erro nos dados deste jovem", e); alert("Erro ao ler os dados."); }
+    }
+
+    // ATUALIZA OS 2 GRÁFICOS COLETIVOS DA TURMA
+    function renderizarGraficosGerais(totalJovens) {
+        if (!dadosGlobais.length) return;
+        let mediasSap = [0,0,0,0,0,0,0];
+        let totaisDisc = [0,0,0,0];
+        let contValidos = 0;
+
+        dadosGlobais.forEach(j => {
+            if(!j.sap || !j.disc || j.nome === "") return;
+            contValidos++;
+            try {
+                JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += v);
+                j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += v);
+            } catch(e) { console.error("Erro no geral", e); }
+        });
+
+        if(contValidos > 0) {
+            desenhar('chartSapGeral', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], mediasSap.map(v => v/contValidos), 'Média SAP (1 a 7)');
+            desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Total DISC da Turma');
+        } else { ocultarSecoes(); }
+    }
+
+    // FUNÇÃO GERAL PARA DESENHAR GRÁFICOS (CHART.JS)
+    function desenhar(id, type, labels, data, label) {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        if (charts[id]) charts[id].destroy(); // Limpa gráfico anterior
+        charts[id] = new Chart(canvas.getContext('2d'), {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: type === 'pie' ? ['rgba(255, 99, 132, 0.4)', 'rgba(54, 162, 235, 0.4)', 'rgba(255, 206, 86, 0.4)', 'rgba(75, 192, 192, 0.4)'] : 'rgba(0, 86, 179, 0.2)',
+                    borderColor: '#0056b3',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: type === 'pie' ? {} : { y: { beginAtZero: true, max: 7 } } }
+        });
+    }
+
+    // EXCLUIR UM INDIVÍDUO (INDIVIDUAL)
+    async function excluirInd(nome) {
+        if (!confirm(`Deseja realmente apagar os dados de: ${nome}?`)) return;
+        try {
+            await fetch(`${URL_API}?action=delete&nome=${encodeURIComponent(nome)}`, { mode: 'no-cors' });
+            // no-cors não dá retorno, então aguardamos 1.5s e recarregamos
+            setTimeout(carregarDados, 1500);
+        } catch (e) { alert("Erro de rede. Tente novamente."); }
+    }
+
+    // EXCLUIR TUDO (GERAL)
+    async function excluirTudo() {
+        if (!confirm("⚠️ PERIGO: Você vai apagar TODOS os registros da planilha. Esta ação é irreversível. Confirma?")) return;
+        try {
+            await fetch(`${URL_API}?action=deleteAll`, { mode: 'no-cors' });
+            setTimeout(carregarDados, 1500);
+        } catch (e) { alert("Erro de rede ao limpar dados."); }
+    }
+
+    // UTILITÁRIOS DE LAYOUT
+    function mostrarSecaoIndividual(show) { document.getElementById('secaoIndividual').style.display = show ? 'block' : 'none'; }
+    function mostrarSecaoGeral() { document.getElementById('secaoGeral').style.display = 'block'; }
+    function ocultarSecoes() { mostrarSecaoIndividual(false); document.getElementById('secaoGeral').style.display = 'none'; }
+
+    // Inicia o painel
+    carregarDados();
+</script>
+</body>
+</html>
