@@ -33,12 +33,7 @@
 
     <div class="disc-box">
         <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
-        <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você em cada linha.</p>
-        <div class="disc-row disc-header">
-            <span>Frase</span>
-            <span style="text-align:center;">MAIS (+)</span>
-            <span style="text-align:center;">MENOS (-)</span>
-        </div>
+        <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você.</p>
         <div id="disc-lista"></div>
     </div>
 
@@ -46,10 +41,9 @@
 </div>
 
 <script>
-    // URL DA SUA IMPLANTAÇÃO VERSÃO 7
-    const URL_API = "https://script.google.com/macros/s/AKfycbxQccfoHu9MljD4004szE1OKc2HZPq0j05wkXSSVACUf_opL9qVdY8gDUVA6ZyhmPa8/exec";
+    // CONFERÊNCIA: URL DA VERSÃO 8 ATIVA
+    const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
 
-    // AS 7 COMPETÊNCIAS ORIGINAIS QUE VOCÊ DEFINIU
     const sapDados = [
         {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
         {t:"2- SER RESPONSÁVEL E COMPROMETIDO", e:"Pontual, cumpre prazos e regras, higiene pessoal."},
@@ -60,7 +54,7 @@
         {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições."}
     ];
 
-    // GERA A LISTA COM ESCALA DE 1 A 5 (AGORA CORRETO NO CÓDIGO)
+    // CONFERÊNCIA: ESCALA TRAVADA EM 1 A 5
     sapDados.forEach((item, i) => {
         document.getElementById('sap-lista').innerHTML += `
             <div class="sap-item">
@@ -122,7 +116,7 @@
             if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
         }
 
-        btn.innerText = "ENVIANDO...";
+        btn.innerText = "ENVIANDO AO GESTOR...";
         btn.disabled = true;
 
         let d = {D:0, I:0, S:0, C:0};
@@ -136,7 +130,7 @@
             alert("✅ Recebido com sucesso!"); 
             window.location.reload();
         } catch (e) { 
-            alert("Erro de conexão. Tente novamente."); 
+            alert("Erro de conexão."); 
             btn.innerText = "TENTAR NOVAMENTE"; 
             btn.disabled = false; 
         }
