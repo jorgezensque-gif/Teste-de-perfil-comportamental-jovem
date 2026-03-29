@@ -8,13 +8,23 @@
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
         .box { background: white; padding: 20px; border-radius: 8px; max-width: 1100px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-top: 10px solid #0056b3; }
         h2 { color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        
+        /* GERADOR DE LINK */
+        .gerador-link { background: #e7f3ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px dashed #0056b3; text-align: center; }
+        .btn-whatsapp { background: #25d366; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+        
+        /* CONTROLES */
         .controles { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
         #inputBusca { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        
+        /* TABELA */
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background: #0056b3; color: white; text-transform: uppercase; font-size: 0.85em; }
         tr:nth-child(even) { background: #f9f9f9; }
+        
+        /* BOTÕES */
         .btn-excluir { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-geral { background: #000; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-excluir:hover, .btn-geral:hover { opacity: 0.8; }
@@ -25,6 +35,13 @@
 
 <div class="box">
     <h2>PAINEL DE CONTROLE - GESTOR JORGE</h2>
+
+    <div class="gerador-link">
+        <p style="margin-top:0;"><strong>🔗 Enviar teste para a turma:</strong></p>
+        <a href="https://api.whatsapp.com/send?text=Olá pessoal! Por favor, preencham o teste de perfil neste link: https://jorgezensque-gif.github.io/Teste-de-perfil-comportamental-jovem/teste.html" target="_blank" class="btn-whatsapp">
+            📲 GERAR LINK E ENVIAR VIA WHATSAPP
+        </a>
+    </div>
 
     <div class="controles">
         <input type="text" id="inputBusca" onkeyup="filtrarNome()" placeholder="🔍 Buscar jovem por nome...">
@@ -49,6 +66,7 @@
 </div>
 
 <script>
+    // URL DA SUA API (CERTIFIQUE-SE QUE É A VERSÃO MAIS RECENTE DA IMPLANTAÇÃO)
     const URL_API = "https://script.google.com/macros/s/AKfycbwwwi-8ZVUYTdmg3Pu1eU4ueK5HV1L7zJBni9b8qwT22w7f-O8CTB8c6OsbtMm73NE-/exec";
 
     async function carregarDados() {
@@ -75,7 +93,7 @@
                     </tr>`;
             });
         } catch (e) {
-            document.getElementById('corpoTabela').innerHTML = "<tr><td colspan='4' style='text-align:center; color:red;'>Erro ao carregar dados. Verifique a URL da API.</td></tr>";
+            document.getElementById('corpoTabela').innerHTML = "<tr><td colspan='4' style='text-align:center; color:red;'>Erro de conexão! Verifique se a URL da API está correta e se a implantação está como 'Qualquer Pessoa'.</td></tr>";
         }
     }
 
