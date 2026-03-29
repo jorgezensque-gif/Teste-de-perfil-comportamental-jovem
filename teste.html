@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Autoavaliação Pescar 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
         .box { background: white; padding: 25px; border-radius: 8px; max-width: 850px; margin: auto; border-top: 10px solid #0056b3; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -16,40 +15,34 @@
         .btn-n.ativo { background: #0056b3; color: white; transform: scale(1.1); }
         .disc-box { background: #161b22; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; }
         .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 0.9em; align-items: center; }
+        .disc-header { color: #f1c40f; font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
         input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
         .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
-        #bloqueio { display: none; text-align: center; padding: 50px; }
     </style>
 </head>
 <body>
-<audio id="somSucesso" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
-<div id="bloqueio" class="box">
-    <h2 style="color: #d63031;">⚠️ Teste Já Realizado</h2>
-    <p>Olá! Identificamos que você já enviou sua autoavaliação.</p>
-    <p>Para evitar erros no painel, o sistema permite apenas um envio por jovem.</p>
-    <p><strong>Dúvidas? Fale com o Educador Jorge.</strong></p>
-</div>
-<div id="conteudo-quiz" class="box">
+<div class="box">
     <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
+    
     <div style="margin-bottom:20px;">
         <label style="font-weight:bold;">NOME COMPLETO:</label>
         <input type="text" id="nome" placeholder="Digite seu nome completo" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
     </div>
+
     <div id="sap-lista"></div>
+
     <div class="disc-box">
         <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
         <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você.</p>
         <div id="disc-lista"></div>
     </div>
+
     <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO GESTOR JORGE</button>
 </div>
-<script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbzDkllLQnuVSAM8JL3nJPl6MKp7venklpiha5kF00Psn2mj3prHcKwJ7gH2WoNyRH-G/exec";
 
-    if (localStorage.getItem("pescar_respondido") === "true") {
-        document.getElementById("conteudo-quiz").style.display = "none";
-        document.getElementById("bloqueio").style.display = "block";
-    }
+<script>
+    // CONFERÊNCIA: URL DA VERSÃO 8 ATIVA
+    const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
 
     const sapDados = [
         {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
@@ -61,13 +54,18 @@
         {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições."}
     ];
 
+    // CONFERÊNCIA: ESCALA TRAVADA EM 1 A 5
     sapDados.forEach((item, i) => {
         document.getElementById('sap-lista').innerHTML += `
             <div class="sap-item">
                 <span class="sap-titulo">${item.t}</span>
                 <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
                 <div class="escala-botoes">
-                    ${[1,2,3,4,5].map(n => `<button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, ${n})">${n}</button>`).join('')}
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 1)">1</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 2)">2</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 3)">3</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 4)">4</button>
+                    <button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, 5)">5</button>
                     <input type="hidden" id="sap${i+1}">
                 </div>
             </div>`;
@@ -99,3 +97,44 @@
     ];
 
     frasesDISC.forEach((item, i) => {
+        document.getElementById('disc-lista').innerHTML += `
+            <div class="disc-row">
+                <span>${item.f}</span>
+                <div style="text-align:center;"><input type="radio" name="disc${i}" class="mais" data-t="${item.t}"></div>
+                <div style="text-align:center;"><input type="radio" name="disc${i}" class="menos" data-t="${item.t}"></div>
+            </div>`;
+    });
+
+    async function enviar() {
+        const nome = document.getElementById('nome').value;
+        const btn = document.getElementById('btn-enviar');
+        if(!nome) return alert("Por favor, digite seu nome!");
+        
+        let saps = {};
+        for(let i=1; i<=7; i++) {
+            saps['sap'+i] = document.getElementById('sap'+i).value;
+            if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
+        }
+
+        btn.innerText = "ENVIANDO AO GESTOR...";
+        btn.disabled = true;
+
+        let d = {D:0, I:0, S:0, C:0};
+        document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
+        document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
+
+        const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
+        
+        try {
+            await fetch(URL_API, { method: "POST", mode: "no-cors", body: JSON.stringify(dados) });
+            alert("✅ Recebido com sucesso!"); 
+            window.location.reload();
+        } catch (e) { 
+            alert("Erro de conexão."); 
+            btn.innerText = "TENTAR NOVAMENTE"; 
+            btn.disabled = false; 
+        }
+    }
+</script>
+</body>
+</html>
