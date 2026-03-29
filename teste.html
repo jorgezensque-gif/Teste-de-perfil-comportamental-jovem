@@ -22,30 +22,49 @@
     </style>
 </head>
 <body>
+
 <audio id="somSucesso" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+
 <div id="bloqueio" class="box">
     <h2 style="color: #d63031;">⚠️ Teste Já Realizado</h2>
     <p>Olá! Identificamos que você já enviou sua autoavaliação.</p>
-    <p><strong>Dúvidas? Fale com o Educador Jorge.</strong></p>
+    <p>Para evitar erros no painel, o sistema permite apenas um envio.</p>
+    <p><strong>Precisa refazer? Peça o link de liberação ao Jorge.</strong></p>
 </div>
+
 <div id="conteudo-quiz" class="box">
     <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
-    <div style="margin-bottom:20px;"><label style="font-weight:bold;">NOME COMPLETO:</label><input type="text" id="nome" placeholder="Digite seu nome completo" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;"></div>
+    
+    <div style="margin-bottom:20px;">
+        <label style="font-weight:bold;">NOME COMPLETO:</label>
+        <input type="text" id="nome" placeholder="Digite seu nome completo" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+    </div>
+
     <div id="sap-lista"></div>
+
     <div class="disc-box">
         <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
         <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você.</p>
         <div id="disc-lista"></div>
     </div>
+
     <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO GESTOR JORGE</button>
 </div>
+
 <script>
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
+
+    // --- LÓGICA DA CHAVE MESTRA (RESET) ---
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+        localStorage.removeItem("pescar_respondido");
+    }
 
     if (localStorage.getItem("pescar_respondido") === "true") {
         document.getElementById("conteudo-quiz").style.display = "none";
         document.getElementById("bloqueio").style.display = "block";
     }
+    // --------------------------------------
 
     const sapDados = [
         {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
@@ -128,7 +147,7 @@
             const texto = await response.text();
 
             if (texto === "DUPLICADO") {
-                alert("❌ ERRO: Este nome já enviou a avaliação hoje!");
+                alert("❌ ERRO: Este nome já enviou a avaliação. Se precisar refazer, fale com o Jorge para liberar.");
                 btn.innerText = "ENVIAR AO GESTOR JORGE";
                 btn.disabled = false;
             } else {
