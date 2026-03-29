@@ -16,7 +16,8 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background: #0056b3; color: white; }
-        .btn-refresh { padding: 10px 20px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; }
+        .btn-refresh { padding: 10px 20px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: bold; }
+        .btn-delete { color: red; cursor: pointer; border: 1px solid red; background: none; padding: 5px 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -36,20 +37,20 @@
         <div class="card"><h3>Individual: SAP (Escala 1 a 5)</h3><canvas id="chartSapInd"></canvas></div>
         <div class="card"><h3>Individual: Perfil DISC</h3><canvas id="chartDiscInd"></canvas></div>
         <div class="card"><h3>Turma: Média SAP</h3><canvas id="chartSapGeral"></canvas></div>
-        <div class="card"><h3>Turma: Perfil Geral</h3><canvas id="chartDiscGeral"></canvas></div>
+        <div class="card"><h3>Turma: Perfil Geral (D-I-S-C)</h3><canvas id="chartDiscGeral"></canvas></div>
     </div>
 
     <table>
-        <thead><tr><th>Nome</th><th>Valores SAP</th><th>DISC (D-I-S-C)</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Valores SAP</th><th>DISC</th><th>Ação</th></tr></thead>
         <tbody id="corpoTabela"></tbody>
     </table>
 </div>
 
 <script>
-    // URL DA VERSÃO 7 ATUALIZADA
-    const URL_API = "https://script.google.com/macros/s/AKfycbxQccfoHu9MljD4004szE1OKc2HZPq0j05wkXSSVACUf_opL9qVdY8gDUVA6ZyhmPa8/exec";
+    // URL DA SUA IMPLANTAÇÃO VERSÃO 8
+    const URL_API = "https://script.google.com/macros/s/AKfycbwsbjloMrtxMQJdWWbT8HR1SbpRZ-KeeT9ZAuHjB3WsJB6XWdds2pXLlVqrO_dNVzqD/exec";
     
-    // Configura o Link do WhatsApp automaticamente para o seu teste.html no GitHub
+    // Configura o Link do WhatsApp automaticamente
     const urlQuiz = window.location.href.replace("resultados.html", "teste.html");
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Por favor, preencha sua autoavaliação do Projeto Pescar aqui: " + urlQuiz;
 
@@ -59,7 +60,6 @@
     async function carregarDados() {
         try {
             const res = await fetch(URL_API);
-            if (!res.ok) throw new Error();
             dadosGlobais = await res.json();
             
             const select = document.getElementById('selectJovem');
@@ -69,11 +69,16 @@
 
             dadosGlobais.forEach((item, index) => {
                 select.innerHTML += `<option value="${index}">${item.nome}</option>`;
-                tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.sap}</td><td>${item.disc}</td><td><button onclick="excluirInd('${item.nome}')" style="color:red; cursor:pointer;">Excluir</button></td></tr>`;
+                tabela.innerHTML += `<tr>
+                    <td>${item.nome}</td>
+                    <td>${item.sap}</td>
+                    <td>${item.disc}</td>
+                    <td><button class="btn-delete" onclick="excluirInd('${item.nome}')">Excluir</button></td>
+                </tr>`;
             });
             renderizarGraficosGerais();
         } catch (e) { 
-            console.log("Aguardando dados da planilha...");
+            console.log("Erro ao buscar dados ou planilha vazia.");
         }
     }
 
@@ -81,12 +86,12 @@
         if (charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
         
-        // TRAVA A ESCALA EM 5 PARA SAP E DISC BARRA
+        // ESCALA TRAVADA EM 5
         const options = {
             responsive: true,
             maintainAspectRatio: false,
             scales: (type === 'radar' || type === 'bar') ? {
-                r: { min: 0, max: 5, ticks: { stepSize: 1, display: true } },
+                r: { min: 0, max: 5, ticks: { stepSize: 1 } },
                 y: { min: 0, max: 5, ticks: { stepSize: 1 } }
             } : {}
         };
@@ -112,7 +117,7 @@
         if (idx === "") return;
         const j = dadosGlobais[idx];
         desenhar('chartSapInd', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], JSON.parse(j.sap), 'Individual SAP');
-        desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], j.disc.split('-').map(v => Math.abs(v)), 'Perfil DISC');
+        desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], j.disc.split('-').map(v => Math.abs(Number(v))), 'Perfil DISC');
     }
 
     function renderizarGraficosGerais() {
@@ -127,7 +132,7 @@
     }
 
     async function excluirInd(n) { 
-        if(confirm("Deseja apagar os dados de "+n+"?")) { 
+        if(confirm("Deseja apagar permanentemente os dados de "+n+"?")) { 
             await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
             setTimeout(carregarDados, 1500); 
         } 
