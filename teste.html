@@ -14,13 +14,18 @@
         .btn-disc { padding: 10px; border: 1px solid #30363d; background: #0d1117; color: white; cursor: pointer; border-radius: 5px; }
         .btn-disc.selected { background: #238636; }
         .btn-enviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-wpp { width: 100%; padding: 15px; background: #25d366; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-align: center; text-decoration: none; }
+        .btn-wpp-link { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-align: center; text-decoration: none; }
     </style>
 </head>
 <body>
 
 <div class="box">
     <h2>Avaliação Jovem - Jorge Zensque</h2>
+    
+    <a href="#" class="btn-wpp-link" onclick="compartilharLink()">ENVIAR LINK PELO WHATSAPP</a>
+
+    <hr style="border: 0.5px solid #30363d; margin: 25px 0;">
+
     <input type="text" id="nome" placeholder="Seu Nome Completo" style="width: 100%; padding: 10px; margin-bottom: 20px;">
 
     <h3>SAP 5.0 (Arraste de 1 a 5)</h3>
@@ -30,7 +35,6 @@
     <div class="disc-grid" id="disc"></div>
 
     <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR PARA O PAINEL DO JORGE</button>
-    <a id="btn-wpp" class="btn-wpp" href="#" onclick="enviarWhatsApp()">ENVIAR PELO WHATSAPP</a>
 </div>
 
 <script>
@@ -46,9 +50,18 @@
         discDiv.innerHTML += `<button class="btn-disc" onclick="this.classList.toggle('selected')" data-t="${item.t}">${item.p}</button>`;
     });
 
-    function obterResumo() {
+    // FUNÇÃO PARA VOCÊ ENVIAR O LINK DO TESTE PARA OS JOVENS
+    function compartilharLink() {
+        const linkSite = window.location.href;
+        const msg = `Olá! Aqui é o Educador Jorge. 🚀%0A%0A Por favor, preencha sua avaliação neste link: %0A${linkSite}`;
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
+    async function enviar() {
         const nome = document.getElementById('nome').value;
-        const saps = [1,2,3,4,5,6,7].map(n => document.getElementById('sap'+n).value);
+        const btn = document.getElementById('btn-enviar');
+        if(!nome) return alert("Falta o nome!");
+
         const sel = document.querySelectorAll('.btn-disc.selected');
         let d=0, i=0, s=0, c=0;
         sel.forEach(b => { 
@@ -57,40 +70,27 @@
         });
         const total = (d+i+s+c) || 1;
         const discStr = `${Math.round(d/total*100)}-${Math.round(i/total*100)}-${Math.round(s/total*100)}-${Math.round(c/total*100)}`;
-        return { nome, saps, discStr };
-    }
-
-    async function enviar() {
-        const { nome, saps, discStr } = obterResumo();
-        const btn = document.getElementById('btn-enviar');
-        if(!nome) return alert("Falta o nome!");
 
         const dados = {
             nome: nome,
-            sap1: saps[0], sap2: saps[1], sap3: saps[2], sap4: saps[3], sap5: saps[4], sap6: saps[5], sap7: saps[6],
+            sap1: document.getElementById('sap1').value, sap2: document.getElementById('sap2').value,
+            sap3: document.getElementById('sap3').value, sap4: document.getElementById('sap4').value,
+            sap5: document.getElementById('sap5').value, sap6: document.getElementById('sap6').value,
+            sap7: document.getElementById('sap7').value,
             disc: discStr
         };
 
-        // LINHA 82 - SEU LINK OFICIAL
         const URL = "https://script.google.com/macros/s/AKfycbLGM8EKwurE1kSgeCMgzERR8g4lWh9yNFPSX7Er43tGUddzrBGRfYusKFU_DDdQomr/exec";
 
         try {
             btn.innerText = "ENVIANDO...";
             await fetch(URL, { method: 'POST', body: JSON.stringify(dados) });
-            alert("Enviado para a planilha com sucesso!");
+            alert("Enviado para o Painel ADM com sucesso!");
             btn.innerText = "ENVIADO ✅";
         } catch (e) {
             alert("Erro ao enviar para o painel.");
             btn.innerText = "TENTAR NOVAMENTE";
         }
-    }
-
-    function enviarWhatsApp() {
-        const { nome, saps, discStr } = obterResumo();
-        if(!nome) return alert("Falta o nome!");
-        
-        const texto = `Avaliação Pescar - ${nome}%0A%0ASAP: ${saps.join(' | ')}%0ADISC: ${discStr}`;
-        const win = window.open(`https://wa.me/5563984534720?text=${texto}`, '_blank'); // Coloquei seu número de Palmas (63)
     }
 </script>
 </body>
