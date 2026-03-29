@@ -15,7 +15,7 @@
         .btn-disc.selected { background: #238636; }
         .btn-enviar { width: 100%; padding: 20px; background: #238636; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; }
         
-        /* ESTILO DO BOTÃO QUE ESTAVA FALTANDO */
+        /* BOTÃO DE ENVIAR LINK PELO WHATSAPP */
         .btn-wpp-link { 
             width: 100%; padding: 15px; background: #007bff; color: white; border: none; 
             border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 25px; 
@@ -41,7 +41,7 @@
 </div>
 
 <script>
-    // FUNÇÃO PARA COMPARTILHAR O LINK
+    // FUNÇÃO QUE GERA O LINK DO WHATSAPP COM A MENSAGEM PARA A TURMA
     function compartilharLink() {
         const linkSite = window.location.href;
         const msg = `Olá! Aqui é o Educador Jorge. 🚀%0A%0APor favor, preencha sua avaliação socioemocional neste link:%0A${linkSite}`;
