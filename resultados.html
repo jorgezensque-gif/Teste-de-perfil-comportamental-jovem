@@ -80,18 +80,26 @@
         if (charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
 
-        // LÓGICA DE ESCALA BLINDADA - AQUI ESTÁ A CORREÇÃO
         let opcoes = {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true, // LEGENDA ATIVA
+                    labels: { font: { weight: 'bold' } }
+                }
+            },
             scales: {}
         };
 
         if (type === 'radar') {
             opcoes.scales = { r: { min: 0, max: 5, ticks: { stepSize: 1 } } };
         } else if (type === 'bar') {
-            opcoes.scales = { y: { beginAtZero: true, grace: '10%' } }; // GRÁFICO DE BARRAS LIVRE PARA CRESCER
+            opcoes.scales = { y: { beginAtZero: true } };
         }
+
+        // CORES DISC: D(Vermelho), I(Azul), S(Amarelo), C(Verde)
+        const coresDisc = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
 
         charts[id] = new Chart(ctx, {
             type: type,
@@ -100,8 +108,8 @@
                 datasets: [{ 
                     label: label, 
                     data: data, 
-                    backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.4)', 
-                    borderColor: '#0056b3', 
+                    backgroundColor: (id.toLowerCase().includes('disc')) ? coresDisc : 'rgba(0, 86, 179, 0.4)', 
+                    borderColor: (id.toLowerCase().includes('disc')) ? coresDisc : '#0056b3',
                     borderWidth: 2 
                 }] 
             },
