@@ -124,7 +124,7 @@
         const idx = document.getElementById('selectJovem').value;
         if (idx === "") return;
         const j = dadosGlobais[idx];
-        desenhar('chartSapInd', 'radar', ['SER PROTAGONISTA', 'SER RESPONSÁVEL E COMPROMETIDO', 'COMPREENDER CONTEXTOS E COMUNICAR-SE', 'SER DEMOCRÁTICO, ÉTICO E CIDADÃO', 'RESOLVER SITUAÇÕES-PROBLEMA', 'TRABALHAR E PRODUZIR EM EQUIPE', 'APRENDER A APRENDER'], JSON.parse(j.sap), 'Individual SAP');
+        desenhar('chartSapInd', 'radar', ['PROTAGONISMO', 'RESPONSABILIDADE', 'COMUNICAÇÃO', 'CIDADANIA E ÉTICA', 'SOLUÇÃO DE PROBLEMAS', 'TRABALHO EM EQUIPE', 'APRENDER A APRENDER'], JSON.parse(j.sap), 'Individual SAP');
         desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], j.disc.split('-').map(v => Math.abs(Number(v))), 'Perfil DISC');
     }
 
