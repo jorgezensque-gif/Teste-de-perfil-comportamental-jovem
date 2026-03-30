@@ -39,31 +39,31 @@
         <div class="card"><h3>Turma: Média SAP Geral</h3><canvas id="chartSapGeral"></canvas></div>
         <div class="card"><h3>Turma: Perfil Geral (DISC)</h3><canvas id="chartDiscGeral"></canvas></div>
     </div>
-<div style="display: flex; gap: 10px; margin-bottom: 10px;">
+
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <button class="btn-refresh" style="background: #2c3e50; flex: 1;" onclick="window.print()">🖨️ Imprimir PDF</button>
         <button class="btn-refresh" style="background: #27ae60; flex: 1;" onclick="exportarExcel()">📊 Exportar para Excel</button>
     </div>
+
     <table>
         <thead><tr><th>Nome</th><th>Valores SAP</th><th>DISC</th><th>Ação</th></tr></thead>
         <tbody id="corpoTabela"></tbody>
     </table>
 </div>
 
-
-    <script>
-    // --- TRAVA DE SEGURANÇA ---
-    const SENHA_MESTRE = "Miraiotsuru@2026#Z"; 
+<script>
+    // --- TRAVA DE SEGURANÇA (MIRAIOTSURU) ---
+    const SENHA_MESTRE = "Miraiotsuru@2026#Z";
     let acesso = prompt("Digite a senha de acesso ao Painel Gestor:");
 
     if (acesso !== SENHA_MESTRE) {
         alert("Senha incorreta! Acesso negado.");
         document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Acesso Restrito - Identifique-se corretamente.</h1>";
-        throw new Error("Acesso negado"); 
+        throw new Error("Acesso negado");
     }
-    // ---------------------------
+    // ----------------------------------------
 
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
-    // ... resto do seu código
     const urlBase = window.location.href.split('resultados.html')[0];
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha sua autoavaliação aqui: " + urlBase + "teste.html";
 
@@ -101,7 +101,7 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: true, // LEGENDA ATIVA
+                    display: true,
                     labels: { font: { weight: 'bold' } }
                 }
             },
@@ -114,7 +114,6 @@
             opcoes.scales = { y: { beginAtZero: true } };
         }
 
-        // CORES DISC: D(Vermelho), I(Azul), S(Amarelo), C(Verde)
         const coresDisc = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
 
         charts[id] = new Chart(ctx, {
@@ -152,12 +151,14 @@
         desenhar('chartDiscGeral', 'bar', ['Dominância (D)', 'Influência (I)', 'Estabilidade (S)', 'Conformidade (C)'], totaisDisc, 'Soma Total dos Perfis da Turma');
     }
 
-    async function excluirInd(n) { 
-        if(confirm("Deseja apagar os dados de "+n+"?")) { 
-            await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
-            setTimeout(carregarDados, 1500); 
+    async function excluirInd(n) {
+        if(confirm("Deseja apagar os dados de "+n+"?")) {
+            await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'});
+            setTimeout(carregarDados, 1500);
         } 
-    }function exportarExcel() {
+    }
+
+    function exportarExcel() {
         let csv = "\ufeffNome;SAP;DISC\n"; 
         dadosGlobais.forEach(item => {
             csv += `${item.nome};"${item.sap}";${item.disc}\n`;
@@ -168,6 +169,7 @@
         link.setAttribute("download", "Relatorio_Projeto_Pescar_2026.csv");
         link.click();
     }
+
     carregarDados();
 </script>
 </body>
