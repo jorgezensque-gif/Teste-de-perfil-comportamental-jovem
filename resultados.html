@@ -124,7 +124,7 @@
         const idx = document.getElementById('selectJovem').value;
         if (idx === "") return;
         const j = dadosGlobais[idx];
-        desenhar('chartSapInd', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], JSON.parse(j.sap), 'Individual SAP');
+        desenhar('chartSapInd', 'radar', ['Autoconhecimento', 'Autogestão', 'Consciência Social', 'Habilidade de Relacionar', 'Tomada de Decisão', 'Determinação', 'Organização'], JSON.parse(j.sap), 'Individual SAP');
         desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], j.disc.split('-').map(v => Math.abs(Number(v))), 'Perfil DISC');
     }
 
