@@ -39,7 +39,10 @@
         <div class="card"><h3>Turma: Média SAP Geral</h3><canvas id="chartSapGeral"></canvas></div>
         <div class="card"><h3>Turma: Perfil Geral (DISC)</h3><canvas id="chartDiscGeral"></canvas></div>
     </div>
-
+<div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button class="btn-refresh" style="background: #2c3e50; flex: 1;" onclick="window.print()">🖨️ Imprimir PDF</button>
+        <button class="btn-refresh" style="background: #27ae60; flex: 1;" onclick="exportarExcel()">📊 Exportar para Excel</button>
+    </div>
     <table>
         <thead><tr><th>Nome</th><th>Valores SAP</th><th>DISC</th><th>Ação</th></tr></thead>
         <tbody id="corpoTabela"></tbody>
