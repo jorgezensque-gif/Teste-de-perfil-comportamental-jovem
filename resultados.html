@@ -135,7 +135,7 @@
             JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += Number(v));
             j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += Math.abs(v));
         });
-        desenhar('chartSapGeral', 'radar', ['SER PROTAGONISTA', 'SER RESPONSÁVEL E COMPROMETIDO', 'COMPREENDER CONTEXTOS E COMUNICAR-SE', 'SER DEMOCRÁTICO, ÉTICO E CIDADÃO', 'RESOLVER SITUAÇÕES-PROBLEMA', 'TRABALHAR E PRODUZIR EM EQUIPE', 'APRENDER A APRENDER'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
+        desenhar('chartSapGeral', 'radar', ['PROTAGONISMO', 'RESPONSABILIDADE', 'COMUNICAÇÃO', 'CIDADANIA E ÉTICA', 'SOLUÇÃO DE PROBLEMAS', 'TRABALHO EM EQUIPE', 'APRENDER A APRENDER'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
         desenhar('chartDiscGeral', 'bar', ['Dominância (D)', 'Influência (I)', 'Estabilidade (S)', 'Conformidade (C)'], totaisDisc, 'Soma Total dos Perfis da Turma');
     }
 
