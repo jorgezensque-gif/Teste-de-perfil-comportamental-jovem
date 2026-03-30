@@ -48,20 +48,16 @@
 </div>
 
 <script>
+    // URL da sua API no Google Apps Script
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
     
-    // Configura o link padrão do WhatsApp
     const urlBase = window.location.href.split('resultados.html')[0];
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha sua autoavaliação aqui: " + urlBase + "teste.html";
 
-    // FUNÇÃO PARA GERAR O LINK QUE LIMPA A TRAVA
     function gerarLinkReset() {
         const linkReset = urlBase + "teste.html?reset=true";
-        const msg = "Envie este link para o jovem que precisa REFAZER o teste:\n\n" + linkReset;
-        
-        // Copia para a área de transferência e avisa
         navigator.clipboard.writeText(linkReset);
-        alert("Link copiado! Segue o link:\n" + linkReset + "\n\nBasta o jovem abrir este link que a trava sumirá.");
+        alert("Link de liberação copiado!\n\nEnvie para o jovem que precisa refazer o teste.");
     }
 
     let dadosGlobais = [];
@@ -80,16 +76,38 @@
                 tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.sap}</td><td>${item.disc}</td><td><button class="btn-delete" onclick="excluirInd('${item.nome}')">Excluir</button></td></tr>`;
             });
             renderizarGraficosGerais();
-        } catch (e) { console.log("Erro ao carregar."); }
+        } catch (e) { console.log("Erro ao carregar dados."); }
     }
 
     function desenhar(id, type, labels, data, label) {
         if (charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
+        
+        // --- BLINDAGEM DA ESCALA ---
+        let configEscala = {};
+        if (type === 'radar') {
+            configEscala = { r: { min: 0, max: 5 } }; // Radar sempre 0 a 5
+        } else if (type === 'bar') {
+            configEscala = { y: { beginAtZero: true } }; // Barras crescem conforme a turma aumenta
+        }
+
         charts[id] = new Chart(ctx, {
             type: type,
-            data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.3)', borderColor: '#0056b3', borderWidth: 2 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: (type === 'radar' || type === 'bar') ? { r: { min: 0, max: 5 }, y: { min: 0, max: 5 } } : {} }
+            data: { 
+                labels: labels, 
+                datasets: [{ 
+                    label: label, 
+                    data: data, 
+                    backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.3)', 
+                    borderColor: '#0056b3', 
+                    borderWidth: 2 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: configEscala 
+            }
         });
     }
 
@@ -113,7 +131,7 @@
     }
 
     async function excluirInd(n) { 
-        if(confirm("Deseja apagar os dados de "+n+"?")) { 
+        if(confirm("Deseja apagar permanentemente os dados de "+n+"?")) { 
             await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
             setTimeout(carregarDados, 1500); 
         } 
