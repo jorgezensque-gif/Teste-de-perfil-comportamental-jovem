@@ -144,6 +144,16 @@
             await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
             setTimeout(carregarDados, 1500); 
         } 
+    }function exportarExcel() {
+        let csv = "\ufeffNome;SAP;DISC\n"; 
+        dadosGlobais.forEach(item => {
+            csv += `${item.nome};"${item.sap}";${item.disc}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", "Relatorio_Projeto_Pescar_2026.csv");
+        link.click();
     }
     carregarDados();
 </script>
