@@ -50,7 +50,20 @@
 </div>
 
 <script>
+    <script>
+    // --- TRAVA DE SEGURANÇA ---
+    const SENHA_MESTRE = "Miraiotsuru@2026#Z"; 
+    let acesso = prompt("Digite a senha de acesso ao Painel Gestor:");
+
+    if (acesso !== SENHA_MESTRE) {
+        alert("Senha incorreta! Acesso negado.");
+        document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Acesso Restrito - Identifique-se corretamente.</h1>";
+        throw new Error("Acesso negado"); 
+    }
+    // ---------------------------
+
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
+    // ... resto do seu código
     const urlBase = window.location.href.split('resultados.html')[0];
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha sua autoavaliação aqui: " + urlBase + "teste.html";
 
