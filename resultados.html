@@ -135,7 +135,7 @@
             JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += Number(v));
             j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += Math.abs(v));
         });
-        desenhar('chartSapGeral', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
+        desenhar('chartSapGeral', 'radar', ['Autoconhecimento', 'Autogestão', 'Consciência Social', 'Habilidade de Relacionar', 'Tomada de Decisão', 'Determinação', 'Organização'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
         desenhar('chartDiscGeral', 'bar', ['Dominância (D)', 'Influência (I)', 'Estabilidade (S)', 'Conformidade (C)'], totaisDisc, 'Soma Total dos Perfis da Turma');
     }
 
