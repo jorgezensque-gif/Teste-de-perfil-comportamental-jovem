@@ -26,7 +26,6 @@
     <h2 style="text-align:center; color: #0056b3;">PAINEL - GESTOR JORGE ZENSQUE</h2>
     
     <a href="#" id="linkWA" class="btn-wa" target="_blank">📲 ENVIAR LINK PADRÃO (WHATSAPP)</a>
-    
     <button onclick="gerarLinkReset()" class="btn-liberar">🔓 GERAR LINK PARA REFAZER TESTE (LIMPAR TRAVA)</button>
 
     <div class="controles">
@@ -38,7 +37,7 @@
         <div class="card"><h3>Individual: SAP (Radar)</h3><canvas id="chartSapInd"></canvas></div>
         <div class="card"><h3>Individual: Perfil DISC</h3><canvas id="chartDiscInd"></canvas></div>
         <div class="card"><h3>Turma: Média SAP Geral</h3><canvas id="chartSapGeral"></canvas></div>
-        <div class="card"><h3>Turma: Perfil Geral</h3><canvas id="chartDiscGeral"></canvas></div>
+        <div class="card"><h3>Turma: Perfil Geral (DISC)</h3><canvas id="chartDiscGeral"></canvas></div>
     </div>
 
     <table>
@@ -48,16 +47,14 @@
 </div>
 
 <script>
-    // URL da sua API no Google Apps Script
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
-    
     const urlBase = window.location.href.split('resultados.html')[0];
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha sua autoavaliação aqui: " + urlBase + "teste.html";
 
     function gerarLinkReset() {
         const linkReset = urlBase + "teste.html?reset=true";
         navigator.clipboard.writeText(linkReset);
-        alert("Link de liberação copiado!\n\nEnvie para o jovem que precisa refazer o teste.");
+        alert("Link copiado! Segue o link:\n" + linkReset + "\n\nBasta o jovem abrir este link que a trava sumirá.");
     }
 
     let dadosGlobais = [];
@@ -76,19 +73,24 @@
                 tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.sap}</td><td>${item.disc}</td><td><button class="btn-delete" onclick="excluirInd('${item.nome}')">Excluir</button></td></tr>`;
             });
             renderizarGraficosGerais();
-        } catch (e) { console.log("Erro ao carregar dados."); }
+        } catch (e) { console.error("Erro ao carregar dados."); }
     }
 
     function desenhar(id, type, labels, data, label) {
         if (charts[id]) charts[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
-        
-        // --- BLINDAGEM DA ESCALA ---
-        let configEscala = {};
+
+        // LÓGICA DE ESCALA BLINDADA - AQUI ESTÁ A CORREÇÃO
+        let opcoes = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {}
+        };
+
         if (type === 'radar') {
-            configEscala = { r: { min: 0, max: 5 } }; // Radar sempre 0 a 5
+            opcoes.scales = { r: { min: 0, max: 5, ticks: { stepSize: 1 } } };
         } else if (type === 'bar') {
-            configEscala = { y: { beginAtZero: true } }; // Barras crescem conforme a turma aumenta
+            opcoes.scales = { y: { beginAtZero: true, grace: '10%' } }; // GRÁFICO DE BARRAS LIVRE PARA CRESCER
         }
 
         charts[id] = new Chart(ctx, {
@@ -98,16 +100,12 @@
                 datasets: [{ 
                     label: label, 
                     data: data, 
-                    backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.3)', 
+                    backgroundColor: type === 'pie' ? ['#e74c3c','#f1c40f','#2ecc71','#3498db'] : 'rgba(0, 86, 179, 0.4)', 
                     borderColor: '#0056b3', 
                     borderWidth: 2 
                 }] 
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: configEscala 
-            }
+            options: opcoes
         });
     }
 
@@ -126,12 +124,12 @@
             JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += Number(v));
             j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += Math.abs(v));
         });
-        desenhar('chartSapGeral', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma');
-        desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Total DISC Turma');
+        desenhar('chartSapGeral', 'radar', ['S1','S2','S3','S4','S5','S6','S7'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
+        desenhar('chartDiscGeral', 'bar', ['Dominância (D)', 'Influência (I)', 'Estabilidade (S)', 'Conformidade (C)'], totaisDisc, 'Soma Total dos Perfis da Turma');
     }
 
     async function excluirInd(n) { 
-        if(confirm("Deseja apagar permanentemente os dados de "+n+"?")) { 
+        if(confirm("Deseja apagar os dados de "+n+"?")) { 
             await fetch(URL_API+"?action=delete&nome="+n, {mode:'no-cors'}); 
             setTimeout(carregarDados, 1500); 
         } 
