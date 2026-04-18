@@ -24,7 +24,7 @@
     <h2 style="text-align:center; color: #0056b3;">PAINEL - GESTOR JORGE ZENSQUE</h2>
     <div style="text-align:center;">
         <select id="selectJovem" onchange="atualizarGraficosIndividuais()"><option value="">Carregando...</option></select>
-        <button class="btn-refresh" onclick="carregarDados()">🔄 Sincronizar</button>
+        <button class="btn-refresh" onclick="carregarDados()">🔄 Sincronizar Agora</button>
     </div>
 
     <div class="dashboard">
@@ -55,12 +55,12 @@
 <script>
     const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
     
-    // Mapeamento Centralizado e Seguro
+    // LINKS EXTERNOS BLINDADOS (Não dependem do seu computador ou pastas do GitHub)
     const INFO_BICHOS = {
-        'D': { nome: 'LEÃO', arq: 'D.png' },
-        'I': { nome: 'PAPAGAIO', arq: 'I.png' },
-        'S': { nome: 'PANDA', arq: 'S.png' },
-        'C': { nome: 'CORUJA', arq: 'C.png' }
+        'D': { nome: 'LEÃO', arq: 'https://i.imgur.com/8mXmZ3N.png' },
+        'I': { nome: 'PAPAGAIO', arq: 'https://i.imgur.com/S6p7Xm6.png' },
+        'S': { nome: 'PANDA', ar?q: 'https://i.imgur.com/f0mXhH5.png' },
+        'C': { nome: 'CORUJA', arq: 'https://i.imgur.com/vHq4R7m.png' }
     };
     
     const SIGLAS = ['D', 'I', 'S', 'C'];
@@ -77,7 +77,10 @@
                 select.innerHTML += `<option value="${index}">${item.nome}</option>`;
             });
             renderizarGraficosGerais();
-        } catch (e) { console.error("Erro de conexão."); }
+        } catch (e) { 
+            console.error("Erro ao conectar com a planilha.");
+            alert("Erro ao carregar dados. Verifique a conexão.");
+        }
     }
 
     function desenhar(id, type, labels, data, label) {
@@ -107,28 +110,29 @@
         desenhar('chartSapInd', 'radar', ['PROT', 'RESP', 'COM', 'CID', 'SOL', 'EQUIP', 'APR'], JSON.parse(j.sap), 'Individual');
         desenhar('chartDiscInd', 'pie', SIGLAS, vDisc, 'Perfil');
 
-        // LÓGICA INDIVIDUAL: APENAS 1 BICHO (O MAIOR)
         let maxIdx = vDisc.indexOf(Math.max(...vDisc));
         let dominante = SIGLAS[maxIdx];
         
         document.getElementById('fotoInd').innerHTML = `
             <div class="pixar-item">
-                <img src="${INFO_BICHOS[dominante].arq}" class="pixar-img" onerror="this.src='https://via.placeholder.com/110?text=${dominante}'">
+                <img src="${INFO_BICHOS[dominante].arq}" class="pixar-img">
                 <span class="pixar-label">PREDOMINANTE: ${INFO_BICHOS[dominante].nome}</span>
             </div>`;
     }
 
     function renderizarGraficosGerais() {
+        if (dadosGlobais.length === 0) return;
         let mediasSap = [0,0,0,0,0,0,0], totaisDisc = [0,0,0,0];
+        
         dadosGlobais.forEach(j => {
-            JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += Number(v));
+            const sapValores = JSON.parse(j.sap);
+            sapValores.forEach((v, i) => mediasSap[i] += Number(v));
             j.disc.split('-').forEach((v, i) => totaisDisc[i] += Math.abs(Number(v)));
         });
 
-        desenhar('chartSapGeral', 'radar', ['PROT', 'RESP', 'COM', 'CID', 'SOL', 'EQUIP', 'APR'], mediasSap.map(v => v/dadosGlobais.length), 'Média');
-        desenhar('chartDiscGeral', 'bar', SIGLAS, totaisDisc, 'Total Turma');
+        desenhar('chartSapGeral', 'radar', ['PROT', 'RESP', 'COM', 'CID', 'SOL', 'EQUIP', 'APR'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma');
+        desenhar('chartDiscGeral', 'bar', SIGLAS, totaisDisc, 'Total da Turma');
 
-        // LÓGICA TURMA: OBRIGATORIAMENTE OS 2 MAIORES
         let ranking = totaisDisc.map((v, i) => ({ valor: v, sigla: SIGLAS[i] }))
                                 .sort((a, b) => b.valor - a.valor);
 
@@ -137,7 +141,7 @@
             let item = ranking[i];
             htmlTurma += `
                 <div class="pixar-item">
-                    <img src="${INFO_BICHOS[item.sigla].arq}" class="pixar-img" onerror="this.src='https://via.placeholder.com/110?text=${item.sigla}'">
+                    <img src="${INFO_BICHOS[item.sigla].arq}" class="pixar-img">
                     <span class="pixar-label">${INFO_BICHOS[item.sigla].nome} (${item.valor.toFixed(0)})</span>
                 </div>`;
         }
@@ -146,5 +150,6 @@
 
     carregarDados();
 </script>
+
 </body>
 </html>
