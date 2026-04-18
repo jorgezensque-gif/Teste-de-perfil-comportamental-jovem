@@ -22,8 +22,8 @@
 <div class="box">
     <h2 style="text-align:center; color: #0056b3;">PAINEL GESTOR - JORGE ZENSQUE</h2>
     <div class="controles">
-        <select id="selectJovem" onchange="atualizarGraficosIndividuais()"><option value="">Selecione um jovem...</option></select>
-        <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar Dados</button>
+        <select id="selectJovem" onchange="atualizarGraficosIndividuais()"><option value="">Carregando jovens...</option></select>
+        <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar</button>
     </div>
     <div class="dashboard">
         <div class="card"><h3>Individual: SAP</h3><canvas id="chartSapInd"></canvas></div>
@@ -54,7 +54,10 @@
 
     function desenhar(id, type, labels, data, label) {
         const el = document.getElementById(id);
-        if (!el) return; // Trava para não dar erro de "Cannot find"
+        if (!el) {
+            console.warn("Aguardando elemento: " + id);
+            return;
+        }
         if (charts[id]) charts[id].destroy();
         const ctx = el.getContext('2d');
         const cores = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
@@ -75,7 +78,7 @@
                 select.innerHTML += `<option value="${index}">${item.nome}</option>`;
             });
             renderizarGraficosGerais();
-        } catch (e) { console.error("Erro ao buscar API", e); }
+        } catch (e) { console.error("Erro na API", e); }
     }
 
     function atualizarGraficosIndividuais() {
@@ -108,7 +111,8 @@
         document.getElementById('labelPixarGeral').innerText = "CULTURA: " + domTurma;
     }
 
-    window.onload = carregarDados; // Só carrega quando TUDO estiver pronto
+    // A MÁGICA ESTÁ AQUI: Espera o DOM carregar completamente
+    document.addEventListener('DOMContentLoaded', carregarDados);
 </script>
 </body>
 </html>
