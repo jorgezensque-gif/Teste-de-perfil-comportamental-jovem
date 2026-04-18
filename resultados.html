@@ -4,55 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Gestor Jorge Zensque</title>
+    
+    <script>
+        (function() {
+            const senhaCorreta = "Miraiotsuru@2026#Z";
+            const tentativa = prompt("🔒 Acesso Restrito. Digite a senha:");
+            if (tentativa !== senhaCorreta) {
+                alert("Acesso Negado!");
+                window.location.href = "index.html";
+                document.write("Acesso negado."); 
+            }
+        })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: none; } /* Escondido até validar senha */
-        .container { max-width: 1200px; margin: auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 12px solid var(--primary); }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; }
+        :root { --primary: #0056b3; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 12px solid var(--primary); }
+        h2 { text-align: center; color: var(--primary); }
         .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-        select { padding: 12px; width: 50%; border-radius: 8px; border: 2px solid var(--primary); font-size: 16px; }
+        select { padding: 12px; width: 50%; border-radius: 8px; border: 2px solid var(--primary); font-size: 16px; font-weight: bold; }
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; }
-        .card { background: var(--white); border: 1px solid #e1e4e8; padding: 20px; border-radius: 12px; text-align: center; }
+        .card { background: white; border: 1px solid #e1e4e8; padding: 20px; border-radius: 12px; text-align: center; }
         .chart-container { width: 100%; height: 300px; }
         .pixar-box { margin-top: 15px; display: flex; flex-direction: column; align-items: center; }
-        .pixar-img { width: 150px; height: 150px; border-radius: 50%; border: 6px solid var(--primary); object-fit: cover; }
-        .pixar-label { font-weight: 800; color: var(--primary); margin-top: 10px; font-size: 18px; }
+        .pixar-img { width: 160px; height: 160px; border-radius: 50%; border: 6px solid var(--primary); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .pixar-label { font-weight: 800; color: var(--primary); margin-top: 10px; font-size: 18px; text-transform: uppercase; }
+        .btn-sync { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<script>
-    // SISTEMA DE SEGURANÇA IMEDIATO
-    const senhaAcesso = "Miraiotsuru@2026#Z";
-    const entrada = prompt("🔒 Acesso Restrito. Digite a senha do Gestor:");
-
-    if (entrada !== senhaAcesso) {
-        alert("Senha incorreta!");
-        window.location.href = "index.html";
-    } else {
-        document.body.style.display = "block";
-    }
-</script>
-
 <div class="container">
-    <h2>📊 Painel de Performance - Jorge Zensque</h2>
+    <h2>📊 Painel de Performance - Gestor Jorge Zensque</h2>
     
     <div class="controles">
         <select id="selectJovem" onchange="atualizarGraficosIndividuais()">
-            <option value="">Carregando lista de jovens...</option>
+            <option value="">Selecione um jovem...</option>
         </select>
-        <button style="padding:10px; cursor:pointer;" onclick="carregarDados()">🔄 Sincronizar</button>
+        <button class="btn-sync" onclick="carregarDados()">🔄 Sincronizar</button>
     </div>
 
     <div class="dashboard">
         <div class="card">
-            <h3>Competências SAP</h3>
+            <h3>Individual: SAP (Radar)</h3>
             <div class="chart-container"><canvas id="chartSapInd"></canvas></div>
         </div>
         
         <div class="card">
-            <h3>Perfil Comportamental</h3>
+            <h3>Individual: Perfil DISC</h3>
             <div class="chart-container"><canvas id="chartDiscInd"></canvas></div>
             <div id="boxPixarInd" class="pixar-box" style="display:none;">
                 <img id="imgPixarInd" src="" class="pixar-img">
@@ -61,12 +62,12 @@
         </div>
 
         <div class="card">
-            <h3>Média da Turma (SAP)</h3>
+            <h3>Turma: Média SAP Geral</h3>
             <div class="chart-container"><canvas id="chartSapGeral"></canvas></div>
         </div>
         
         <div class="card">
-            <h3>Cultura da Turma (DISC)</h3>
+            <h3>Turma: Cultura Geral</h3>
             <div class="chart-container"><canvas id="chartDiscGeral"></canvas></div>
             <div id="boxPixarGeral" class="pixar-box">
                 <img id="imgPixarGeral" src="" class="pixar-img">
@@ -125,13 +126,12 @@
         desenhar('chartDiscInd', 'doughnut', ['D', 'I', 'S', 'C'], discVals, 'DISC');
 
         const siglas = ['D', 'I', 'S', 'C'];
-        const nomes = {'D':'Dominante','I':'Influente','S':'Estável','C':'Conforme'};
         const dominante = siglas[discVals.indexOf(Math.max(...discVals))];
         
         // CORREÇÃO FINAL DAS IMAGENS: Força PNG e ignora o cache
         const imgElement = document.getElementById('imgPixarInd');
         imgElement.src = dominante + ".png?v=" + new Date().getTime(); 
-        document.getElementById('labelPixarInd').innerText = "Perfil: " + nomes[dominante];
+        document.getElementById('labelPixarInd').innerText = "Perfil: " + dominante;
         document.getElementById('boxPixarInd').style.display = "flex";
     }
 
@@ -144,11 +144,13 @@
             JSON.parse(j.sap).forEach((v, i) => somaSap[i] += v);
         });
 
-        desenhar('chartSapGeral', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], somaSap.map(v => v/dadosGlobais.length), 'Média');
+        desenhar('chartSapGeral', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], somaSap.map(v => v/dadosGlobais.length), 'Média Turma');
         desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Total Turma');
 
         const siglas = ['D', 'I', 'S', 'C'];
         const domTurma = siglas[totaisDisc.indexOf(Math.max(...totaisDisc))];
+        
+        // CORREÇÃO DAS IMAGENS NA TURMA
         document.getElementById('imgPixarGeral').src = domTurma + ".png?v=" + new Date().getTime();
         document.getElementById('labelPixarGeral').innerText = "Cultura: " + domTurma;
     }
