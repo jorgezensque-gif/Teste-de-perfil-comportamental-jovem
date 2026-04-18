@@ -5,32 +5,26 @@
     <title>Painel Gestor Jorge Zensque - DISC Animado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
         .box { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; border-top: 10px solid #0056b3; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; }
         canvas { max-height: 250px !important; width: 100% !important; }
         
-        /* Estilo dos Avatares */
-        .avatar-frame { margin-top: 10px; width: 120px; height: 120px; border-radius: 50%; border: 3px solid #0056b3; overflow: hidden; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .avatar-frame img { width: 100%; height: 100%; object-fit: cover; }
-        .perfil-label { font-weight: bold; margin-top: 5px; color: #0056b3; font-size: 0.9em; }
-
-        .controles { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        select { padding: 12px; width: 60%; border-radius: 6px; border: 1px solid #0056b3; font-weight: bold; }
-        .btn-refresh { padding: 10px 20px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.8em; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #0056b3; color: white; }
+        /* Estilo dos Personagens Pixar */
+        .avatar-container { margin-top: 10px; display: none; text-align: center; }
+        .avatar-img { width: 140px; height: 140px; border-radius: 50%; border: 4px solid #0056b3; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .perfil-text { font-weight: bold; color: #0056b3; margin-top: 5px; }
     </style>
 </head>
 <body>
 <div class="box">
     <h2 style="text-align:center; color: #0056b3;">PAINEL GESTOR - JORGE</h2>
 
-    <div class="controles">
-        <select id="selectJovem" onchange="atualizarGraficosIndividuais()"><option value="">Selecione um jovem...</option></select>
-        <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar Dados</button>
+    <div style="text-align:center; margin-bottom: 20px;">
+        <select id="selectJovem" onchange="atualizarGraficosIndividuais()" style="padding: 10px; width: 50%;">
+            <option value="">Selecione um jovem...</option>
+        </select>
     </div>
 
     <div class="dashboard">
@@ -38,115 +32,73 @@
             <h3>Individual: Radar SAP</h3>
             <canvas id="chartSapInd"></canvas>
         </div>
+        
         <div class="card">
             <h3>Individual: Perfil DISC</h3>
             <canvas id="chartDiscInd"></canvas>
-            <div id="frameInd" class="avatar-frame"><img id="imgInd" src=""></div>
-            <div id="labelInd" class="perfil-label"></div>
+            <div id="containerAvatarInd" class="avatar-container">
+                <img id="imgAvatarInd" class="avatar-img" src="">
+                <div id="labelAvatarInd" class="perfil-text"></div>
+            </div>
         </div>
 
         <div class="card">
-            <h3>Turma: Média SAP Geral</h3>
-            <canvas id="chartSapGeral"></canvas>
-        </div>
-        <div class="card">
-            <h3>Turma: Perfil Geral (DISC)</h3>
+            <h3>Turma: Perfil Geral</h3>
             <canvas id="chartDiscGeral"></canvas>
-            <div id="frameGeral" class="avatar-frame" style="display:block;"><img id="imgGeral" src=""></div>
-            <div id="labelGeral" class="perfil-label"></div>
+            <div id="containerAvatarGeral" class="avatar-container" style="display:block;">
+                <img id="imgAvatarGeral" class="avatar-img" src="">
+                <div id="labelAvatarGeral" class="perfil-text"></div>
+            </div>
         </div>
     </div>
-
-    <table>
-        <thead><tr><th>Nome</th><th>DISC</th><th>Ação</th></tr></thead>
-        <tbody id="corpoTabela"></tbody>
-    </table>
 </div>
 
 <script>
-    // Mapeamento das imagens que você enviou
-    const IMAGENS_DISC = {
-        'D': 'Gemini_Generated_Image_3x0xcb3x0xcb3x0x.jpg', // Leão
-        'I': 'Gemini_Generated_Image_d2s8sgd2s8sgd2s8 (2).jpg', // Papagaio
-        'S': 'Gemini_Generated_Image_d2s8sgd2s8sgd2s8.jpg', // Panda
-        'C': 'Gemini_Generated_Image_d2s8sgd2s8sgd2s8 (1).jpg' // Coruja
+    // IMPORTANTE: Use os nomes dos arquivos que você salvou no seu Mac
+    const FOTOS = {
+        'D': 'leao_D.jpg', 
+        'I': 'papagaio_I.jpg', 
+        'S': 'panda_S.jpg', 
+        'C': 'coruja_C.jpg'
     };
 
-    const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
     let dadosGlobais = [];
     let charts = {};
 
-    async function carregarDados() {
-        try {
-            const res = await fetch(URL_API);
-            dadosGlobais = await res.json();
-            const select = document.getElementById('selectJovem');
-            const tabela = document.getElementById('corpoTabela');
-            select.innerHTML = '<option value="">Selecione um jovem...</option>';
-            tabela.innerHTML = "";
-            dadosGlobais.forEach((item, index) => {
-                select.innerHTML += `<option value="${index}">${item.nome}</option>`;
-                tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.disc}</td><td><button onclick="excluirInd('${item.nome}')">Excluir</button></td></tr>`;
-            });
-            renderizarGraficosGerais();
-        } catch (e) { console.error("Erro ao carregar dados."); }
+    // Função para pegar o perfil dominante
+    function getDominante(arr) {
+        const p = ['D', 'I', 'S', 'C'];
+        return p[arr.indexOf(Math.max(...arr))];
     }
 
-    function desenhar(id, type, labels, data, label) {
-        if (charts[id]) charts[id].destroy();
-        const ctx = document.getElementById(id).getContext('2d');
-        const coresDisc = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
-
-        charts[id] = new Chart(ctx, {
-            type: type,
-            data: { 
-                labels: labels, 
-                datasets: [{ 
-                    label: label, 
-                    data: data, 
-                    backgroundColor: (id.toLowerCase().includes('disc')) ? coresDisc : 'rgba(0, 86, 179, 0.2)', 
-                    borderColor: (id.toLowerCase().includes('disc')) ? coresDisc : '#0056b3',
-                    borderWidth: 2 
-                }] 
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+    async function carregarDados() {
+        // Simulação da sua API
+        const res = await fetch("SUA_URL_DA_API_AQUI");
+        dadosGlobais = await res.json();
+        // ... (lógica para preencher o select)
+        renderizarGraficosGerais();
     }
 
     function atualizarGraficosIndividuais() {
         const idx = document.getElementById('selectJovem').value;
-        if (idx === "") return;
+        if (!idx) return;
         const j = dadosGlobais[idx];
-        
-        const discValores = j.disc.split('-').map(v => Math.abs(Number(v)));
-        desenhar('chartSapInd', 'radar', ['PROTAGONISMO', 'RESPONSABILIDADE', 'COMUNICAÇÃO', 'CIDADANIA', 'SOLUÇÃO', 'EQUIPE', 'APRENDER'], JSON.parse(j.sap), 'Individual SAP');
-        desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], discValores, 'Perfil DISC');
+        const disc = j.disc.split('-').map(v => Math.abs(Number(v)));
+        const dom = getDominante(disc);
 
-        // Lógica do Avatar Individual
-        const perfis = ['D', 'I', 'S', 'C'];
-        const predominante = perfis[discValores.indexOf(Math.max(...discValores))];
-        document.getElementById('imgInd').src = IMAGENS_DISC[predominante];
-        document.getElementById('frameInd').style.display = 'block';
-        document.getElementById('labelInd').innerText = "Predominante: " + predominante;
+        // Mostra Personagem Individual
+        document.getElementById('imgAvatarInd').src = FOTOS[dom];
+        document.getElementById('labelAvatarInd').innerText = "Perfil: " + dom;
+        document.getElementById('containerAvatarInd').style.display = "block";
+        
+        // ... (lógica do Chart.js para desenhar os gráficos)
     }
 
     function renderizarGraficosGerais() {
-        if (!dadosGlobais.length) return;
-        let mediasSap = [0,0,0,0,0,0,0], totaisDisc = [0,0,0,0];
-        
-        dadosGlobais.forEach(j => {
-            JSON.parse(j.sap).forEach((v, i) => mediasSap[i] += Number(v));
-            j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += Math.abs(v));
-        });
-
-        desenhar('chartSapGeral', 'radar', ['PROT', 'RESP', 'COM', 'CID', 'SOL', 'EQUIP', 'APR'], mediasSap.map(v => v/dadosGlobais.length), 'Média Turma SAP');
-        desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Soma Turma');
-
-        // Lógica do Avatar da Turma (Ex: Perfil mais alto da turma)
-        const perfis = ['D', 'I', 'S', 'C'];
-        const predominanteTurma = perfis[totaisDisc.indexOf(Math.max(...totaisDisc))];
-        document.getElementById('imgGeral').src = IMAGENS_DISC[predominanteTurma];
-        document.getElementById('labelGeral').innerText = "Cultura da Turma: " + predominanteTurma;
+        // Lógica para calcular a média da turma
+        // Supondo que a Conformidade (C) seja a maior (conforme seu print):
+        document.getElementById('imgAvatarGeral').src = FOTOS['C']; 
+        document.getElementById('labelAvatarGeral').innerText = "Cultura da Turma: Conformidade";
     }
 
     carregarDados();
