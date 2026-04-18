@@ -7,49 +7,52 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: none; } /* Escondido até validar senha */
         .container { max-width: 1200px; margin: auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 12px solid var(--primary); }
-        h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
-        
+        h2 { text-align: center; color: var(--primary); text-transform: uppercase; }
         .controles { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-        select { padding: 12px 20px; width: 50%; border-radius: 8px; border: 2px solid var(--primary); font-size: 16px; font-weight: 600; cursor: pointer; }
-        .btn-refresh { padding: 12px 25px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .btn-refresh:hover { background: #004494; transform: translateY(-2px); }
-
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px; }
-        .card { background: var(--white); border: 1px solid #e1e4e8; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
-        .card h3 { margin-top: 0; color: #333; font-size: 18px; border-bottom: 2px solid #eee; width: 100%; padding-bottom: 10px; }
-        
-        .chart-container { width: 100%; height: 300px; position: relative; margin-bottom: 15px; }
-        
-        .pixar-box { margin-top: 10px; display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.8s ease-in; }
-        .pixar-img { width: 150px; height: 150px; border-radius: 50%; border: 6px solid var(--primary); object-fit: cover; background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .pixar-label { font-weight: 800; color: var(--primary); margin-top: 12px; font-size: 18px; text-transform: uppercase; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @media (max-width: 768px) { .dashboard { grid-template-columns: 1fr; } select { width: 100%; } }
+        select { padding: 12px; width: 50%; border-radius: 8px; border: 2px solid var(--primary); font-size: 16px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; }
+        .card { background: var(--white); border: 1px solid #e1e4e8; padding: 20px; border-radius: 12px; text-align: center; }
+        .chart-container { width: 100%; height: 300px; }
+        .pixar-box { margin-top: 15px; display: flex; flex-direction: column; align-items: center; }
+        .pixar-img { width: 150px; height: 150px; border-radius: 50%; border: 6px solid var(--primary); object-fit: cover; }
+        .pixar-label { font-weight: 800; color: var(--primary); margin-top: 10px; font-size: 18px; }
     </style>
 </head>
 <body>
 
+<script>
+    // SISTEMA DE SEGURANÇA IMEDIATO
+    const senhaAcesso = "Miraiotsuru@2026#Z";
+    const entrada = prompt("🔒 Acesso Restrito. Digite a senha do Gestor:");
+
+    if (entrada !== senhaAcesso) {
+        alert("Senha incorreta!");
+        window.location.href = "index.html";
+    } else {
+        document.body.style.display = "block";
+    }
+</script>
+
 <div class="container">
-    <h2>📊 Painel de Performance - Gestor Jorge Zensque</h2>
+    <h2>📊 Painel de Performance - Jorge Zensque</h2>
     
     <div class="controles">
         <select id="selectJovem" onchange="atualizarGraficosIndividuais()">
-            <option value="">Aguardando dados...</option>
+            <option value="">Carregando lista de jovens...</option>
         </select>
-        <button class="btn-refresh" onclick="carregarDados()">🔄 Sincronizar Agora</button>
+        <button style="padding:10px; cursor:pointer;" onclick="carregarDados()">🔄 Sincronizar</button>
     </div>
 
     <div class="dashboard">
         <div class="card">
-            <h3>Individual: Competências SAP</h3>
+            <h3>Competências SAP</h3>
             <div class="chart-container"><canvas id="chartSapInd"></canvas></div>
         </div>
         
         <div class="card">
-            <h3>Individual: Perfil Comportamental</h3>
+            <h3>Perfil Comportamental</h3>
             <div class="chart-container"><canvas id="chartDiscInd"></canvas></div>
             <div id="boxPixarInd" class="pixar-box" style="display:none;">
                 <img id="imgPixarInd" src="" class="pixar-img">
@@ -58,12 +61,12 @@
         </div>
 
         <div class="card">
-            <h3>Turma: Média de Competências</h3>
+            <h3>Média da Turma (SAP)</h3>
             <div class="chart-container"><canvas id="chartSapGeral"></canvas></div>
         </div>
         
         <div class="card">
-            <h3>Turma: Cultura Predominante</h3>
+            <h3>Cultura da Turma (DISC)</h3>
             <div class="chart-container"><canvas id="chartDiscGeral"></canvas></div>
             <div id="boxPixarGeral" class="pixar-box">
                 <img id="imgPixarGeral" src="" class="pixar-img">
@@ -78,15 +81,11 @@
     let dadosGlobais = [];
     let charts = {};
 
-    // Função universal para criar gráficos
     function desenhar(id, type, labels, data, label) {
         const el = document.getElementById(id);
         if (!el) return;
         if (charts[id]) charts[id].destroy();
-        
         const ctx = el.getContext('2d');
-        const cores = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
-        
         charts[id] = new Chart(ctx, {
             type: type,
             data: {
@@ -94,17 +93,12 @@
                 datasets: [{
                     label: label,
                     data: data,
-                    backgroundColor: id.includes('Disc') ? cores : 'rgba(0, 86, 179, 0.2)',
+                    backgroundColor: id.includes('Disc') ? ['#e74c3c','#3498db','#f1c40f','#2ecc71'] : 'rgba(0,86,179,0.2)',
                     borderColor: '#0056b3',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#0056b3'
+                    borderWidth: 2
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: type !== 'radar' } }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     }
 
@@ -113,69 +107,53 @@
             const res = await fetch(URL_API);
             dadosGlobais = await res.json();
             const select = document.getElementById('selectJovem');
-            select.innerHTML = '<option value="">Escolha um Jovem para analisar...</option>';
-            
+            select.innerHTML = '<option value="">Selecione um jovem...</option>';
             dadosGlobais.forEach((item, index) => {
                 select.innerHTML += `<option value="${index}">${item.nome}</option>`;
             });
-            
             renderizarGraficosGerais();
-        } catch (e) {
-            console.error("Erro ao conectar com a planilha:", e);
-            alert("Erro ao carregar dados. Verifique sua conexão.");
-        }
+        } catch (e) { console.error(e); }
     }
 
     function atualizarGraficosIndividuais() {
         const idx = document.getElementById('selectJovem').value;
         if (idx === "") return;
-        
         const j = dadosGlobais[idx];
         const discVals = j.disc.split('-').map(v => Math.abs(parseFloat(v)) || 0);
-        const sapVals = JSON.parse(j.sap);
         
-        // Gráficos
-        desenhar('chartSapInd', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], sapVals, 'Score SAP');
-        desenhar('chartDiscInd', 'doughnut', ['D', 'I', 'S', 'C'], discVals, 'Perfil');
+        desenhar('chartSapInd', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], JSON.parse(j.sap), 'SAP');
+        desenhar('chartDiscInd', 'doughnut', ['D', 'I', 'S', 'C'], discVals, 'DISC');
 
-        // Lógica do Animal (PNG + Cache Busting)
         const siglas = ['D', 'I', 'S', 'C'];
-        const nomesPerfis = { 'D': 'Dominante', 'I': 'Influente', 'S': 'Estável', 'C': 'Conforme' };
+        const nomes = {'D':'Dominante','I':'Influente','S':'Estável','C':'Conforme'};
         const dominante = siglas[discVals.indexOf(Math.max(...discVals))];
         
+        // CORREÇÃO FINAL DAS IMAGENS: Força PNG e ignora o cache
         const imgElement = document.getElementById('imgPixarInd');
-        imgElement.src = dominante + ".png?t=" + new Date().getTime(); 
-        document.getElementById('labelPixarInd').innerText = "Perfil: " + nomesPerfis[dominante];
+        imgElement.src = dominante + ".png?v=" + new Date().getTime(); 
+        document.getElementById('labelPixarInd').innerText = "Perfil: " + nomes[dominante];
         document.getElementById('boxPixarInd').style.display = "flex";
     }
 
     function renderizarGraficosGerais() {
         if (!dadosGlobais.length) return;
-        
         let totaisDisc = [0,0,0,0];
         let somaSap = [0,0,0,0,0,0,0];
-
         dadosGlobais.forEach(j => {
             j.disc.split('-').map(v => Math.abs(parseFloat(v)) || 0).forEach((v, i) => totaisDisc[i] += v);
             JSON.parse(j.sap).forEach((v, i) => somaSap[i] += v);
         });
 
-        const mediaSap = somaSap.map(v => (v / dadosGlobais.length).toFixed(2));
-        
-        desenhar('chartSapGeral', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], mediaSap, 'Média Turma');
-        desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Volume por Perfil');
+        desenhar('chartSapGeral', 'radar', ['Protagonismo', 'Responsabilidade', 'Comunicação', 'Cidadania', 'Solução', 'Equipe', 'Aprender'], somaSap.map(v => v/dadosGlobais.length), 'Média');
+        desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Total Turma');
 
-        // Cultura da Turma
         const siglas = ['D', 'I', 'S', 'C'];
         const domTurma = siglas[totaisDisc.indexOf(Math.max(...totaisDisc))];
-        
-        document.getElementById('imgPixarGeral').src = domTurma + ".png?t=" + new Date().getTime();
-        document.getElementById('labelPixarGeral').innerText = "Cultura Predominante: " + domTurma;
+        document.getElementById('imgPixarGeral').src = domTurma + ".png?v=" + new Date().getTime();
+        document.getElementById('labelPixarGeral').innerText = "Cultura: " + domTurma;
     }
 
-    // Inicia quando a página estiver pronta
     document.addEventListener('DOMContentLoaded', carregarDados);
 </script>
-
 </body>
 </html>
