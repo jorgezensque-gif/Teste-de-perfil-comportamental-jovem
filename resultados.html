@@ -11,43 +11,43 @@
         .card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; text-align: center; min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
         canvas { max-height: 250px !important; width: 100% !important; }
         
-        /* Ajuste das Fotos */
+        /* Fotos Pixar */
         .pixar-box { margin-top: 15px; text-align: center; min-height: 160px; }
-        .pixar-img { width: 130px; height: 130px; border-radius: 50%; border: 5px solid #0056b3; object-fit: cover; background: #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .pixar-label { font-weight: bold; color: #0056b3; margin-top: 8px; display: block; }
+        .pixar-img { width: 140px; height: 140px; border-radius: 50%; border: 6px solid #0056b3; object-fit: cover; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .pixar-label { font-weight: bold; color: #0056b3; margin-top: 10px; display: block; font-size: 16px; }
         
         .controles { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        select { padding: 12px; width: 60%; border-radius: 6px; border: 1px solid #0056b3; font-weight: bold; }
+        select { padding: 12px; width: 60%; border-radius: 6px; border: 1px solid #0056b3; font-weight: bold; font-size: 16px; }
         .btn-refresh { padding: 10px 20px; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="box">
-    <h2 style="text-align:center; color: #0056b3;">PAINEL - GESTOR JORGE ZENSQUE</h2>
+    <h2 style="text-align:center; color: #0056b3;">PAINEL GESTOR - JORGE ZENSQUE</h2>
     
     <div class="controles">
         <select id="selectJovem" onchange="atualizarGraficosIndividuais()"><option value="">Selecione um jovem...</option></select>
-        <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar Dados</button>
+        <button class="btn-refresh" onclick="carregarDados()">🔄 Atualizar</button>
     </div>
 
     <div class="dashboard">
-        <div class="card"><h3>Individual: SAP (Radar)</h3><canvas id="chartSapInd"></canvas></div>
+        <div class="card"><h3>Individual: SAP</h3><canvas id="chartSapInd"></canvas></div>
         
         <div class="card">
             <h3>Individual: Perfil DISC</h3>
             <canvas id="chartDiscInd"></canvas>
-            <div id="containerPixarInd" class="pixar-box" style="display:none;">
-                <img id="imgPixarInd" src="" class="pixar-img" onerror="this.src='https://via.placeholder.com/130?text=Erro+Foto'">
+            <div id="boxPixarInd" class="pixar-box" style="display:none;">
+                <img id="imgPixarInd" src="" class="pixar-img">
                 <span id="labelPixarInd" class="pixar-label"></span>
             </div>
         </div>
 
-        <div class="card"><h3>Turma: Média SAP Geral</h3><canvas id="chartSapGeral"></canvas></div>
+        <div class="card"><h3>Turma: Média SAP</h3><canvas id="chartSapGeral"></canvas></div>
         
         <div class="card">
-            <h3>Turma: Perfil Geral (DISC)</h3>
+            <h3>Turma: Cultura Geral</h3>
             <canvas id="chartDiscGeral"></canvas>
-            <div id="containerPixarGeral" class="pixar-box">
+            <div id="boxPixarGeral" class="pixar-box">
                 <img id="imgPixarGeral" src="" class="pixar-img">
                 <span id="labelPixarGeral" class="pixar-label"></span>
             </div>
@@ -88,34 +88,40 @@
         const idx = document.getElementById('selectJovem').value;
         if (idx === "") return;
         const j = dadosGlobais[idx];
-        const discVals = j.disc.split('-').map(v => Math.abs(Number(v)));
         
-        desenhar('chartSapInd', 'radar', ['PROTAGONISMO', 'RESPONSABILIDADE', 'COMUNICAÇÃO', 'CIDADANIA', 'SOLUÇÃO', 'EQUIPE', 'APRENDER'], JSON.parse(j.sap), 'Individual SAP');
-        desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], discVals, 'Perfil DISC');
+        // CORREÇÃO DA LOGICA: Converte string para numero e garante que não seja Undefined
+        const discVals = j.disc.split('-').map(v => Math.abs(parseFloat(v)) || 0);
+        
+        desenhar('chartSapInd', 'radar', ['PROTAGONISMO', 'RESPONSABILIDADE', 'COMUNICAÇÃO', 'CIDADANIA', 'SOLUÇÃO', 'EQUIPE', 'APRENDER'], JSON.parse(j.sap), 'SAP');
+        desenhar('chartDiscInd', 'pie', ['D', 'I', 'S', 'C'], discVals, 'DISC');
 
         const siglas = ['D', 'I', 'S', 'C'];
-        const dominante = siglas[discVals.indexOf(Math.max(...discVals))];
+        const nomes = {'D':'Dominante','I':'Influente','S':'Estável','C':'Conforme'};
         
-        // Caminho direto para as fotos renomeadas no GitHub
-        const urlFoto = dominante + ".jpg";
+        // Acha o maior valor
+        const maxVal = Math.max(...discVals);
+        const dominante = siglas[discVals.indexOf(maxVal)];
         
-        document.getElementById('imgPixarInd').src = urlFoto; 
-        document.getElementById('labelPixarInd').innerText = "PERFIL DOMINANTE: " + dominante;
-        document.getElementById('containerPixarInd').style.display = "block";
+        // Força o carregamento da imagem certa
+        document.getElementById('imgPixarInd').src = dominante + ".jpg?v=" + new Date().getTime(); 
+        document.getElementById('labelPixarInd').innerText = "PERFIL: " + nomes[dominante];
+        document.getElementById('boxPixarInd').style.display = "block";
     }
 
     function renderizarGraficosGerais() {
         if (!dadosGlobais.length) return;
         let totaisDisc = [0,0,0,0];
         dadosGlobais.forEach(j => {
-            j.disc.split('-').map(Number).forEach((v, i) => totaisDisc[i] += Math.abs(v));
+            j.disc.split('-').map(v => Math.abs(parseFloat(v)) || 0).forEach((v, i) => totaisDisc[i] += v);
         });
+        
         desenhar('chartDiscGeral', 'bar', ['D', 'I', 'S', 'C'], totaisDisc, 'Soma Turma');
         
         const siglas = ['D', 'I', 'S', 'C'];
         const domTurma = siglas[totaisDisc.indexOf(Math.max(...totaisDisc))];
-        document.getElementById('imgPixarGeral').src = domTurma + ".jpg";
-        document.getElementById('labelPixarGeral').innerText = "CULTURA DA TURMA: " + domTurma;
+        
+        document.getElementById('imgPixarGeral').src = domTurma + ".jpg?v=" + new Date().getTime();
+        document.getElementById('labelPixarGeral').innerText = "CULTURA: " + domTurma;
     }
 
     carregarDados();
