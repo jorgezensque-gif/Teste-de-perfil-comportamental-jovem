@@ -2,140 +2,227 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <title>Autoavaliação Pescar 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação de Competências - Jorge Zensque</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 10px solid #0056b3; }
-        h2 { color: #0056b3; text-align: center; margin-bottom: 30px; }
-        .pergunta-bloco { margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #fafafa; }
-        .titulo-competencia { font-size: 1.2em; font-weight: bold; color: #0056b3; display: block; margin-bottom: 10px; text-transform: uppercase; }
-        .descricao-apoio { font-size: 0.95em; color: #333; line-height: 1.5; margin-bottom: 15px; display: block; background: #eef2f7; padding: 15px; border-left: 4px solid #0056b3; text-align: justify; }
-        .evidencias-titulo { font-weight: bold; font-size: 0.9em; color: #0056b3; margin-top: 10px; display: block; text-decoration: underline; }
-        .evidencias-lista { font-size: 0.9em; color: #444; margin-bottom: 15px; display: block; line-height: 1.6; padding-left: 10px; }
-        .opcoes { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
-        .opcao-item { text-align: center; flex: 1; }
-        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
-        .label-escala { font-size: 0.85em; color: #555; display: block; margin-top: 5px; font-weight: bold; }
-        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0 25px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
-        button { width: 100%; padding: 15px; background-color: #0056b3; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #003d80; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
+        .box { background: white; padding: 25px; border-radius: 8px; max-width: 850px; margin: auto; border-top: 10px solid #0056b3; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sap-item { margin-bottom: 25px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .sap-titulo { font-weight: bold; color: #0056b3; display: block; margin-bottom: 8px; font-size: 1.1em; }
+        .sap-descricao { font-size: 0.9em; color: #333; margin-bottom: 10px; display: block; line-height: 1.4; text-align: justify; }
+        .sap-evidencias { font-size: 0.85em; color: #666; display: block; margin-bottom: 10px; border-top: 1px solid #eee; padding-top: 8px; font-style: italic; }
+        .escala-botoes { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        .btn-sap { padding: 10px 15px; border: 1px solid #0056b3; background: white; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.3s; }
+        .btn-sap.active { background: #0056b3; color: white; }
+        
+        .disc-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
+        .disc-table th { background: #0056b3; color: white; padding: 10px; }
+        .disc-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .btn-enviar { background: #27ae60; color: white; padding: 20px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 30px; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 id="tituloFase">AVALIAÇÃO DE COMPETÊNCIAS</h2>
+<div class="box">
+    <h2 style="text-align: center; color: #0056b3;">Autoavaliação de Competências e Perfil</h2>
     
-    <div id="formIdentificacao">
-        <label><b>DIGITE SEU NOME COMPLETO:</b></label>
-        <input type="text" id="nomeParticipante" placeholder="Ex: João Silva">
-        <button onclick="iniciarAvaliacao()">INICIAR AVALIAÇÃO</button>
+    <label><b>SEU NOME COMPLETO:</b></label>
+    <input type="text" id="nomeParticipante" style="width: 100%; padding: 10px; margin: 10px 0 30px; border-radius: 5px; border: 1px solid #ccc;">
+
+    <h3 style="border-bottom: 2px solid #0056b3; padding-bottom: 5px;">PARTE 1: COMPETÊNCIAS SAP (Escala 1 a 5)</h3>
+    
+    <div id="containerSAP">
+        <div class="sap-item">
+            <span class="sap-titulo">1- SER PROTAGONISTA</span>
+            <span class="sap-descricao">Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. A partir disso, consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal, contribuindo para o exercício da cidadania e com a atitudes coerentes.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Sou visto como referência construtiva nos meus grupos; Respeito e me faço respeitar; Construo meu Projeto de Vida; Reconheço potenciais e talentos; Observo necessidades e ofereço ajuda.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap1">
+                <button class="btn-sap" onclick="setSap(1, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(1, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(1, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(1, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(1, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">2- SER RESPONSÁVEL E COMPROMETIDO</span>
+            <span class="sap-descricao">Ser Responsável e Comprometido é comprometer-se com suas atividades, ser pontual e assíduo (não faltar), cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos. É esforçar-se para obter bons resultados e melhorar seu desempenho.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Cumpro tarefas e prazos; Sou pontual e assíduo (justifico faltas); Cuido da minha apresentação e higiene; Cumpro as regras do contrato de convivência.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap2">
+                <button class="btn-sap" onclick="setSap(2, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(2, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(2, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(2, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(2, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">3- COMPREENDER CONTEXTOS E COMUNICAR-SE</span>
+            <span class="sap-descricao">Capacidade de compreender o outro dentro de uma realidade histórica e cultural. Comunicar-se de forma clara e objetiva, com a capacidade de repassar informações de forma completa e ter predisposição para ouvir e compreender mensagens.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Postura coerente com ambientes; Percebo o humor do outro e respeito; Faço críticas construtivas e sugestões; Articulo pensamentos de forma ordenada; Sei esperar minha vez de falar.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap3">
+                <button class="btn-sap" onclick="setSap(3, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(3, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(3, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(3, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(3, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO</span>
+            <span class="sap-descricao">Possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta e confiável. Conhece seus direitos e deveres.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Sou honesto e ético; Assumo quando cometo erros; Respeito opiniões diferentes; Atitudes coerentes com o discurso; Conheço meus direitos e deveres.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap4">
+                <button class="btn-sap" onclick="setSap(4, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(4, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(4, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(4, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(4, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">5- RESOLVER SITUAÇÕES-PROBLEMA</span>
+            <span class="sap-descricao">Capacidade de entender e enfrentar um problema, pensando em alternativas de solução e tomando decisões. Capacidade de mudar, aprender, reconhecer erros e reconsiderar pontos de vista.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Resolvo problemas sem fofocas; Penso antes de agir e me responsabilizo; Não me envergonho de pedir ajuda; Reconheço meus sentimentos e sei lidar com eles.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap5">
+                <button class="btn-sap" onclick="setSap(5, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(5, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(5, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(5, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(5, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">6- TRABALHAR E PRODUZIR EM EQUIPE</span>
+            <span class="sap-descricao">Capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses do grupo acima dos interesses pessoais. Reconhece a importância de todos.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Penso no bem-estar do grupo; Busco o consenso; Assumo o desafio de trabalhar em grupo; Recebo críticas e sugestões; Transmito informações com fidelidade.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap6">
+                <button class="btn-sap" onclick="setSap(6, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(6, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(6, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(6, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(6, 5)">5</button>
+            </div>
+        </div>
+
+        <div class="sap-item">
+            <span class="sap-titulo">7- APRENDER A APRENDER</span>
+            <span class="sap-descricao">Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática aquilo que aprendeu ao longo da vida e em todos os espaços.</span>
+            <span class="sap-evidencias"><b>EVIDÊNCIAS NORTEADORAS:</b> Aprofundo conhecimentos; Comprometimento com a aprendizagem; Tiro lições de situações boas ou ruins; Questiono e argumento; Utilizo o aprendizado no dia a dia.</span>
+            <div class="escala-botoes">
+                <input type="hidden" id="sap7">
+                <button class="btn-sap" onclick="setSap(7, 1)">1</button>
+                <button class="btn-sap" onclick="setSap(7, 2)">2</button>
+                <button class="btn-sap" onclick="setSap(7, 3)">3</button>
+                <button class="btn-sap" onclick="setSap(7, 4)">4</button>
+                <button class="btn-sap" onclick="setSap(7, 5)">5</button>
+            </div>
+        </div>
     </div>
 
-    <div id="questoes" style="display:none;">
-        <p style="text-align: center; font-weight: bold; color: #d35400; font-size: 1.1em;">Escala de 1 (Mínimo) a 10 (Máximo)</p>
-        <div id="listaPerguntas"></div>
-        <button onclick="finalizar()">ENVIAR RESPOSTAS</button>
-    </div>
+    <h3 style="border-bottom: 2px solid #0056b3; padding-bottom: 5px; margin-top: 40px;">PARTE 2: TESTE DE PERFIL (DISC)</h3>
+    <p>Escolha em cada linha a palavra que <b>MAIS (+)</b> e a que <b>MENOS (-)</b> te define.</p>
+    
+    <table class="disc-table">
+        <thead>
+            <tr><th>MAIS (+)</th><th>CARACTERÍSTICA</th><th>MENOS (-)</th></tr>
+        </thead>
+        <tbody id="corpoDisc">
+            </tbody>
+    </table>
+
+    <button id="btnEnviar" class="btn-enviar" onclick="enviarDados()">ENVIAR AO GESTOR JORGE</button>
+    <audio id="somSucesso" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
 </div>
 
 <script>
+    const URL_API = "SUA_URL_DO_GAS_AQUI"; // COLOQUE SUA URL AQUI
     const urlParams = new URLSearchParams(window.location.search);
     const etapa = urlParams.get('etapa') || 'I';
-    document.getElementById('tituloFase').innerText = "AVALIAÇÃO DE COMPETÊNCIAS - ETAPA " + etapa;
 
-    const COMPETENCIAS = [
-        { 
-            ref: "PROT", 
-            titulo: "1- SER PROTAGONISTA", 
-            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. A partir disso, consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal, contribuindo para o exercício da cidadania e com a atitudes coerentes.", 
-            evidencias: "• Sou visto como referência construtiva nos meus grupos de convivência;<br>• Respeito e me faço respeitar no grupo;<br>• Construo meu Projeto de Vida, incluindo e relacionando os estudos, o trabalho, a vida pessoal e familiar;<br>• Reconheço minhas preferências, potenciais e talentos, assim como meus pontos a melhorar;<br>• Nos diferentes ambientes, observo as necessidades e ofereço ajuda."
-        },
-        { 
-            ref: "RESP", 
-            titulo: "2- SER RESPONSÁVEL E COMPROMETIDO", 
-            desc: "Ser Responsável e Comprometido é comprometer-se com suas atividades, ser pontual e assíduo (não faltar), cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos. É esforçar-se para obter bons resultados e melhorar seu desempenho, contribuindo para o seu desenvolvimento e do grupo.", 
-            evidencias: "• Cumpro tarefas e prazos, esforçando-me para ter um bom desempenho;<br>• Sou pontual e assíduo e quando falto ou atraso, sempre justifico;<br>• Reconheço a importância do trabalho para minha satisfação e desenvolvimento enquanto ser humano;<br>• Cuido da minha apresentação e higiene pessoal;<br>• Cumpro as regras/normas do contrato de convivência."
-        },
-        { 
-            ref: "COM", 
-            titulo: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", 
-            desc: "Compreender atos, fatos e contextos é a capacidade de compreender o outro, considerando que um comportamento e/ou uma situação sempre acontece dentro de uma realidade histórica e cultural. Comunicar-se é a facilidade de se expressar numa linguagem clara e objetiva, com a capacidade de repassar informações a outros de forma completa e também ter predisposição para ouvir e compreender o contexto das mensagens que lhe são transmitidas.", 
-            evidencias: "• Tenho postura coerente com diferentes ambientes que frequento;<br>• Percebo o estado de humor do outro, compreendo as razões e motivos, respeitando-o;<br>• Durante os conteúdos trabalhados, faço contribuições através de críticas construtivas, elogios, sugestões e exemplos do dia a dia;<br>• Sou capaz de articular o pensamento de forma ordenada e o expressar oralmente ou por escrito;<br>• Presto atenção na explanação das outras pessoas, sem interferir e sei esperar a minha vez de falar."
-        },
-        { 
-            ref: "CID", 
-            titulo: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", 
-            desc: "Uma pessoa democrática, ética e cidadã possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta e confiável. Conhece seus direitos e deveres.", 
-            evidencias: "• Na relação com as pessoas e com ambiente sou honesto (a) e procuro ser uma pessoa ética;<br>• Assumo quando cometo erros;<br>• Respeito opiniões diferentes da minha, sendo capaz de mudar meu ponto de vista;<br>• Tenho atitudes coerentes com o discurso;<br>• Busco e/ou conheço meus direitos e deveres."
-        },
-        { 
-            ref: "SOL", 
-            titulo: "5- RESOLVER SITUAÇÕES-PROBLEMA", 
-            desc: "Resolver Situações Problema é a capacidade de entender e enfrentar um problema, pensando em alternativas de solução e tomando decisões. Capacidade de mudar, aprender, reconhecer erros e reconsiderar seus pontos de vista, aceitando o novo.", 
-            evidencias: "• Diante do problema com alguém, procuro resolver com a pessoa, sem a interferência de terceiros, evitando fofocas;<br>• Quando me deparo com um problema, penso antes de agir, responsabilizando-me por minhas escolhas;<br>• Não me envergonho de pedir ajuda;<br>• Diante de uma situação de incerteza ou desafio, permite-me enfrentá-la;<br>• Reconheço meus sentimentos e sei lidar com eles."
-        },
-        { 
-            ref: "EQUIP", 
-            titulo: "6- TRABALHAR E PRODUZIR EM EQUIPE", 
-            desc: "Trabalhar e Produzir em Equipe é a capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses do grupo acima dos interesses pessoais. É reconhecer a importância de todos no grupo, respeitando as contribuições de cada um e percebendo seus próprios limites.", 
-            evidencias: "• Penso no bem-estar do grupo e não só no meu bem-estar;<br>• Busco o consenso do grupo nas atividades coletivas;<br>• Assumo o desafio de trabalhar em grupo;<br>• Consigo receber críticas e sugestões sobre o meu comportamento;<br>• Transmito com fidelidade, o que me é comunicado."
-        },
-        { 
-            ref: "APR", 
-            titulo: "7- APRENDER A APRENDER", 
-            desc: "Aprender a Aprender é a habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática aquilo que aprendeu ao longo da vida e em todos os espaços.", 
-            evidencias: "• Aprofundo e/ou construo novos conhecimentos a partir dos conteúdos trabalhados;<br>• Apresento comprometimento com a vida escolar e meu processo de aprendizagem;<br>• A partir de situações boas ou ruins, consigo tirar lições para minha vida;<br>• Questiono, indago, argumento e mostra-me disposto a ampliar meu ponto de vista (tenho curiosidade);<br>• Utilizo os conteúdos aprendidos nas situações do dia a dia."
-        }
+    // Gera a tabela DISC (conforme seu original)
+    const palavras = [
+        ["Entusiasta","Rápido","Lógico","Amigável"],
+        ["Cauteloso","Decidido","Receptivo","Expressivo"],
+        ["Amável","Atento","Teimoso","Alegre"],
+        ["Persuasivo","Gentil","Humilde","Independente"]
+        // ... adicione as outras 24 linhas do seu original aqui
     ];
+    const tipos = ["I","D","C","S"];
 
-    function iniciarAvaliacao() {
-        const nome = document.getElementById('nomeParticipante').value;
-        if (nome.length < 3) return alert("Por favor, digite seu nome completo.");
-        
-        document.getElementById('formIdentificacao').style.display = 'none';
-        const areaPerguntas = document.getElementById('questoes');
-        areaPerguntas.style.display = 'block';
-
-        const lista = document.getElementById('listaPerguntas');
-        COMPETENCIAS.forEach((c) => {
-            let htmlOpcoes = "";
-            for(let i=1; i<=10; i++) {
-                htmlOpcoes += `
-                    <div class="opcao-item">
-                        <input type="radio" name="${c.ref}" value="${i}">
-                        <span class="label-escala">${i}</span>
-                    </div>`;
-            }
-
-            lista.innerHTML += `
-                <div class="pergunta-bloco">
-                    <span class="titulo-competencia">${c.titulo}</span>
-                    <span class="descricao-apoio">${c.desc}</span>
-                    <span class="evidencias-titulo">EVIDÊNCIAS NORTEADORAS:</span>
-                    <span class="evidencias-lista">${c.evidencias}</span>
-                    <div class="opcoes">${htmlOpcoes}</div>
-                </div>`;
+    function montarTabela() {
+        const corpo = document.getElementById('corpoDisc');
+        palavras.forEach((linha, i) => {
+            let tr = "<tr>";
+            linha.forEach((palavra, j) => {
+                tr = `<tr>
+                    <td><input type="radio" name="mais${i}" class="mais" data-t="${tipos[j]}"></td>
+                    <td>${palavra}</td>
+                    <td><input type="radio" name="menos${i}" class="menos" data-t="${tipos[j]}"></td>
+                </tr>`;
+                corpo.innerHTML += tr;
+            });
+            corpo.innerHTML += "<tr style='background:#eee'><td colspan='3'></td></tr>";
         });
     }
 
-    async function finalizar() {
-        const nome = document.getElementById('nomeParticipante').value;
-        const respostasSap = [];
-        let todasRespondidas = true;
-
-        COMPETENCIAS.forEach(c => {
-            const r = document.querySelector(`input[name="${c.ref}"]:checked`);
-            if (r) respostasSap.push(r.value);
-            else todasRespondidas = false;
-        });
-
-        if (!todasRespondidas) return alert("Por favor, responda todas as competências!");
-
-        const sapString = JSON.stringify(respostasSap);
-        window.location.href = `disc.html?nome=${encodeURIComponent(nome)}&sap=${sapString}&etapa=${etapa}`;
+    function setSap(id, valor) {
+        document.getElementById('sap'+id).value = valor;
+        const botoes = document.querySelectorAll(`.sap-item:nth-child(${id}) .btn-sap`);
+        botoes.forEach(b => b.classList.remove('active'));
+        botoes[valor-1].classList.add('active');
     }
+
+    async function enviarDados() {
+        const nome = document.getElementById('nomeParticipante').value;
+        const btn = document.getElementById('btnEnviar');
+        if(!nome) return alert("Digite seu nome!");
+
+        let saps = [];
+        for(let i=1; i<=7; i++) {
+            let v = document.getElementById('sap'+i).value;
+            if(!v) return alert("Responda todo o SAP!");
+            saps.push(v);
+        }
+
+        let d = {D:0, I:0, S:0, C:0};
+        document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
+        document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
+
+        const payload = {
+            nome: nome,
+            etapa: etapa,
+            sap: JSON.stringify(saps),
+            disc: `${d.D}-${d.I}-${d.S}-${d.C}`
+        };
+
+        btn.innerText = "ENVIANDO...";
+        btn.disabled = true;
+
+        try {
+            await fetch(URL_API, { method: "POST", body: JSON.stringify(payload) });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            alert("✅ Sucesso, Jorge! Dados enviados.");
+            location.reload();
+        } catch(e) {
+            alert("Erro ao enviar.");
+            btn.disabled = false;
+        }
+    }
+
+    montarTabela();
 </script>
 
 </body>
