@@ -2,166 +2,142 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Autoavaliação Pescar 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <title>Avaliação de Competências - Jorge Zensque</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
-        .box { background: white; padding: 25px; border-radius: 8px; max-width: 850px; margin: auto; border-top: 10px solid #0056b3; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .sap-item { margin-bottom: 25px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
-        .sap-titulo { font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; }
-        .sap-evidencias { font-size: 0.85em; color: #666; display: block; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .escala-botoes { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        .btn-n { width: 45px; height: 45px; border: 2px solid #0056b3; background: white; color: #0056b3; font-weight: bold; border-radius: 50%; cursor: pointer; transition: 0.2s; }
-        .btn-n.ativo { background: #0056b3; color: white; transform: scale(1.1); }
-        .disc-box { background: #161b22; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; }
-        .disc-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 0.9em; align-items: center; }
-        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
-        .btn-enviar { width: 100%; padding: 20px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1.2em; cursor: pointer; margin-top: 20px; }
-        #bloqueio { display: none; text-align: center; padding: 50px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 10px solid #0056b3; }
+        h2 { color: #0056b3; text-align: center; margin-bottom: 30px; }
+        .pergunta-bloco { margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #fafafa; }
+        .titulo-competencia { font-size: 1.2em; font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; text-transform: uppercase; }
+        .descricao-apoio { font-size: 0.95em; color: #444; line-height: 1.5; margin-bottom: 10px; display: block; background: #eef2f7; padding: 12px; border-left: 4px solid #0056b3; }
+        .evidencias-titulo { font-weight: bold; font-size: 0.85em; color: #0056b3; margin-top: 10px; display: block; }
+        .evidencias-lista { font-size: 0.85em; color: #555; margin-bottom: 15px; display: block; line-height: 1.4; }
+        .opcoes { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background: white; padding: 10px; border-radius: 8px; }
+        .opcao-item { text-align: center; flex: 1; }
+        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
+        .label-escala { font-size: 0.8em; color: #777; display: block; margin-top: 5px; }
+        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0 25px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
+        button { width: 100%; padding: 15px; background-color: #0056b3; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #003d80; }
     </style>
 </head>
 <body>
 
-<audio id="somSucesso" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
-
-<div id="bloqueio" class="box">
-    <h2 style="color: #d63031;">⚠️ Teste Já Realizado</h2>
-    <p>Olá! Identificamos que você já enviou sua autoavaliação.</p>
-    <p>Para evitar erros no painel, o sistema permite apenas um envio.</p>
-    <p><strong>Precisa refazer? Peça o link de liberação ao Jorge.</strong></p>
-</div>
-
-<div id="conteudo-quiz" class="box">
-    <h2 style="text-align:center; color:#0056b3;">Autoavaliação SAP Jovem 5.0</h2>
+<div class="container">
+    <h2 id="tituloFase">AVALIAÇÃO DE COMPETÊNCIAS</h2>
     
-    <div style="margin-bottom:20px;">
-        <label style="font-weight:bold;">NOME COMPLETO:</label>
-        <input type="text" id="nome" placeholder="Digite seu nome completo" style="width:100%; padding:12px; margin-top:5px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+    <div id="formIdentificacao">
+        <label><b>DIGITE SEU NOME COMPLETO:</b></label>
+        <input type="text" id="nomeParticipante" placeholder="Ex: João Silva">
+        <button onclick="iniciarAvaliacao()">INICIAR AVALIAÇÃO</button>
     </div>
 
-    <div id="sap-lista"></div>
-
-    <div class="disc-box">
-        <h3 style="color:#f1c40f; margin-top:0;">AVALIAÇÃO DE PERFIL DISC</h3>
-        <p style="font-size: 0.85em; color: #ccc;">Marque o que MAIS (+) e o que MENOS (-) combina com você.</p>
-        <div id="disc-lista"></div>
+    <div id="questoes" style="display:none;">
+        <p style="text-align: center; font-weight: bold; color: #d35400;">Escala de 1 (Mínimo) a 10 (Máximo)</p>
+        <div id="listaPerguntas"></div>
+        <button onclick="finalizar()">ENVIAR RESPOSTAS</button>
     </div>
-
-    <button id="btn-enviar" class="btn-enviar" onclick="enviar()">ENVIAR AO GESTOR JORGE</button>
 </div>
 
 <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwua4hn4gHs053z4_17z3JvBO2C_8jyTSrjD4vFIas0SsNUjIeUEnBbe5lO2RDGuzzJ/exec";
-
-    // --- LÓGICA DA CHAVE MESTRA (RESET) ---
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reset') === 'true') {
-        localStorage.removeItem("pescar_respondido");
-    }
+    const etapa = urlParams.get('etapa') || 'I';
+    document.getElementById('tituloFase').innerText = "AVALIAÇÃO DE COMPETÊNCIAS - ETAPA " + etapa;
 
-    if (localStorage.getItem("pescar_respondido") === "true") {
-        document.getElementById("conteudo-quiz").style.display = "none";
-        document.getElementById("bloqueio").style.display = "block";
-    }
-    // --------------------------------------
-
-    const sapDados = [
-        {t:"1- SER PROTAGONISTA", e:"Referência construtiva, Projeto de Vida, ajuda outros."},
-        {t:"2- SER RESPONSÁVEL E COMPROMETIDO", e:"Pontual, cumpre prazos e regras, higiene pessoal."},
-        {t:"3- COMPREENDER CONTEXTOS E COMUNICAR-SE", e:"Clareza, respeita a vez de falar, postura coerente."},
-        {t:"4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", e:"Honesto, assume erros, respeita opiniões."},
-        {t:"5- RESOLVER SITUAÇÕES-PROBLEMA", e:"Enfrenta desafios, sem fofoca, lida com sentimentos."},
-        {t:"6- TRABALHAR E PRODUZIR EM EQUIPE", e:"Bem-estar do grupo, busca consenso, recebe críticas."},
-        {t:"7- APRENDER A APRENDER", e:"Curioso, busca conhecimentos, tira lições."}
-    ];
-
-    sapDados.forEach((item, i) => {
-        document.getElementById('sap-lista').innerHTML += `
-            <div class="sap-item">
-                <span class="sap-titulo">${item.t}</span>
-                <span class="sap-evidencias"><strong>Evidências:</strong> ${item.e}</span>
-                <div class="escala-botoes">
-                    ${[1,2,3,4,5].map(n => `<button class="btn-n q${i+1}" onclick="marcar(this, ${i+1}, ${n})">${n}</button>`).join('')}
-                    <input type="hidden" id="sap${i+1}">
-                </div>
-            </div>`;
-    });
-
-    function marcar(btn, q, v) {
-        document.querySelectorAll('.q'+q).forEach(b => b.classList.remove('ativo'));
-        btn.classList.add('ativo');
-        document.getElementById('sap'+q).value = v;
-    }
-
-    const frasesDISC = [
-        {f: "Eu gosto de liderar e tomar decisões rápidas.", t: "D"},
-        {f: "Eu gosto de conversar e animar as pessoas.", t: "I"},
-        {f: "Eu prefiro trabalhar em um ritmo calmo e estável.", t: "S"},
-        {f: "Eu presto muita atenção aos detalhes e regras.", t: "C"},
-        {f: "Eu sou focado em resultados e desafios difíceis.", t: "D"},
-        {f: "Eu sou otimista e gosto de fazer novos amigos.", t: "I"},
-        {f: "Eu sou um bom ouvinte e gosto de ajudar o grupo.", t: "S"},
-        {f: "Eu sou organizado e gosto de tudo planejado.", t: "C"},
-        {f: "Eu falo o que penso, mesmo que seja direto demais.", t: "D"},
-        {f: "Eu uso o entusiasmo para convencer os outros.", t: "I"},
-        {f: "Eu evito conflitos e prefiro a harmonia.", t: "S"},
-        {f: "Eu analiso os fatos antes de dar minha opinião.", t: "C"},
-        {f: "Eu sou independente e gosto de agir por conta própria.", t: "D"},
-        {f: "Eu gosto de ser o centro das atenções em um grupo.", t: "I"},
-        {f: "Eu sou paciente, mesmo em situações repetitivas.", t: "S"},
-        {f: "Eu busco a perfeição em tudo o que eu faço.", t: "C"}
-    ];
-
-    frasesDISC.forEach((item, i) => {
-        document.getElementById('disc-lista').innerHTML += `
-            <div class="disc-row">
-                <span>${item.f}</span>
-                <div style="text-align:center;"><input type="radio" name="disc${i}" class="mais" data-t="${item.t}"></div>
-                <div style="text-align:center;"><input type="radio" name="disc${i}" class="menos" data-t="${item.t}"></div>
-            </div>`;
-    });
-
-    async function enviar() {
-        const nome = document.getElementById('nome').value.trim();
-        const btn = document.getElementById('btn-enviar');
-        if(!nome) return alert("Por favor, digite seu nome!");
-        
-        let saps = {};
-        for(let i=1; i<=7; i++) {
-            saps['sap'+i] = document.getElementById('sap'+i).value;
-            if(!saps['sap'+i]) return alert("Faltou avaliar a competência SAP " + i);
+    const COMPETENCIAS = [
+        { 
+            ref: "PROT", 
+            titulo: "1- SER PROTAGONISTA", 
+            desc: "É o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. Consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal.", 
+            evidencias: "• Sou referência construtiva nos meus grupos;<br>• Construo meu Projeto de Vida (estudos, trabalho, vida pessoal);<br>• Reconheço meus potenciais e pontos a melhorar."
+        },
+        { 
+            ref: "RESP", 
+            titulo: "2- SER RESPONSÁVEL E COMPROMETIDO", 
+            desc: "Comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos e esforçando-se para obter bons resultados.", 
+            evidencias: "• Cumpro tarefas e prazos;<br>• Sou pontual e assíduo (justifico faltas);<br>• Cumpro as regras do contrato de convivência."
+        },
+        { 
+            ref: "COM", 
+            titulo: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", 
+            desc: "Capacidade de compreender o outro dentro de uma realidade histórica e cultural. Comunicar-se de forma clara e objetiva, repassando informações completas e tendo predisposição para ouvir e compreender mensagens.", 
+            evidencias: "• Postura coerente com diferentes ambientes;<br>• Articulo pensamentos de forma ordenada (oral ou escrita);<br>• Presto atenção sem interferir e espero minha vez de falar."
+        },
+        { 
+            ref: "CID", 
+            titulo: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", 
+            desc: "Possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta, confiável e que conhece seus direitos e deveres.", 
+            evidencias: "• Sou honesto e ético nas relações;<br>• Assumo quando cometo erros;<br>• Respeito opiniões diferentes e sou capaz de mudar meu ponto de vista."
+        },
+        { 
+            ref: "SOL", 
+            titulo: "5- RESOLVER SITUAÇÕES-PROBLEMA", 
+            desc: "Capacidade de entender e enfrentar um problema, pensando em alternativas de solução e tomando decisões. Capacidade de mudar, aprender, reconhecer erros e aceitar o novo.", 
+            evidencias: "• Procuro resolver problemas sem fofocas ou terceiros;<br>• Penso antes de agir e me responsabilizo pelas escolhas;<br>• Reconheço meus sentimentos e sei lidar com eles."
+        },
+        { 
+            ref: "EQUIP", 
+            titulo: "6- TRABALHAR E PRODUZIR EM EQUIPE", 
+            desc: "Capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses coletivos acima dos pessoais e reconhecendo a importância de todos.", 
+            evidencias: "• Penso no bem-estar do grupo e não só no meu;<br>• Busco o consenso nas atividades coletivas;<br>• Consigo receber críticas e sugestões sobre meu comportamento."
+        },
+        { 
+            ref: "APR", 
+            titulo: "7- APRENDER A APRENDER", 
+            desc: "Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática aquilo que aprendeu ao longo da vida e em todos os espaços.", 
+            evidencias: "• Construo novos conhecimentos a partir dos conteúdos;<br>• Tiro lições de situações boas ou ruins para minha vida;<br>• Questiono, indago e tenho curiosidade em ampliar meu ponto de vista."
         }
+    ];
 
-        btn.innerText = "VERIFICANDO...";
-        btn.disabled = true;
-
-        let d = {D:0, I:0, S:0, C:0};
-        document.querySelectorAll('.mais:checked').forEach(r => d[r.dataset.t]++);
-        document.querySelectorAll('.menos:checked').forEach(r => d[r.dataset.t]--);
-
-        const dados = { nome, ...saps, disc: `${d.D}-${d.I}-${d.S}-${d.C}` };
+    function iniciarAvaliacao() {
+        const nome = document.getElementById('nomeParticipante').value;
+        if (nome.length < 3) return alert("Por favor, digite seu nome completo.");
         
-        try {
-            const response = await fetch(URL_API, { method: "POST", body: JSON.stringify(dados) });
-            const texto = await response.text();
+        document.getElementById('formIdentificacao').style.display = 'none';
+        const areaPerguntas = document.getElementById('questoes');
+        areaPerguntas.style.display = 'block';
 
-            if (texto === "DUPLICADO") {
-                alert("❌ ERRO: Este nome já enviou a avaliação. Se precisar refazer, fale com o Jorge para liberar.");
-                btn.innerText = "ENVIAR AO GESTOR JORGE";
-                btn.disabled = false;
-            } else {
-                document.getElementById('somSucesso').play();
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                localStorage.setItem("pescar_respondido", "true");
-                alert("✅ Enviado com sucesso!"); 
-                window.location.reload();
+        const lista = document.getElementById('listaPerguntas');
+        COMPETENCIAS.forEach((c) => {
+            let htmlOpcoes = "";
+            for(let i=1; i<=10; i++) {
+                htmlOpcoes += `
+                    <div class="opcao-item">
+                        <input type="radio" name="${c.ref}" value="${i}">
+                        <span class="label-escala">${i}</span>
+                    </div>`;
             }
-        } catch (e) { 
-            localStorage.setItem("pescar_respondido", "true");
-            window.location.reload();
-        }
+
+            lista.innerHTML += `
+                <div class="pergunta-bloco">
+                    <span class="titulo-competencia">${c.titulo}</span>
+                    <span class="descricao-apoio">${c.desc}</span>
+                    <span class="evidencias-titulo">EVIDÊNCIAS PARA OBSERVAR:</span>
+                    <span class="evidencias-lista">${c.evidencias}</span>
+                    <div class="opcoes">${htmlOpcoes}</div>
+                </div>`;
+        });
+    }
+
+    async function finalizar() {
+        const nome = document.getElementById('nomeParticipante').value;
+        const respostasSap = [];
+        let todasRespondidas = true;
+
+        COMPETENCIAS.forEach(c => {
+            const r = document.querySelector(`input[name="${c.ref}"]:checked`);
+            if (r) respostasSap.push(r.value);
+            else todasRespondidas = false;
+        });
+
+        if (!todasRespondidas) return alert("Por favor, responda todas as competências!");
+
+        const sapString = JSON.stringify(respostasSap);
+        // Mantém o fluxo para o próximo passo do teste
+        window.location.href = `disc.html?nome=${encodeURIComponent(nome)}&sap=${sapString}&etapa=${etapa}`;
     }
 </script>
+
 </body>
 </html>
