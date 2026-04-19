@@ -10,11 +10,11 @@
         .btn-wa { background: #25d366; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: block; text-align: center; margin-bottom: 10px; }
         .btn-liberar { background: #f39c12; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; display: block; text-align: center; margin-bottom: 20px; border: none; width: 100%; cursor: pointer; }
         
-        /* Grade de novos botões */
-        .grid-ferramentas { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .grid-ferramentas { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .btn-tool { padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 0.85em; }
         .btn-etapa { background: #34495e; }
         .btn-excel { background: #27ae60; }
+        .btn-arquivar { background: #e67e22; }
         .btn-puxar { background: #8e44ad; }
         .btn-limpar { background: #c0392b; }
 
@@ -29,7 +29,6 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background: #0056b3; color: white; }
-        .btn-table { padding: 5px 8px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.8em; margin-right: 3px; }
     </style>
 </head>
 <body>
@@ -44,12 +43,12 @@
     <h2 style="text-align:center; color: #0056b3;">PAINEL - GESTOR JORGE ZENSQUE</h2>
     
     <a href="#" id="linkWA" class="btn-wa" target="_blank">📲 ENVIAR LINK PARA WHATSAPP</a>
-    <button onclick="gerarLinkReset()" class="btn-liberar">🔓 GERAR LINK PARA REFAZER (LIMPAR TRAVA)</button>
+    <button onclick="gerarLinkResetComEtapa()" class="btn-liberar">🔓 GERAR LINK PARA REFAZER (ESCOLHER ETAPA)</button>
 
     <div class="grid-ferramentas">
-        <button class="btn-tool btn-etapa" onclick="mudarEtapa('Etapa I')">📝 NOVA AVALIAÇÃO: I</button>
-        <button class="btn-tool btn-etapa" onclick="mudarEtapa('Etapa II')">📝 NOVA AVALIAÇÃO: II</button>
+        <button class="btn-tool btn-etapa">📍 ETAPA ATUAL: I</button>
         <button class="btn-tool btn-excel" onclick="exportarExcel()">📊 EXPORTAR EXCEL</button>
+        <button class="btn-tool btn-arquivar" onclick="arquivarGeralCSV()">📁 ARQUIVAR DADOS (CSV)</button>
         <button class="btn-tool btn-puxar" onclick="carregarArquivados()">📥 VER ARQUIVADOS</button>
         <button class="btn-tool btn-limpar" onclick="limparTudo()">⚠️ LIMPAR TUDO</button>
     </div>
@@ -67,7 +66,7 @@
     </div>
     
     <table>
-        <thead><tr><th>Nome</th><th>SAP</th><th>DISC</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Status</th><th>SAP</th><th>DISC</th><th>Ação</th></tr></thead>
         <tbody id="corpoTabela"></tbody>
     </table>
 </div>
@@ -78,47 +77,58 @@
     let dadosGlobais = [];
     let charts = {};
 
-    // 1. WhatsApp e Link Reset
     document.getElementById("linkWA").href = "https://api.whatsapp.com/send?text=Olá! Preencha o teste: " + urlBase + "teste.html";
-    function gerarLinkReset() {
-        const link = urlBase + "teste.html?reset=true";
-        navigator.clipboard.writeText(link); alert("Link de reset copiado!");
+
+    // Função de Reset com indicação de Etapa (Pergunta antes de gerar)
+    function gerarLinkResetComEtapa() {
+        let etapa = prompt("Para qual etapa deseja liberar o link? (Digite 1 para Etapa I ou 2 para Etapa II)", "1");
+        if (etapa === "1" || etapa === "2") {
+            const labelEtapa = (etapa === "1" ? "I" : "II");
+            const link = urlBase + "teste.html?reset=true&etapa=" + labelEtapa;
+            navigator.clipboard.writeText(link);
+            alert("Link de REFAZER para " + labelEtapa + " copiado!\nEnvie para o aluno que faltou.");
+        } else {
+            alert("Operação cancelada.");
+        }
     }
 
-    // 2. Exportar Excel (CSV compatível)
-    function exportarExcel() {
-        let csv = "\ufeffNome;SAP;DISC\n";
-        dadosGlobais.forEach(i => csv += `${i.nome};"${i.sap}";${i.disc}\n`);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob); link.download = "Painel_Exportado.csv"; link.click();
-    }
-
-    // 3. Funções de Etapa e Arquivo
-    function mudarEtapa(e) { alert("Link do WhatsApp configurado para " + e); }
-
-    async function arquivarInd(nome) {
-        if(confirm("Arquivar " + nome + "?")) {
-            await fetch(URL_API + "?action=archive&nome=" + nome, {mode:'no-cors'});
-            alert("Arquivado!"); setTimeout(carregarDados, 1000);
+    // Gerar CSV de Arquivamento (Backup Leve)
+    function arquivarGeralCSV() {
+        if(confirm("Deseja baixar o arquivo CSV para arquivamento antes de limpar o painel?")) {
+            let csv = "\ufeffNome;Etapa;SAP;DISC\n";
+            dadosGlobais.forEach(i => csv += `${i.nome};Etapa I;"${i.sap}";${i.disc}\n`);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "arquivo_sap_disc_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".csv";
+            link.click();
+            alert("Arquivo de arquivamento pronto!");
         }
     }
 
     async function carregarArquivados() {
-        alert("Puxando dados arquivados do histórico...");
+        alert("Buscando histórico de dados arquivados na planilha...");
         const res = await fetch(URL_API + "?action=getArchived");
         dadosGlobais = await res.json();
         atualizarInterface();
     }
 
+    function exportarExcel() {
+        let csv = "\ufeffNome;SAP;DISC\n";
+        dadosGlobais.forEach(i => csv += `${i.nome};"${i.sap}";${i.disc}\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob); link.download = "Relatorio_Excel.csv"; link.click();
+    }
+
     async function limparTudo() {
-        if(confirm("⚠️ APAGAR TUDO?")) {
+        if(confirm("⚠️ ATENÇÃO: Deseja limpar os dados visíveis agora? Certifique-se de ter clicado em ARQUIVAR primeiro.")) {
             await fetch(URL_API + "?action=clearAll", {mode:'no-cors'});
             setTimeout(carregarDados, 1500);
         }
     }
 
-    // --- Lógica de Gráficos e Bichos ---
+    // --- Lógica de Sistema (Gráficos e Bichos) ---
     const MAPA_BICHOS = { 0: { nome: 'LEÃO (D)', arq: 'D.png' }, 1: { nome: 'PAPAGAIO (I)', arq: 'I.png' }, 2: { nome: 'PANDA (S)', arq: 'S.png' }, 3: { nome: 'CORUJA (C)', arq: 'C.png' } };
 
     async function carregarDados() {
@@ -135,9 +145,8 @@
         
         dadosGlobais.forEach((item, index) => {
             select.innerHTML += `<option value="${index}">${item.nome}</option>`;
-            tabela.innerHTML += `<tr><td>${item.nome}</td><td>${item.sap}</td><td>${item.disc}</td><td>
-                <button class="btn-table" style="background:#7f8c8d" onclick="arquivarInd('${item.nome}')">Arquivar</button>
-                <button class="btn-table" style="background:#c0392b" onclick="excluirInd('${item.nome}')">Excluir</button>
+            tabela.innerHTML += `<tr><td>${item.nome}</td><td><span style="color:blue">Etapa I</span></td><td>${item.sap}</td><td>${item.disc}</td><td>
+                <button style="color:red; cursor:pointer; border:none; background:none;" onclick="excluirInd('${item.nome}')">Excluir</button>
             </td></tr>`;
         });
         renderizarGraficosGerais();
@@ -151,7 +160,7 @@
 
     function exibirBicho(v, d, t) {
         let m = Math.max(...v); let i = v.indexOf(m); let b = MAPA_BICHOS[i];
-        document.getElementById(d).innerHTML = `<img src="${b.arq}" class="img-bicho" onerror="this.src='https://via.placeholder.com/100?text=Bicho'"><span class="label-bicho">${t}: ${b.nome}</span>`;
+        document.getElementById(d).innerHTML = `<img src="${b.arq}" class="img-bicho" onerror="this.src='https://via.placeholder.com/100?text=Erro'"><span class="label-bicho">${t}: ${b.nome}</span>`;
     }
 
     function desenhar(id, type, labels, data, label) {
