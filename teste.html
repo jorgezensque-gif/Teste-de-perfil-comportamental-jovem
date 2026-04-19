@@ -10,9 +10,7 @@
         h2 { color: #0056b3; text-align: center; margin-bottom: 30px; }
         .pergunta-bloco { margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #fafafa; }
         .titulo-competencia { font-size: 1.2em; font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        .descricao-apoio { font-size: 0.95em; color: #444; line-height: 1.5; margin-bottom: 10px; display: block; background: #eef2f7; padding: 12px; border-left: 4px solid #0056b3; }
-        .evidencias-titulo { font-weight: bold; font-size: 0.85em; color: #0056b3; margin-top: 10px; display: block; }
-        .evidencias-lista { font-size: 0.85em; color: #555; margin-bottom: 15px; display: block; line-height: 1.4; }
+        .descricao-apoio { font-size: 0.95em; color: #555; line-height: 1.5; margin-bottom: 15px; display: block; font-style: italic; background: #eef2f7; padding: 10px; border-left: 4px solid #0056b3; }
         .opcoes { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background: white; padding: 10px; border-radius: 8px; }
         .opcao-item { text-align: center; flex: 1; }
         input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
@@ -48,45 +46,38 @@
     const COMPETENCIAS = [
         { 
             ref: "PROT", 
-            titulo: "1- SER PROTAGONISTA", 
-            desc: "É o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. Consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal.", 
-            evidencias: "• Sou referência construtiva nos meus grupos;<br>• Construo meu Projeto de Vida (estudos, trabalho, vida pessoal);<br>• Reconheço meus potenciais e pontos a melhorar."
+            titulo: "PROTAGONISMO", 
+            desc: "Capacidade de assumir a responsabilidade por sua própria vida e ações. Envolve iniciativa, liderança pessoal e a busca ativa por soluções, sem esperar que os outros decidam por você." 
         },
         { 
             ref: "RESP", 
-            titulo: "2- SER RESPONSÁVEL E COMPROMETIDO", 
-            desc: "Comprometer-se com suas atividades, ser pontual e assíduo, cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos e esforçando-se para obter bons resultados.", 
-            evidencias: "• Cumpro tarefas e prazos;<br>• Sou pontual e assíduo (justifico faltas);<br>• Cumpro as regras do contrato de convivência."
+            titulo: "RESPONSABILIDADE", 
+            desc: "Cumprimento de deveres e obrigações de forma íntegra. Capacidade de responder pelas consequências de suas escolhas e manter o compromisso com prazos e combinados." 
         },
         { 
             ref: "COM", 
-            titulo: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", 
-            desc: "Capacidade de compreender o outro dentro de uma realidade histórica e cultural. Comunicar-se de forma clara e objetiva, repassando informações completas e tendo predisposição para ouvir e compreender mensagens.", 
-            evidencias: "• Postura coerente com diferentes ambientes;<br>• Articulo pensamentos de forma ordenada (oral ou escrita);<br>• Presto atenção sem interferir e espero minha vez de falar."
+            titulo: "COMUNICAÇÃO", 
+            desc: "Habilidade de expressar ideias com clareza e ouvir ativamente. Envolve empatia, assertividade e a capacidade de transmitir mensagens de forma que sejam compreendidas sem conflitos." 
         },
         { 
             ref: "CID", 
-            titulo: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", 
-            desc: "Possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta, confiável e que conhece seus direitos e deveres.", 
-            evidencias: "• Sou honesto e ético nas relações;<br>• Assumo quando cometo erros;<br>• Respeito opiniões diferentes e sou capaz de mudar meu ponto de vista."
+            titulo: "CIDADANIA E ÉTICA", 
+            desc: "Atuação baseada em princípios morais e respeito ao coletivo. Compreender seu papel na sociedade, respeitando direitos alheios e agindo de forma justa e honesta." 
         },
         { 
             ref: "SOL", 
-            titulo: "5- RESOLVER SITUAÇÕES-PROBLEMA", 
-            desc: "Capacidade de entender e enfrentar um problema, pensando em alternativas de solução e tomando decisões. Capacidade de mudar, aprender, reconhecer erros e aceitar o novo.", 
-            evidencias: "• Procuro resolver problemas sem fofocas ou terceiros;<br>• Penso antes de agir e me responsabilizo pelas escolhas;<br>• Reconheço meus sentimentos e sei lidar com eles."
+            titulo: "SOLUÇÃO DE PROBLEMAS", 
+            desc: "Capacidade analítica para identificar desafios e propor caminhos eficazes. Envolve criatividade, pensamento crítico e foco na resolução prática de obstáculos." 
         },
         { 
             ref: "EQUIP", 
-            titulo: "6- TRABALHAR E PRODUZIR EM EQUIPE", 
-            desc: "Capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses coletivos acima dos pessoais e reconhecendo a importância de todos.", 
-            evidencias: "• Penso no bem-estar do grupo e não só no meu;<br>• Busco o consenso nas atividades coletivas;<br>• Consigo receber críticas e sugestões sobre meu comportamento."
+            titulo: "TRABALHO EM EQUIPE", 
+            desc: "Capacidade de colaborar com outros para um objetivo comum. Valorizar a diversidade de opiniões, ajudar os colegas e contribuir para um clima de cooperação." 
         },
         { 
             ref: "APR", 
-            titulo: "7- APRENDER A APRENDER", 
-            desc: "Habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática aquilo que aprendeu ao longo da vida e em todos os espaços.", 
-            evidencias: "• Construo novos conhecimentos a partir dos conteúdos;<br>• Tiro lições de situações boas ou ruins para minha vida;<br>• Questiono, indago e tenho curiosidade em ampliar meu ponto de vista."
+            titulo: "APRENDER A APRENDER", 
+            desc: "Disposição para adquirir novos conhecimentos constantemente. Reconhecer que não sabe tudo, ter curiosidade intelectual e resiliência para evoluir com novos desafios." 
         }
     ];
 
@@ -113,8 +104,6 @@
                 <div class="pergunta-bloco">
                     <span class="titulo-competencia">${c.titulo}</span>
                     <span class="descricao-apoio">${c.desc}</span>
-                    <span class="evidencias-titulo">EVIDÊNCIAS PARA OBSERVAR:</span>
-                    <span class="evidencias-lista">${c.evidencias}</span>
                     <div class="opcoes">${htmlOpcoes}</div>
                 </div>`;
         });
@@ -133,8 +122,8 @@
 
         if (!todasRespondidas) return alert("Por favor, responda todas as competências!");
 
+        // Redireciona para o teste DISC após o SAP
         const sapString = JSON.stringify(respostasSap);
-        // Mantém o fluxo para o próximo passo do teste
         window.location.href = `disc.html?nome=${encodeURIComponent(nome)}&sap=${sapString}&etapa=${etapa}`;
     }
 </script>
