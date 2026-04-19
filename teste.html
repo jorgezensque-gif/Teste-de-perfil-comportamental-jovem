@@ -9,12 +9,14 @@
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 10px solid #0056b3; }
         h2 { color: #0056b3; text-align: center; margin-bottom: 30px; }
         .pergunta-bloco { margin-bottom: 40px; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #fafafa; }
-        .titulo-competencia { font-size: 1.2em; font-weight: bold; color: #0056b3; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        .descricao-apoio { font-size: 0.95em; color: #555; line-height: 1.5; margin-bottom: 15px; display: block; font-style: italic; background: #eef2f7; padding: 10px; border-left: 4px solid #0056b3; }
-        .opcoes { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; background: white; padding: 10px; border-radius: 8px; }
+        .titulo-competencia { font-size: 1.2em; font-weight: bold; color: #0056b3; display: block; margin-bottom: 10px; text-transform: uppercase; }
+        .descricao-apoio { font-size: 0.95em; color: #333; line-height: 1.5; margin-bottom: 15px; display: block; background: #eef2f7; padding: 15px; border-left: 4px solid #0056b3; text-align: justify; }
+        .evidencias-titulo { font-weight: bold; font-size: 0.9em; color: #0056b3; margin-top: 10px; display: block; text-decoration: underline; }
+        .evidencias-lista { font-size: 0.9em; color: #444; margin-bottom: 15px; display: block; line-height: 1.6; padding-left: 10px; }
+        .opcoes { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
         .opcao-item { text-align: center; flex: 1; }
-        input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
-        .label-escala { font-size: 0.8em; color: #777; display: block; margin-top: 5px; }
+        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; }
+        .label-escala { font-size: 0.85em; color: #555; display: block; margin-top: 5px; font-weight: bold; }
         input[type="text"] { width: 100%; padding: 12px; margin: 10px 0 25px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
         button { width: 100%; padding: 15px; background-color: #0056b3; color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background-color: #003d80; }
@@ -32,7 +34,7 @@
     </div>
 
     <div id="questoes" style="display:none;">
-        <p style="text-align: center; font-weight: bold; color: #d35400;">Escala de 1 (Mínimo) a 10 (Máximo)</p>
+        <p style="text-align: center; font-weight: bold; color: #d35400; font-size: 1.1em;">Escala de 1 (Mínimo) a 10 (Máximo)</p>
         <div id="listaPerguntas"></div>
         <button onclick="finalizar()">ENVIAR RESPOSTAS</button>
     </div>
@@ -46,38 +48,45 @@
     const COMPETENCIAS = [
         { 
             ref: "PROT", 
-            titulo: "PROTAGONISMO", 
-            desc: "Capacidade de assumir a responsabilidade por sua própria vida e ações. Envolve iniciativa, liderança pessoal e a busca ativa por soluções, sem esperar que os outros decidam por você." 
+            titulo: "1- SER PROTAGONISTA", 
+            desc: "Protagonista é o jovem que se conscientiza de sua identidade, se reconhece como ser atuante, autônomo, solidário, participativo e construtor do seu destino. A partir disso, consegue exercer ações de intervenção no contexto social, visando responder a problemas reais como sujeito principal, contribuindo para o exercício da cidadania e com a atitudes coerentes.", 
+            evidencias: "• Sou visto como referência construtiva nos meus grupos de convivência;<br>• Respeito e me faço respeitar no grupo;<br>• Construo meu Projeto de Vida, incluindo e relacionando os estudos, o trabalho, a vida pessoal e familiar;<br>• Reconheço minhas preferências, potenciais e talentos, assim como meus pontos a melhorar;<br>• Nos diferentes ambientes, observo as necessidades e ofereço ajuda."
         },
         { 
             ref: "RESP", 
-            titulo: "RESPONSABILIDADE", 
-            desc: "Cumprimento de deveres e obrigações de forma íntegra. Capacidade de responder pelas consequências de suas escolhas e manter o compromisso com prazos e combinados." 
+            titulo: "2- SER RESPONSÁVEL E COMPROMETIDO", 
+            desc: "Ser Responsável e Comprometido é comprometer-se com suas atividades, ser pontual e assíduo (não faltar), cumprir o que é exigido, respeitar regras e normas de convivência, responsabilizando-se pelos acontecimentos. É esforçar-se para obter bons resultados e melhorar seu desempenho, contribuindo para o seu desenvolvimento e do grupo.", 
+            evidencias: "• Cumpro tarefas e prazos, esforçando-me para ter um bom desempenho;<br>• Sou pontual e assíduo e quando falto ou atraso, sempre justifico;<br>• Reconheço a importância do trabalho para minha satisfação e desenvolvimento enquanto ser humano;<br>• Cuido da minha apresentação e higiene pessoal;<br>• Cumpro as regras/normas do contrato de convivência."
         },
         { 
             ref: "COM", 
-            titulo: "COMUNICAÇÃO", 
-            desc: "Habilidade de expressar ideias com clareza e ouvir ativamente. Envolve empatia, assertividade e a capacidade de transmitir mensagens de forma que sejam compreendidas sem conflitos." 
+            titulo: "3- COMPREENDER CONTEXTOS E COMUNICAR-SE", 
+            desc: "Compreender atos, fatos e contextos é a capacidade de compreender o outro, considerando que um comportamento e/ou uma situação sempre acontece dentro de uma realidade histórica e cultural. Comunicar-se é a facilidade de se expressar numa linguagem clara e objetiva, com a capacidade de repassar informações a outros de forma completa e também ter predisposição para ouvir e compreender o contexto das mensagens que lhe são transmitidas.", 
+            evidencias: "• Tenho postura coerente com diferentes ambientes que frequento;<br>• Percebo o estado de humor do outro, compreendo as razões e motivos, respeitando-o;<br>• Durante os conteúdos trabalhados, faço contribuições através de críticas construtivas, elogios, sugestões e exemplos do dia a dia;<br>• Sou capaz de articular o pensamento de forma ordenada e o expressar oralmente ou por escrito;<br>• Presto atenção na explanação das outras pessoas, sem interferir e sei esperar a minha vez de falar."
         },
         { 
             ref: "CID", 
-            titulo: "CIDADANIA E ÉTICA", 
-            desc: "Atuação baseada em princípios morais e respeito ao coletivo. Compreender seu papel na sociedade, respeitando direitos alheios e agindo de forma justa e honesta." 
+            titulo: "4- SER DEMOCRÁTICO, ÉTICO E CIDADÃO", 
+            desc: "Uma pessoa democrática, ética e cidadã possui valores e princípios que respeitam as diferenças e os direitos humanos. É uma pessoa honesta e confiável. Conhece seus direitos e deveres.", 
+            evidencias: "• Na relação com as pessoas e com ambiente sou honesto (a) e procuro ser uma pessoa ética;<br>• Assumo quando cometo erros;<br>• Respeito opiniões diferentes da minha, sendo capaz de mudar meu ponto de vista;<br>• Tenho atitudes coerentes com o discurso;<br>• Busco e/ou conheço meus direitos e deveres."
         },
         { 
             ref: "SOL", 
-            titulo: "SOLUÇÃO DE PROBLEMAS", 
-            desc: "Capacidade analítica para identificar desafios e propor caminhos eficazes. Envolve criatividade, pensamento crítico e foco na resolução prática de obstáculos." 
+            titulo: "5- RESOLVER SITUAÇÕES-PROBLEMA", 
+            desc: "Resolver Situações Problema é a capacidade de entender e enfrentar um problema, pensando em alternativas de solução e tomando decisões. Capacidade de mudar, aprender, reconhecer erros e reconsiderar seus pontos de vista, aceitando o novo.", 
+            evidencias: "• Diante do problema com alguém, procuro resolver com a pessoa, sem a interferência de terceiros, evitando fofocas;<br>• Quando me deparo com um problema, penso antes de agir, responsabilizando-me por minhas escolhas;<br>• Não me envergonho de pedir ajuda;<br>• Diante de uma situação de incerteza ou desafio, permite-me enfrentá-la;<br>• Reconheço meus sentimentos e sei lidar com eles."
         },
         { 
             ref: "EQUIP", 
-            titulo: "TRABALHO EM EQUIPE", 
-            desc: "Capacidade de colaborar com outros para um objetivo comum. Valorizar a diversidade de opiniões, ajudar os colegas e contribuir para um clima de cooperação." 
+            titulo: "6- TRABALHAR E PRODUZIR EM EQUIPE", 
+            desc: "Trabalhar e Produzir em Equipe é a capacidade de colaborar e partilhar, contribuindo para o crescimento do grupo, colocando os interesses do grupo acima dos interesses pessoais. É reconhecer a importância de todos no grupo, respeitando as contribuições de cada um e percebendo seus próprios limites.", 
+            evidencias: "• Penso no bem-estar do grupo e não só no meu bem-estar;<br>• Busco o consenso do grupo nas atividades coletivas;<br>• Assumo o desafio de trabalhar em grupo;<br>• Consigo receber críticas e sugestões sobre o meu comportamento;<br>• Transmito com fidelidade, o que me é comunicado."
         },
         { 
             ref: "APR", 
-            titulo: "APRENDER A APRENDER", 
-            desc: "Disposição para adquirir novos conhecimentos constantemente. Reconhecer que não sabe tudo, ter curiosidade intelectual e resiliência para evoluir com novos desafios." 
+            titulo: "7- APRENDER A APRENDER", 
+            desc: "Aprender a Aprender é a habilidade para buscar, compreender e construir novos conhecimentos, colocando em prática aquilo que aprendeu ao longo da vida e em todos os espaços.", 
+            evidencias: "• Aprofundo e/ou construo novos conhecimentos a partir dos conteúdos trabalhados;<br>• Apresento comprometimento com a vida escolar e meu processo de aprendizagem;<br>• A partir de situações boas ou ruins, consigo tirar lições para minha vida;<br>• Questiono, indago, argumento e mostra-me disposto a ampliar meu ponto de vista (tenho curiosidade);<br>• Utilizo os conteúdos aprendidos nas situações do dia a dia."
         }
     ];
 
@@ -104,6 +113,8 @@
                 <div class="pergunta-bloco">
                     <span class="titulo-competencia">${c.titulo}</span>
                     <span class="descricao-apoio">${c.desc}</span>
+                    <span class="evidencias-titulo">EVIDÊNCIAS NORTEADORAS:</span>
+                    <span class="evidencias-lista">${c.evidencias}</span>
                     <div class="opcoes">${htmlOpcoes}</div>
                 </div>`;
         });
@@ -122,7 +133,6 @@
 
         if (!todasRespondidas) return alert("Por favor, responda todas as competências!");
 
-        // Redireciona para o teste DISC após o SAP
         const sapString = JSON.stringify(respostasSap);
         window.location.href = `disc.html?nome=${encodeURIComponent(nome)}&sap=${sapString}&etapa=${etapa}`;
     }
